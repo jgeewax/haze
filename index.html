@@ -153,18 +153,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .instx svg{width:15px;height:15px}
 .steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
 .steps svg{width:18px;height:18px;vertical-align:-3px}
-/* the share panel: the picture card's thumbnail beside a big Share picture button */
-.share2{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;margin-top:4px;padding:14px 14px 12px 16px;border-radius:18px;background:var(--surface-2);border:1px solid var(--line)}
+/* the share panel: Share on WhatsApp (the picture) and Share (every other way), side by side */
+.share2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.share2 button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:52px;border-radius:14px;padding:10px 12px;font-weight:800;font-size:15.5px;line-height:1.2;text-align:center;text-wrap:balance}
+.share2 svg{width:20px;height:20px;flex:none}
+.s2wa{border:0;background:#25D366;color:#062B14}
+.s2all{border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
 .thumb{width:66px;aspect-ratio:4/5;border:3px solid #FFFFFF;border-radius:9px;padding:0;background:linear-gradient(#C9BFA9,#EDE5D3) center/cover no-repeat;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);transform:rotate(-5deg);transition:transform .2s}
-.thumb:hover{transform:rotate(-2deg) scale(1.04)}
 .thumb.mini{width:30px;border-width:2px;border-radius:5px;transform:rotate(-5deg);display:inline-block;flex:none}
-.s2b{display:flex;flex-direction:column;gap:5px;min-width:0}
-.s2main{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;background:#25D366;color:#062B14;border-radius:13px;padding:12px 14px;font-weight:800;font-size:15.5px}
-.s2main svg{width:20px;height:20px}
-.s2hint{font-size:12px;color:var(--muted);text-align:center}
-.s2links{display:flex;justify-content:center;gap:4px 16px;flex-wrap:wrap;font-size:13px;font-weight:600}
-.s2links a,.s2links button{color:var(--accent);text-decoration:none;border:0;background:none;padding:0;font:inherit}
-.s2links a:hover,.s2links button:hover{text-decoration:underline}
 
 /* My day */
 .day{padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px;flex:1 0 auto}
@@ -454,9 +450,9 @@ en: {
   "share.fcToday": "Forecast today: {name}", "share.fcTomorrow": "Forecast tomorrow: {name}", "share.fcOn": "Forecast for {day}: {name}",
   "share.none": "Live haze readings for Singapore, by region.", "share.copyLink": "Copy link", "share.copyText": "Copy text", "share.more": "More",
   "share.scan": "Scan to open", "share.scanBody": "Show this screen to someone nearby. It opens on {region}.", "share.copied": "Copied", "share.selected": "Text selected",
-  "share.sendText": "Send as text",
-  "pic.share": "Share picture", "pic.shareHint": "Opens your share menu. Pick WhatsApp.", "pic.copy": "Copy picture", "pic.copyHint": "Then paste it into a WhatsApp chat.",
-  "pic.save": "Save picture", "pic.saveHint": "Then send it in WhatsApp.", "pic.preparing": "Preparing picture…", "pic.copied": "Copied. Paste it into a chat.",
+  "share.wa": "Share on WhatsApp",
+  "pic.share": "Share picture", "pic.copy": "Copy picture",
+  "pic.save": "Save picture", "pic.preparing": "Preparing picture…", "pic.copied": "Copied. Paste it into a chat.",
   "pic.alt": "Haze picture for {region}: {band}", "pic.hold": "On a phone, press and hold the picture to save or share it.",
   "card.now": "NOW · THE NEXT HOUR", "card.pmLabel": "This hour · PM2.5 µg/m³ · Band {n}", "card.past": "Past 24 hours · PSI",
   "card.fcToday": "Forecast today · PSI", "card.fcTomorrow": "Forecast tomorrow · PSI", "card.nofc": "No forecast issued", "card.nowPin": "{v} now",
@@ -562,9 +558,9 @@ zh: {
   "share.fcToday": "今天预测：{name}", "share.fcTomorrow": "明天预测：{name}", "share.fcOn": "{day}预测：{name}",
   "share.none": "新加坡各地区的实时烟霾读数。", "share.copyLink": "复制链接", "share.copyText": "复制文字", "share.more": "更多",
   "share.scan": "扫描打开", "share.scanBody": "把这个画面给身边的人看。打开后显示{region}。", "share.copied": "已复制", "share.selected": "已选取文字",
-  "share.sendText": "以文字发送",
-  "pic.share": "分享图片", "pic.shareHint": "会打开分享菜单，选择WhatsApp即可。", "pic.copy": "复制图片", "pic.copyHint": "然后粘贴到WhatsApp聊天中。",
-  "pic.save": "保存图片", "pic.saveHint": "然后在WhatsApp中发送。", "pic.preparing": "正在准备图片…", "pic.copied": "已复制，可粘贴到聊天中。",
+  "share.wa": "分享到WhatsApp",
+  "pic.share": "分享图片", "pic.copy": "复制图片",
+  "pic.save": "保存图片", "pic.preparing": "正在准备图片…", "pic.copied": "已复制，可粘贴到聊天中。",
   "pic.alt": "{region}烟霾图片：{band}", "pic.hold": "在手机上，长按图片即可保存或分享。",
   "card.now": "现在 · 接下来一小时", "card.pmLabel": "这一小时 · PM2.5 µg/m³ · 第{n}级", "card.past": "过去24小时 · PSI",
   "card.fcToday": "今天预测 · PSI", "card.fcTomorrow": "明天预测 · PSI", "card.nofc": "尚未发布预测", "card.nowPin": "目前 {v}",
@@ -670,9 +666,9 @@ ms: {
   "share.fcToday": "Ramalan hari ini: {name}", "share.fcTomorrow": "Ramalan esok: {name}", "share.fcOn": "Ramalan untuk {day}: {name}",
   "share.none": "Bacaan jerebu langsung untuk Singapura, mengikut kawasan.", "share.copyLink": "Salin pautan", "share.copyText": "Salin teks", "share.more": "Lagi",
   "share.scan": "Imbas untuk buka", "share.scanBody": "Tunjukkan skrin ini kepada orang berdekatan. Ia dibuka pada {region}.", "share.copied": "Disalin", "share.selected": "Teks dipilih",
-  "share.sendText": "Hantar sebagai teks",
-  "pic.share": "Kongsi gambar", "pic.shareHint": "Membuka menu kongsi anda. Pilih WhatsApp.", "pic.copy": "Salin gambar", "pic.copyHint": "Kemudian tampal dalam sembang WhatsApp.",
-  "pic.save": "Simpan gambar", "pic.saveHint": "Kemudian hantar dalam WhatsApp.", "pic.preparing": "Menyediakan gambar…", "pic.copied": "Disalin. Tampal dalam sembang.",
+  "share.wa": "Kongsi di WhatsApp",
+  "pic.share": "Kongsi gambar", "pic.copy": "Salin gambar",
+  "pic.save": "Simpan gambar", "pic.preparing": "Menyediakan gambar…", "pic.copied": "Disalin. Tampal dalam sembang.",
   "pic.alt": "Gambar jerebu untuk {region}: {band}", "pic.hold": "Pada telefon, tekan dan tahan gambar untuk menyimpan atau berkongsi.",
   "card.now": "KINI · SEJAM AKAN DATANG", "card.pmLabel": "Sejam ini · PM2.5 µg/m³ · Jalur {n}", "card.past": "24 jam lalu · PSI",
   "card.fcToday": "Ramalan hari ini · PSI", "card.fcTomorrow": "Ramalan esok · PSI", "card.nofc": "Tiada ramalan dikeluarkan", "card.nowPin": "{v} kini",
@@ -778,9 +774,9 @@ ta: {
   "share.fcToday": "இன்றைய முன்னறிவிப்பு: {name}", "share.fcTomorrow": "நாளைய முன்னறிவிப்பு: {name}", "share.fcOn": "{day}க்கான முன்னறிவிப்பு: {name}",
   "share.none": "சிங்கப்பூரின் ஒவ்வொரு பகுதிக்குமான நேரலை புகைமூட்ட அளவீடுகள்.", "share.copyLink": "இணைப்பை நகலெடு", "share.copyText": "உரையை நகலெடு", "share.more": "மேலும்",
   "share.scan": "திறக்க ஸ்கேன் செய்யவும்", "share.scanBody": "இந்தத் திரையை அருகில் உள்ளவருக்குக் காட்டுங்கள். அது {region} பகுதியில் திறக்கும்.", "share.copied": "நகலெடுக்கப்பட்டது", "share.selected": "உரை தேர்ந்தெடுக்கப்பட்டது",
-  "share.sendText": "உரையாக அனுப்பு",
-  "pic.share": "படத்தைப் பகிர்", "pic.shareHint": "பகிர்வு மெனுவைத் திறக்கும். WhatsApp-ஐத் தேர்ந்தெடுக்கவும்.", "pic.copy": "படத்தை நகலெடு", "pic.copyHint": "பிறகு WhatsApp உரையாடலில் ஒட்டவும்.",
-  "pic.save": "படத்தைச் சேமி", "pic.saveHint": "பிறகு WhatsApp-இல் அனுப்பவும்.", "pic.preparing": "படம் தயாராகிறது…", "pic.copied": "நகலெடுக்கப்பட்டது. உரையாடலில் ஒட்டவும்.",
+  "share.wa": "WhatsApp-இல் பகிர்",
+  "pic.share": "படத்தைப் பகிர்", "pic.copy": "படத்தை நகலெடு",
+  "pic.save": "படத்தைச் சேமி", "pic.preparing": "படம் தயாராகிறது…", "pic.copied": "நகலெடுக்கப்பட்டது. உரையாடலில் ஒட்டவும்.",
   "pic.alt": "{region} புகைமூட்டப் படம்: {band}", "pic.hold": "கைபேசியில், படத்தைச் சேமிக்க அல்லது பகிர அதை அழுத்திப் பிடிக்கவும்.",
   "card.now": "இப்போது · அடுத்த ஒரு மணி நேரம்", "card.pmLabel": "இந்த மணி நேரம் · PM2.5 µg/m³ · நிலை {n}", "card.past": "கடந்த 24 மணி நேரம் · PSI",
   "card.fcToday": "இன்றைய முன்னறிவிப்பு · PSI", "card.fcTomorrow": "நாளைய முன்னறிவிப்பு · PSI", "card.nofc": "முன்னறிவிப்பு வெளியிடப்படவில்லை", "card.nowPin": "இப்போது {v}",
@@ -3133,6 +3129,7 @@ const ICON = {
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>',
   image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.5z"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 20.7l1-5.1A8.5 8.5 0 1 1 8.4 19.7z"/><path fill="currentColor" stroke="none" d="M9.3 7.4c.3-.3.8-.2 1 .2l.8 1.7c.1.3.1.6-.2.8l-.6.6c.6 1.2 1.6 2.2 2.8 2.8l.6-.6c.2-.3.5-.3.8-.2l1.7.8c.4.2.5.7.2 1l-.8.8c-.5.5-1.3.7-2 .4-2.2-.9-3.9-2.6-4.8-4.8-.3-.7-.1-1.5.4-2z"/></svg>',
   tile:'<svg class="apptile" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9A493"/><stop offset="1" stop-color="#E6DCC6"/></linearGradient><linearGradient id="ts" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#F2742B"/><stop offset="1" stop-color="#F2742B" stop-opacity=".15"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#tb)"/><circle cx="16" cy="16" r="10" fill="url(#ts)"/></svg>',
   iosShare:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></svg>',
   out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg>',
@@ -3631,7 +3628,7 @@ function shareHTML(){
       <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">${t('share.copyText')}</span></button>
       ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>${t('share.more')}</button>` : ''}
     </div>
-    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${pic().label}</span></button><div id="imgOut" hidden></div>` : ''}
+    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${picLabel()}</span></button><div id="imgOut" hidden></div>` : ''}
     <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>${t('share.scan')}</b><span>${esc(t('share.scanBody', {region:RNAME[P.region]}))}</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
@@ -3785,20 +3782,36 @@ async function sharePicture(btn){
   track('share/picture/shown');
   showPicture(blob);
 }
-const pic = () => CAN_SHARE_FILES ? {label:t('pic.share'), hint:t('pic.shareHint')}
-                 : CAN_COPY_IMG ? {label:t('pic.copy'), hint:t('pic.copyHint')}
-                 : {label:t('pic.save'), hint:t('pic.saveHint')};
-/* the share panel on Now and My day: the picture first, the other ways underneath */
-function shareBlock(){
-  const P2 = pic();
-  return `<div class="share2">
-    <button class="thumb" data-act="pic" aria-label="${P2.label}"></button>
-    <div class="s2b">
-      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${P2.label}</span></button>
-      <div class="s2hint">${P2.hint}</div>
-      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">${t('share.sendText')}</a><button data-act="copylink"><span class="lbl">${t('share.copyLink')}</span></button><button data-act="share">${t('share.more')}</button></div>
-    </div></div>`;
+const picLabel = () => t(CAN_SHARE_FILES ? 'pic.share' : CAN_COPY_IMG ? 'pic.copy' : 'pic.save');
+/* Share on WhatsApp sends the picture card itself, never text. No web page can drop a picture straight into WhatsApp:
+   phones (and Safari on a Mac) open the share menu with the picture attached, where WhatsApp is one tap; other
+   computers copy the picture and open WhatsApp Web to paste it; anything else shows it to save. The picture goes
+   alone, because WhatsApp on iPhones drops a picture that comes with text, and the card already carries the address
+   and a QR code. */
+async function shareWhatsApp(btn){
+  const lbl = btn.querySelector('.lbl'), was = lbl.textContent, say = (m, ms) => { lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
+  let blob = cardCache.key === cardKey() ? cardCache.blob : null;
+  if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
+  if (CAN_SHARE_FILES){
+    try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})]}); track('share/whatsapp/shared'); return; }
+    catch(e){ if (e.name === 'AbortError') return; }
+  }
+  if (CAN_COPY_IMG && !matchMedia('(pointer:coarse)').matches){
+    try {
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      track('share/whatsapp/copied'); say(t('pic.copied'), 4000);
+      window.open('https://web.whatsapp.com/', '_blank', 'noopener');
+      return;
+    } catch(e) {}
+  }
+  track('share/whatsapp/shown');
+  showPicture(blob);
 }
+/* the share panel on Now and My day */
+const shareBlock = () => `<div class="share2">
+    <button class="s2wa" data-act="wa">${ICON.wa}<span class="lbl">${t('share.wa')}</span></button>
+    <button class="s2all" data-act="share">${ICON.share}<span class="lbl">${t('share.title')}</span></button>
+  </div>`;
 
 /* ---------- Events ---------- */
 document.getElementById('app').addEventListener('click', e => {
@@ -3813,8 +3826,8 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.id === 'copyLink') return copy(shareURL(), b);
   if (b.id === 'copyMsg') return copy(shareText(), b);
   if (b.id === 'shareMore'){ navigator.share({title:'Haze Status', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
-  if (b.id === 'shareImg' || b.dataset.act === 'pic') return sharePicture(b);
-  if (b.dataset.act === 'copylink') return copy(shareURL(), b);
+  if (b.id === 'shareImg') return sharePicture(b);
+  if (b.dataset.act === 'wa') return shareWhatsApp(b);
   if (b.dataset.act === 'install') return doInstall();
   if (b.dataset.act === 'install-dismiss'){ try { localStorage.setItem('haze-sky:install-dismissed', '1'); } catch(e) {} return render(); }
   if (b.id === 'retry'){ showStatus(t('status.loading')); return refresh(); }
@@ -3895,10 +3908,9 @@ function trackButton(b){
   const ids = {copyLink:'share/copy-link', copyMsg:'share/copy-text', shareMore:'share/system-sheet', shareImg:'share/image', geo:'location/asked', reset:'settings/reset'};
   if (ids[b.id]) return track(ids[b.id]);
   if (a === 'share') return track('share/open/' + where);
-  if (a === 'pic') return track('share/picture/' + where);
+  if (a === 'wa') return track('share/whatsapp-button/' + where);
   if (a === 'install') return track('install/asked/' + where);
   if (a === 'install-dismiss') return track('install/dismissed');
-  if (a === 'copylink') return track('share/copy-link/' + where);
   if (a === 'def') return track('define/' + b.dataset.k);
   if (a === 'nea') return track('nea-wording/' + b.dataset.k);
   if (a === 'explain' || a === 'news' || a === 'region') return track('open/' + a);
