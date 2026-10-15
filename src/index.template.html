@@ -145,6 +145,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .locbtn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:13px 16px;font-weight:700;font-size:15px}
 .locbtn svg{width:20px;height:20px}
+.locbtn:disabled{opacity:.6;cursor:progress}
 .msg{font-size:13px;color:var(--muted);margin:8px 2px 10px}
 .plain{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
 
@@ -166,6 +167,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .mx .r .h{font-weight:800;font-size:11.5px}
 .mx .r .h small{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
 .mx .r.on{box-shadow:0 0 0 2px var(--ink) inset}
+/* sharing */
+.hdr{gap:4px}
+.hdr .iconbtn{width:36px;height:36px}
+.hdr .chip{margin-right:2px}
+.logo > div{min-width:0}
+.logo small{overflow:hidden;text-overflow:ellipsis}
+.sharerow{margin-top:auto;padding-top:18px}
+.bubble{background:var(--surface-2);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.shbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:6px}
+.shb{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:4px 0;font-size:12px;font-weight:600;color:var(--ink);text-decoration:none;text-align:center;line-height:1.2}
+.si{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#FFFFFF}
+.si svg{width:24px;height:24px}
+.imgbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px}
+.imgbtn svg{width:20px;height:20px}
+#imgOut{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+#imgOut[hidden]{display:none}
+#imgOut img{width:100%;max-width:100%;border-radius:14px;border:1px solid var(--line);display:block}
+#imgOut a{text-decoration:none;color:var(--ink)}
+.qrbox{display:flex;gap:16px;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:14px}
+.qrbox svg{flex:none;width:132px;height:132px;border-radius:8px}
+.qrbox b{display:block;font-size:15px;margin-bottom:2px}
+.qrbox span{display:block;font-size:13px;color:var(--muted);line-height:1.4}
+.qrbox .u{color:var(--ink);font-weight:700;margin-top:8px;-webkit-user-select:all;user-select:all;overflow-wrap:anywhere}
+
 /* Full-bleed at every width: backgrounds run edge to edge, the content column stays at most 600px and centred */
 .hdr{padding-left:max(18px,calc(50% - 300px));padding-right:max(10px,calc(50% - 310px))}
 .sky,.ahead{padding-left:max(22px,calc(50% - 300px));padding-right:max(22px,calc(50% - 300px))}
@@ -182,6 +207,7 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div><b>Haze</b><small id="upd"></small></div>
     </div>
     <button class="chip" data-act="region" id="regionChip"></button>
+    <button class="iconbtn" data-act="share" aria-label="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></svg></button>
     <button class="iconbtn" data-act="explain" aria-label="Understanding the readings"></button>
   </header>
   <section class="view" id="v-now" aria-label="Now"></section>
@@ -202,6 +228,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   </div>
 </div>
 
+<script>/*VENDOR:qrcode*/</script>
 <script>
 /* ---------- Snapshot of real NEA responses (used only when the live fetch is unavailable) ---------- */
 const SNAP_AQ = /*AQ*/null;
@@ -211,7 +238,6 @@ const SNAP_ADV = /*ADV*/null;
 const REGIONS = ['north','west','central','east','south'];
 const RNAME = {north:'North',south:'South',east:'East',west:'West',central:'Central'};
 const REX = {north:'Woodlands, Yishun, Sembawang', west:'Jurong, Clementi, Choa Chu Kang', central:'Bishan, Toa Payoh, Ang Mo Kio, Orchard', east:'Tampines, Bedok, Pasir Ris, Punggol', south:'CBD, Bukit Merah, Queenstown, Sentosa'};
-const RPOINT = {north:[1.41803,103.82], south:[1.29587,103.82], east:[1.35735,103.94], west:[1.35735,103.7], central:[1.35735,103.82]};
 const SUBS = [['pm25','ChartPM25'],['pm10','ChartPM10'],['o3','ChartO3'],['co','ChartCO'],['so2','ChartSO2']];
 /* who → which column of NEA's guide applies */
 const GROUPS = [
@@ -242,7 +268,12 @@ const ICON = {
   go:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
   ease:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12h12"/></svg>',
   light:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 8.5V12l2.5 1.5"/></svg>',
-  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11 12 4.5 19.5 11M6.5 9.5V19h11V9.5"/></svg>'
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11 12 4.5 19.5 11M6.5 9.5V19h11V9.5"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>',
+  image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.5z"/></svg>',
+  plane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11.2l6.3 2.3L11.6 20l3.3-4.4 4.6 3.4L21 4zM9.3 13.5 21 4"/></svg>'
 };
 
 /* ---------- Settings, saved in this browser ---------- */
@@ -253,7 +284,18 @@ try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
   if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {} }
+/* A shared link like haze.geewax.org/#west opens on that region. It becomes the default only for a first-time
+   visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
+let keepRegion = null;
+{ const linked = (location.hash || '').slice(1).toLowerCase();
+  if (REGIONS.includes(linked)){
+    let stored = null; try { stored = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
+    if (stored && REGIONS.includes(stored.region) && stored.region !== linked) keepRegion = stored.region;
+    P.region = linked;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch(e) {}
+    if (!stored) try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {}
+  } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(keepRegion ? {...P, region:keepRegion} : P)); } catch(e) {} }
 const S = {tab:P.start, d:null, live:false};
 const G = () => GROUPS.find(g => g.id === P.group);
 
@@ -332,8 +374,8 @@ function verdict(t){
 
 /* ---------- Sky ---------- */
 function mix(a, b, t){ const p = x => [1,3,5].map(i => parseInt(x.slice(i, i+2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2, '0')).join(''); }
-function skyOf(pm){
-  const t = Math.min(1, pm / 260), dark = isDark();
+function skyOf(pm, dark = isDark()){
+  const t = Math.min(1, pm / 260);
   const clear = dark ? ['#0E2A45','#2B557C'] : ['#5BA6E6','#D4EAF9'];
   const hazy  = dark ? ['#363128','#6E6352'] : ['#AFA796','#E6DFD1'];
   const thick = dark ? ['#3A2416','#7E5534'] : ['#8E7258','#D9BE9C'];
@@ -386,6 +428,7 @@ function renderNow(){
       ${pmScale(n.pm)}
       <div class="act">${esc(pmAdvice(n.b))}</div>
       ${forLine()}
+      <div class="sharerow"><button class="chip" data-act="share">${ICON.share}Share this reading</button></div>
     </div>
     <div class="ahead">
       <div class="eb" style="color:var(--muted)">Plan ahead <span class="sub">· <button class="term" data-act="explain">24-hr PSI forecast</button></span></div>
@@ -421,6 +464,7 @@ function renderDay(){
     <div><h2>${head}</h2><div style="margin-top:6px;color:var(--muted)">${forLine()}</div></div>
     <div class="tl">${steps.join('')}</div>
     ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
+    <button class="imgbtn" data-act="share">${ICON.share}Share today’s readings with family</button>
   </div>`;
 }
 
@@ -539,35 +583,222 @@ function explainHTML(){
 function newsHTML(){
   return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="https://www.haze.gov.sg/" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.right}</a>`;
 }
-function geolocate(){
-  const msg = document.getElementById('geomsg');
-  if (!navigator.geolocation){ msg.textContent = 'Location isn’t available in this browser. Pick your region below.'; return; }
-  msg.textContent = 'Finding you…';
+/* Use my location: GPS position → nearest named area → that area's NEA region */
+async function geolocate(){
+  const btn = document.getElementById('geo'), say = t => { const m = document.getElementById('geomsg'); if (m) m.textContent = t; };
+  if (!('geolocation' in navigator)) return say('This browser can’t share its location. Pick your region below.');
+  if (!window.isSecureContext) return say('Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.');
+  let state = null;
+  try { state = (await navigator.permissions.query({name:'geolocation'})).state; } catch(e) {}
+  if (state === 'denied') return say('Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.');
+  say('Finding your location…'); if (btn) btn.disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
+    if (btn) btn.disabled = false;
     const {latitude:la, longitude:lo} = pos.coords;
-    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ msg.textContent = 'You seem to be outside Singapore. Pick a region below.'; return; }
-    let best = 'central', bd = 1e9;
-    for (const r of REGIONS){ const [a, b] = RPOINT[r], d = (a-la)**2 + (b-lo)**2; if (d < bd){ bd = d; best = r; } }
-    setRegion(best);
-  }, () => { msg.textContent = 'Location access is blocked here. Pick your region below.'; }, {timeout:8000, maximumAge:600000});
+    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1) return say('You seem to be outside Singapore. Pick a region below.');
+    const a = nearestArea(la, lo);
+    placeFound(a[0], a[1]);
+  }, err => {
+    if (btn) btn.disabled = false;
+    say(err.code === 1 ? 'Location permission wasn’t given. Allow location for this site in your browser settings, and turn on Location Services for your browser on a phone. Or pick your region below.'
+      : err.code === 3 ? 'Finding your location took too long. Try again, or pick your region below.'
+      : 'Your device couldn’t work out where you are. Try again with Wi-Fi on, or pick your region below.');
+  }, {enableHighAccuracy:false, timeout:15000, maximumAge:10 * 60e3});
 }
-function setRegion(r){ P.region = r; save(); closeSheet(); render(); }
+/* Neighbourhood centres, each assigned to the NEA region that reports for it */
+const AREAS = [
+  ['Admiralty','north',1.4406,103.8009],['Ang Mo Kio','central',1.3691,103.8454],['Bedok','east',1.3236,103.9273],
+  ['Bishan','central',1.3526,103.8352],['Boon Lay','west',1.3386,103.7058],['Bukit Batok','west',1.3590,103.7637],
+  ['Bukit Merah','south',1.2819,103.8239],['Bukit Panjang','west',1.3774,103.7719],['Bukit Timah','central',1.3294,103.8021],
+  ['Changi','east',1.3644,103.9915],['Choa Chu Kang','west',1.3840,103.7470],['Clementi','west',1.3162,103.7649],
+  ['Geylang','east',1.3201,103.8918],['Harbourfront','south',1.2653,103.8220],['Holland Village','central',1.3110,103.7960],
+  ['Hougang','east',1.3612,103.8863],['Jurong East','west',1.3329,103.7436],['Jurong West','west',1.3404,103.7090],
+  ['Kallang','central',1.3100,103.8651],['Lim Chu Kang','north',1.4300,103.7170],['Mandai','north',1.4043,103.7898],
+  ['Marina Bay','south',1.2789,103.8536],['Marine Parade','east',1.3020,103.8971],['Novena','central',1.3204,103.8438],
+  ['Orchard','central',1.3048,103.8318],['Pasir Ris','east',1.3721,103.9474],['Paya Lebar','east',1.3177,103.8926],
+  ['Punggol','east',1.3984,103.9072],['Queenstown','south',1.2942,103.7861],['Raffles Place','south',1.2840,103.8510],
+  ['Seletar','north',1.4040,103.8690],['Sembawang','north',1.4491,103.8185],['Sengkang','east',1.3868,103.8914],
+  ['Sentosa','south',1.2494,103.8303],['Serangoon','central',1.3554,103.8679],['Tampines','east',1.3496,103.9568],
+  ['Tanjong Pagar','south',1.2764,103.8460],['Toa Payoh','central',1.3343,103.8563],['Tuas','west',1.2949,103.6306],
+  ['West Coast','west',1.3000,103.7650],['Woodlands','north',1.4382,103.7890],['Yishun','north',1.4304,103.8354]];
+function nearestArea(la, lo){
+  let best = AREAS[0], bd = Infinity;
+  for (const a of AREAS){ const d = (a[2] - la)**2 + (a[3] - lo)**2; if (d < bd){ bd = d; best = a; } }
+  return best;
+}
+function placeFound(name, r){
+  P.region = r; keepRegion = null; S.hi = null; save();
+  const note = `Found you near ${name}, in the ${RNAME[r]} region. Saved on this device.`;
+  render();
+  if (sheet.classList.contains('on')){ document.getElementById('sheetBody').innerHTML = regionSheetHTML(note); setTimeout(closeSheet, 1600); }
+  else { const m = document.getElementById('geomsg'); if (m) m.textContent = note; }
+}
+const regionSheetHTML = (note = 'Saved on this device.') =>
+  `<button class="locbtn" id="geo">${ICON.locate} Use my location</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
+function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); render(); }
+
+/* ---------- Sharing: message, link, QR code, picture card ---------- */
+const SITE = 'https://haze.geewax.org/';
+const shareURL = () => SITE + '#' + P.region;
+function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
+/* Plain text that reads well in any chat app. The coloured squares match NEA's band colours. */
+function shareText(withURL = true){
+  let lines = ['Live haze readings for Singapore, by region.'];
+  if (S.d){
+    const n = now(P.region), f = S.d.fc, sq = ['🟩','🟦','🟨','🟧','🟥'];
+    lines = [`Haze in ${RNAME[P.region]}, ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}`,
+      `${sq[n.b.c]} Now: ${n.b.name}, ${n.pm} µg/m³ (1-hr PM2.5, Band ${n.b.n})`, n.b.gen];
+    if (f) lines.push(`${sq[PSI[f.lo].c]}${f.hi !== f.lo ? sq[PSI[f.hi].c] : ''} 24-hr PSI forecast for ${fcFor()}: ${fcName()}`);
+  }
+  return withURL ? `${lines.join('\n')}\n\nLive readings for your area: ${shareURL()}` : lines.join('\n');
+}
+function qrModules(text){
+  if (typeof qrcode !== 'function') return null;
+  const q = qrcode(0, 'M'); q.addData(text); q.make();
+  return {n: q.getModuleCount(), dark: (r, c) => q.isDark(r, c)};
+}
+/* Always dark modules on white, with a quiet zone, so any phone camera can read it in either theme */
+function qrSVG(text){
+  const q = qrModules(text); if (!q) return '';
+  const m = 4, s = q.n + 2*m; let d = '';
+  for (let r = 0; r < q.n; r++) for (let c = 0; c < q.n; c++) if (q.dark(r, c)) d += `M${c+m} ${r+m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${s} ${s}" shape-rendering="crispEdges" role="img" aria-label="QR code for ${esc(text)}"><rect width="${s}" height="${s}" fill="#FFFFFF"/><path d="${d}" fill="#12202B"/></svg>`;
+}
+function shareHTML(){
+  const text = shareText();
+  const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
+  const tg = 'https://t.me/share/url?url=' + encodeURIComponent(shareURL()) + '&text=' + encodeURIComponent(shareText(false));
+  return `<div class="bubble" id="shareMsg">${esc(text)}</div>
+    <div class="shbtns">
+      <a class="shb" href="${wa}" target="_blank" rel="noopener"><span class="si" style="background:#25D366">${ICON.chat}</span>WhatsApp</a>
+      <a class="shb" href="${tg}" target="_blank" rel="noopener"><span class="si" style="background:#2AABEE">${ICON.plane}</span>Telegram</a>
+      <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">Copy link</span></button>
+      <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">Copy text</span></button>
+      ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
+    </div>
+    ${S.d ? `<button class="imgbtn" id="shareImg">${ICON.image}<span class="lbl">Share as image</span></button><div id="imgOut" hidden></div>` : ''}
+    <div class="qrbox">${qrSVG(shareURL())}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(shareURL().replace('https://', ''))}</span></div></div>`;
+}
+function openShare(){
+  openSheet('Share', shareHTML());
+  card = null; if (S.d) cardBlob().then(b => { card = b; }).catch(() => {});   // ready before the tap, so the share keeps the tap's permission
+}
+async function copy(text, btn){
+  const lbl = btn.querySelector('.lbl') || btn, was = lbl.textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch(e){
+    const ta = Object.assign(document.createElement('textarea'), {value:text, readOnly:true});
+    ta.style.cssText = 'position:fixed;opacity:0'; document.body.append(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch(_) {}
+    ta.remove();
+  }
+  if (!ok){ const r = document.createRange(), el = document.getElementById('shareMsg'); r.selectNodeContents(el); getSelection().removeAllRanges(); getSelection().addRange(r); }
+  lbl.textContent = ok ? 'Copied' : 'Text selected';
+  setTimeout(() => { lbl.textContent = was; }, 2200);
+}
+
+/* The picture card: 1080×1350, always in the light palette so it looks the same for everyone it reaches */
+const CARD = {c:['#479B02','#006FA1','#FFCE03','#FFA800','#D60000'], on:['#FFFFFF','#FFFFFF','#1F1A00','#1F1400','#FFFFFF'],
+  fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6'};
+let card = null;
+function rr(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X+r, Y); x.arcTo(X+w, Y, X+w, Y+h, r); x.arcTo(X+w, Y+h, X, Y+h, r); x.arcTo(X, Y+h, X, Y, r); x.arcTo(X, Y, X+w, Y, r); x.closePath(); }
+function wrap(x, text, maxW){
+  const out = []; let line = '';
+  for (const w of text.split(' ')){ const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line){ out.push(line); line = w; } else line = t; }
+  return line ? [...out, line] : out;
+}
+async function cardBlob(){
+  const D = "'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Helvetica Neue', system-ui, sans-serif";
+  try { await Promise.all(['750 150px "Bricolage Grotesque"', '600 50px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"'].map(f => document.fonts.load(f))); } catch(e) {}
+  const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, sky = skyOf(n.pm, false);
+  const cv = Object.assign(document.createElement('canvas'), {width:W, height:H}), x = cv.getContext('2d');
+  const font = (w, px, fam) => { x.font = `${w} ${px}px ${fam}`; };
+  const space = px => { if ('letterSpacing' in x) x.letterSpacing = px + 'px'; };
+  // sky, with the same haze grain as the app
+  const g = x.createLinearGradient(0, 0, 0, 920); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const gc = sky.t > .3 ? '100,80,55' : '255,255,255';
+  for (let i = 0, N = 60 + n.pm * 3; i < N; i++){ x.beginPath(); x.arc(Math.random()*W, Math.random()*900, 1.2 + Math.random()*3.4, 0, 7); x.fillStyle = `rgba(${gc},${.1 + Math.random()*.28})`; x.fill(); }
+  // header
+  x.fillStyle = sky.ink; x.textBaseline = 'middle';
+  x.beginPath(); x.arc(pad + 26, 104, 18, 0, 7); x.fill();
+  x.globalAlpha = .55; x.lineCap = 'round'; x.lineWidth = 6; x.strokeStyle = sky.ink;
+  for (const [y, a, b] of [[134, 4, 48], [148, 14, 38]]){ x.beginPath(); x.moveTo(pad + a, y); x.lineTo(pad + b, y); x.stroke(); }
+  x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze', pad + 70, 118);
+  font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
+  // right now
+  x.textBaseline = 'alphabetic'; font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText('RIGHT NOW · 1-HR PM2.5', pad, 262); x.globalAlpha = 1; space(0);
+  font(750, 150, D); const bw = x.measureText(n.b.name).width;
+  x.fillStyle = CARD.c[n.b.c]; rr(x, pad - 12, 290, bw + 48, 186, 26); x.fill();
+  x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 12, 432);
+  x.fillStyle = sky.ink; font(700, 44, B); x.fillText(`${n.pm} µg/m³ · Band ${n.b.n}`, pad, 548);
+  const seg = (cw - 3*10) / 4, idx = pmIdx(n.pm), bb = PM[idx], fr = Math.max(0, Math.min(1, (n.pm - bb.lo) / (bb.hi - bb.lo)));
+  PM.forEach((b, k) => { x.globalAlpha = k === idx ? 1 : .45; x.fillStyle = CARD.c[b.c]; rr(x, pad + k*(seg + 10), 590, seg, 22, 6); x.fill(); });
+  x.globalAlpha = 1; const mx = pad + idx*(seg + 10) + fr*seg;
+  x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, mx - 9, 572, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, mx - 5, 576, 10, 50, 5); x.fill();
+  font(600, 24, B); PM.forEach((b, k) => { x.globalAlpha = k === idx ? 1 : .7; x.fillText(`${b.n} · ${b.name}`, pad + k*(seg + 10), 654); }); x.globalAlpha = 1;
+  font(600, 50, D); wrap(x, n.b.gen, cw).slice(0, 3).forEach((l, i) => x.fillText(l, pad, 748 + i*62));
+  // plan ahead panel
+  x.fillStyle = '#FFFFFF'; rr(x, 0, 920, W, H, 44); x.fill();
+  x.fillStyle = CARD.muted; font(800, 26, B); space(3);
+  x.fillText(f ? `24-HR PSI FORECAST · ${fcFor().toUpperCase()}` : '24-HR PSI FORECAST', pad, 998); space(0);
+  let y = 1072;
+  if (f){
+    x.fillStyle = CARD.fg[PSI[f.hi].c]; font(700, 64, D);
+    for (const l of wrap(x, fcName(), cw)){ x.fillText(l, pad, y); y += 70; }
+    const s5 = (cw - 4*8) / 5; y += 6;
+    PSI.forEach((b, k) => { x.globalAlpha = k >= f.lo && k <= f.hi ? 1 : .3; x.fillStyle = CARD.c[b.c]; rr(x, pad + k*(s5 + 8), y - 30, s5, 22, 6); x.fill(); });
+    x.globalAlpha = 1; x.strokeStyle = CARD.ink; x.lineWidth = 5; rr(x, pad + f.lo*(s5 + 8) - 8, y - 42, (f.hi - f.lo + 1)*(s5 + 8) + 8, 46, 12); x.stroke();
+    font(600, 22, B); PSI.forEach((b, k) => { x.fillStyle = k >= f.lo && k <= f.hi ? CARD.ink : CARD.muted; x.fillText(b.name, pad + k*(s5 + 8), y + 30); });
+  } else { x.fillStyle = CARD.muted; font(600, 44, D); x.fillText('None issued. NEA publishes one when air', pad, y); x.fillText('quality reaches the Unhealthy range.', pad, y + 56); }
+  // footer: where to find it, plus a QR code so a screenshot of this card still leads back
+  x.fillStyle = CARD.line; x.fillRect(pad, 1176, cw, 2);
+  x.fillStyle = CARD.muted; font(600, 28, B); x.fillText('Live readings for your area', pad, 1246);
+  x.fillStyle = CARD.accent; font(800, 46, B); x.fillText('haze.geewax.org', pad, 1300);
+  x.fillStyle = CARD.muted; font(500, 21, B); x.fillText('Data: National Environment Agency. Unofficial.', pad, 1334);
+  const q = qrModules(shareURL());
+  if (q){ const cell = Math.max(4, Math.floor(150 / q.n)), size = cell * q.n, qx = W - pad - size, qy = H - 22 - size;
+    x.fillStyle = CARD.ink; for (let r = 0; r < q.n; r++) for (let c = 0; c < q.n; c++) if (q.dark(r, c)) x.fillRect(qx + c*cell, qy + r*cell, cell, cell); }
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
+}
+async function shareImage(btn){
+  const lbl = btn.querySelector('.lbl'), was = lbl.textContent;
+  const name = `haze-${P.region}-${sgDay(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
+  let blob = card;
+  if (!blob){ lbl.textContent = 'Preparing image…'; try { blob = card = await cardBlob(); } finally { lbl.textContent = was; } }
+  const file = new File([blob], name, {type:'image/png'});
+  if (navigator.canShare && navigator.canShare({files:[file]})){
+    try { await navigator.share({files:[file], text:shareText()}); return; }
+    catch(e){ if (e.name === 'AbortError') return; }
+  }
+  // No file sharing here (most desktops): show the card to save or drag into a chat
+  const u = URL.createObjectURL(blob), out = document.getElementById('imgOut');
+  out.hidden = false;
+  out.innerHTML = `<img src="${u}" alt="Haze card for ${RNAME[P.region]}: ${esc(now(P.region).b.name)}"><a class="plain" href="${u}" download="${name}">Download image</a><p class="msg" style="margin:0">On a phone, press and hold the image to save or share it.</p>`;
+  out.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
 
 /* ---------- Events ---------- */
 document.getElementById('app').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.id === 'geo') return geolocate();
+  if (b.id === 'copyLink') return copy(shareURL(), b);
+  if (b.id === 'copyMsg') return copy(shareText(), b);
+  if (b.id === 'shareMore'){ navigator.share({title:'Haze', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
+  if (b.id === 'shareImg') return shareImage(b);
   if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
-  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
+  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
   if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
   if (b.dataset.region){ S.hi = null; return setRegion(b.dataset.region); }
   if (b.dataset.group){ P.group = b.dataset.group; save(); return render(); }
   if (b.dataset.start){ P.start = b.dataset.start; save(); return render(); }
   if (b.dataset.tab){ closeSheet(); S.tab = b.dataset.tab; render(); document.getElementById('v-' + S.tab).scrollTop = 0; return; }
   const a = b.dataset.act;
-  if (a === 'region') openSheet('Your region', `<button class="locbtn" id="geo">${ICON.locate} Use my location</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">Saved on this device.</p>${regionOpts()}`);
+  if (a === 'region') openSheet('Your region', regionSheetHTML());
   if (a === 'explain') openSheet('Understanding the readings', explainHTML());
   if (a === 'news') openSheet('NEA update', newsHTML());
+  if (a === 'share') openShare();
 });
 
 /* ---------- Render ---------- */

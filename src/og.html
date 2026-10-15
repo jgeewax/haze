@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Haze link preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Public+Sans:wght@500;600;700;800&display=block">
+<style>
+/* 1200×630 link-preview card, rendered to og.png by `python3 build.py --og`. Static: it shows the scales, never a reading. */
+:root{--ink:#17222B;--muted:#4A5560;--c0:#479B02;--c1:#006FA1;--c2:#FFCE03;--c3:#FFA800;--c4:#D60000}
+*{box-sizing:border-box}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden}
+body{background:linear-gradient(#AFA796,#E6DFD1);color:var(--ink);font-family:'Public Sans','Helvetica Neue',sans-serif;position:relative;padding:64px 72px}
+canvas{position:absolute;inset:0}
+.wrap{position:relative;display:grid;grid-template-columns:1fr 470px;gap:56px;height:100%}
+.logo{display:flex;align-items:center;gap:16px}
+.logo svg{width:56px;height:56px}
+.logo b{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:48px;letter-spacing:-.02em}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:66px;line-height:1.02;letter-spacing:-.03em;margin:44px 0 18px}
+p{font-size:25px;line-height:1.4;margin:0;color:var(--muted);max-width:31ch}
+.url{position:absolute;left:0;bottom:0;font-weight:800;font-size:28px;color:#1D5C88}
+.panel{background:#FFFFFF;border-radius:28px;padding:30px 30px 26px;align-self:center;display:flex;flex-direction:column;gap:26px;box-shadow:0 30px 60px -30px rgba(30,25,15,.45)}
+.eb{font-size:16px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.scale{display:grid;gap:5px}
+.scale div{height:16px;border-radius:4px}
+.lab{display:grid;gap:5px;font-size:14px;font-weight:700;margin-top:8px;line-height:1.15}
+</style>
+</head>
+<body>
+<canvas id="g" width="1200" height="630"></canvas>
+<div class="wrap">
+  <div style="position:relative">
+    <div class="logo"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="11" r="6" fill="currentColor" opacity=".9"/><path d="M3 17h22M6 21h16M9 25h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/></svg><b>Haze</b></div>
+    <h1>Singapore air quality, by region.</h1>
+    <p>The 1-hr PM2.5 for the next hour. NEA’s 24-hr PSI forecast to plan ahead.</p>
+    <div class="url">haze.geewax.org</div>
+  </div>
+  <div class="panel">
+    <div>
+      <div class="eb">Right now · 1-hr PM2.5</div>
+      <div class="scale" style="grid-template-columns:repeat(4,1fr)"><div style="background:var(--c0)"></div><div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div></div>
+      <div class="lab" style="grid-template-columns:repeat(4,1fr)"><span>1 · Normal</span><span>2 · Elevated</span><span>3 · High</span><span>4 · Very High</span></div>
+    </div>
+    <div>
+      <div class="eb">Plan ahead · 24-hr PSI forecast</div>
+      <div class="scale" style="grid-template-columns:repeat(5,1fr)"><div style="background:var(--c0)"></div><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div></div>
+      <div class="lab" style="grid-template-columns:repeat(5,1fr)"><span>Good</span><span>Moderate</span><span>Unhealthy</span><span>Very Unhealthy</span><span>Hazardous</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// fixed seed so the preview image is identical on every render
+let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+const x = document.getElementById('g').getContext('2d');
+for (let i = 0; i < 260; i++){ x.beginPath(); x.arc(rnd()*1200, rnd()*630, .8 + rnd()*2.4, 0, 7); x.fillStyle = `rgba(100,80,55,${.08 + rnd()*.25})`; x.fill(); }
+</script>
+</body>
+</html>
