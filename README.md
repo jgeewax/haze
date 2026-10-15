@@ -17,6 +17,14 @@ Settings (region, group, start tab) are saved in the browser's `localStorage`.
 
 **Sharing.** The share sheet offers WhatsApp, Telegram, copy link, copy text, the system share sheet where the browser has one, a QR code, and a 1080×1350 picture card drawn on a canvas. The card carries its own QR code, so a forwarded screenshot still leads back to the site. Shared links name a region, e.g. `https://haze.geewax.org/west/` (the older `#west` form still works). A first-time visitor adopts that region; a returning visitor sees it for that visit only and keeps their saved default. The QR codes come from [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 (MIT), kept in `vendor/` and bundled into the page at build time. `og.png` is the fixed link-preview image, used when live previews can't be made (see Deploying).
 
+**Analytics.** [GoatCounter](https://geewaxhaze.goatcounter.com) counts visits and taps, without cookies, and only on haze.geewax.org; local copies and previews aren't counted. The page view records the landing path (`/` or `/west/` …). Events include:
+
+- `arrived/shared-link/<region>`, `arrived/qr/<region>` and `arrived/picture-card/<region>`: how a visit came in. Share links carry `?at=<hour>`, the share-sheet QR code carries `?qr`, and the picture card's QR code carries `?card`; the page strips these from the address bar.
+- `share/whatsapp-button`, `share/open/<where>`, `share/whatsapp`, `share/telegram`, `share/copy-link`, `share/copy-text`, `share/system-sheet` and `share/image`.
+- `location/asked`, `location/found/<region>`, `location/denied` …; `tab/<name>`, `region/<name>`, `group/<name>`, `define/<number>`, `nea-wording/<section>` and `out/<site>`.
+
+To leave your own visits out, run `localStorage.setItem('skipgc', 't')` in the browser console on the site.
+
 ## Building
 
 Edit `src/index.template.html`, then:

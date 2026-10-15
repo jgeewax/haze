@@ -2673,6 +2673,8 @@ try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
 /* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
    first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
+const ARRIVAL = (() => { const q = new URLSearchParams(location.search);
+  return {path: location.pathname, via: q.has('at') ? 'shared-link' : q.has('qr') ? 'qr' : q.has('card') ? 'picture-card' : null}; })();
 let keepRegion = null;
 { const fromPath = (/^\/(north|south|east|west|central)\/?$/i.exec(location.pathname) || [])[1];
   const linked = (fromPath || (location.hash || '').slice(1)).toLowerCase();
@@ -2682,7 +2684,7 @@ let keepRegion = null;
     P.region = linked;
     if (!stored) try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {}
   }
-  const q = new URLSearchParams(location.search); q.delete('at');
+  const q = new URLSearchParams(location.search); ['at', 'qr', 'card'].forEach(k => q.delete(k));
   if (fromPath || location.search !== (q.toString() ? '?' + q : '') || REGIONS.includes((location.hash || '').slice(1)))
     try { history.replaceState(null, '', (fromPath ? '/' : location.pathname) + (q.toString() ? '?' + q : '')); } catch(e) {}
 }
@@ -2802,7 +2804,7 @@ function grain(el, pm){
 
 /* ---------- Links to the official source ---------- */
 const OFFICIAL = 'https://www.haze.gov.sg/', NEA_GUIDE = 'https://www.haze.gov.sg/docs/default-source/posters/haze-pm-psi-guide-a4-english.pdf';
-const ext = (href, text) => `<a class="ext" href="${href}" target="_blank" rel="noopener">${text}${ICON.out}</a>`;
+const ext = (href, text) => `<a class="ext" href="${href}" target="_blank" rel="noopener" data-track="out/${new URL(href).hostname}">${text}${ICON.out}</a>`;
 const officialLine = () => `<p class="official">Unofficial view of NEA data. For official readings, advisories and the haze situation, see ${ext(OFFICIAL, 'haze.gov.sg')}.</p>`;
 
 /* ---------- Now ---------- */
@@ -2842,7 +2844,7 @@ function renderNow(){
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
         <div class="nea" id="nea-psi" hidden>NEA: “${esc(psiAdvice(plan))}”${f && f.lo !== f.hi ? ` For the upper end of the forecast, ${PSI[f.hi].name}.` : f ? '' : ' For the current 24-hr PSI; no forecast has been issued.'}</div></div>
       <div class="sharebar">
-        <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener">${ICON.chat}Share on WhatsApp</a>
+        <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-button">${ICON.chat}Share on WhatsApp</a>
         <button class="more" data-act="share" aria-label="More ways to share">${ICON.share}</button>
       </div>
       <div class="lfoot"><button data-tab="set">${esc(who)}</button> · Source: NEA, ${ext(OFFICIAL, 'haze.gov.sg')}</div>
@@ -2976,6 +2978,7 @@ function renderSet(){
       <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
     <div class="sec"><h3>About the data</h3>
       <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} This site is not affiliated with NEA.</p>
+      <p style="font-size:14px;margin:0 0 10px">Visits and button taps are counted with ${ext('https://www.goatcounter.com/', 'GoatCounter')}, which uses no cookies. Your location, region and settings stay on this device.</p>
       <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, 'NEA’s activity guide (PDF)')}</p>
       <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">Reset saved settings</button><span class="foot" id="resetmsg"></span></div></div>
   </div>`;
@@ -3011,20 +3014,22 @@ function newsHTML(){
 /* Use my location: GPS position → nearest named area → that area's NEA region */
 async function geolocate(){
   const btn = document.getElementById('geo'), say = t => { const m = document.getElementById('geomsg'); if (m) m.textContent = t; };
-  if (!('geolocation' in navigator)) return say('This browser can’t share its location. Pick your region below.');
-  if (!window.isSecureContext) return say('Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.');
+  if (!('geolocation' in navigator)){ track('location/unsupported'); return say('This browser can’t share its location. Pick your region below.'); }
+  if (!window.isSecureContext){ track('location/insecure'); return say('Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.'); }
   let state = null;
   try { state = (await navigator.permissions.query({name:'geolocation'})).state; } catch(e) {}
-  if (state === 'denied') return say('Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.');
+  if (state === 'denied'){ track('location/blocked'); return say('Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.'); }
   say('Finding your location…'); if (btn) btn.disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
     if (btn) btn.disabled = false;
     const {latitude:la, longitude:lo} = pos.coords;
-    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1) return say('You seem to be outside Singapore. Pick a region below.');
+    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ track('location/outside-singapore'); return say('You seem to be outside Singapore. Pick a region below.'); }
     const a = nearestArea(la, lo);
+    track('location/found/' + a[1]);
     placeFound(a[0], a[1]);
   }, err => {
     if (btn) btn.disabled = false;
+    track('location/' + (err.code === 1 ? 'denied' : err.code === 3 ? 'timeout' : 'unavailable'));
     say(err.code === 1 ? 'Location permission wasn’t given. Allow location for this site in your browser settings, and turn on Location Services for your browser on a phone. Or pick your region below.'
       : err.code === 3 ? 'Finding your location took too long. Try again, or pick your region below.'
       : 'Your device couldn’t work out where you are. Try again with Wi-Fi on, or pick your region below.');
@@ -3068,7 +3073,8 @@ const SITE = 'https://haze.geewax.org/';
    can't be told to refresh, so shared links carry the reading's hour (?at=YYYYMMDDHH) and get a fresh preview each
    hour. QR codes use the plain address: nobody previews a scanned link. */
 const atStamp = d => { const x = sg(d), p2 = v => String(v).padStart(2, '0'); return `${x.getUTCFullYear()}${p2(x.getUTCMonth() + 1)}${p2(x.getUTCDate())}${p2(x.getUTCHours())}`; };
-const shareURL = (stamped = true) => SITE + P.region + '/' + (stamped && S.d ? '?at=' + atStamp(S.d.asOf) : '');
+const plainURL = () => SITE + P.region + '/';
+const shareURL = (via = 'link') => plainURL() + (via === 'link' ? (S.d ? '?at=' + atStamp(S.d.asOf) : '') : '?' + via);
 function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
 /* Short plain text for any chat app: the two numbers, the forecast, the link. Coloured squares match NEA's band colours. */
 function shareText(withURL = true){
@@ -3099,14 +3105,14 @@ function shareHTML(){
   const tg = 'https://t.me/share/url?url=' + encodeURIComponent(shareURL()) + '&text=' + encodeURIComponent(shareText(false));
   return `<div class="bubble" id="shareMsg">${esc(text)}</div>
     <div class="shbtns">
-      <a class="shb" href="${wa}" target="_blank" rel="noopener"><span class="si" style="background:#25D366">${ICON.chat}</span>WhatsApp</a>
-      <a class="shb" href="${tg}" target="_blank" rel="noopener"><span class="si" style="background:#2AABEE">${ICON.plane}</span>Telegram</a>
+      <a class="shb" href="${wa}" target="_blank" rel="noopener" data-track="share/whatsapp"><span class="si" style="background:#25D366">${ICON.chat}</span>WhatsApp</a>
+      <a class="shb" href="${tg}" target="_blank" rel="noopener" data-track="share/telegram"><span class="si" style="background:#2AABEE">${ICON.plane}</span>Telegram</a>
       <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">Copy link</span></button>
       <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">Copy text</span></button>
       ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
     </div>
     ${S.d ? `<button class="imgbtn" id="shareImg">${ICON.image}<span class="lbl">Share as image</span></button><div id="imgOut" hidden></div>` : ''}
-    <div class="qrbox">${qrSVG(shareURL(false))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(shareURL(false).replace('https://', ''))}</span></div></div>`;
+    <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
   openSheet('Share', shareHTML());
@@ -3190,7 +3196,7 @@ async function cardBlob(){
   { const m = pad + along(PSI, n.psi) * cw, lab = `${n.psi} now`; font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
     x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
     x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
-  const q = qrModules(shareURL(false)), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
+  const q = qrModules(shareURL('card')), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
   if (f){
     const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
     x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';
@@ -3226,9 +3232,11 @@ async function shareImage(btn){
 
 /* ---------- Events ---------- */
 document.getElementById('app').addEventListener('click', e => {
+  const tr = e.target.closest('a[data-track]'); if (tr) track(tr.dataset.track);
   const b = e.target.closest('button');
   if (!e.target.closest('#pop') && !(b && b.dataset.act === 'def')) pop().hidden = true;   // a tap anywhere else closes a definition
   if (!b) return;
+  trackButton(b);
   if (b.dataset.act === 'def') return showDef(b.dataset.k);
   if (b.dataset.act === 'nea'){ const n = document.getElementById('nea-' + b.dataset.k); n.hidden = !n.hidden; b.setAttribute('aria-expanded', !n.hidden); return; }
   if (b.id === 'geo') return geolocate();
@@ -3277,6 +3285,38 @@ function showStatus(text, retry){
   document.getElementById('v-now').innerHTML = `<div class="day" style="justify-content:center;align-items:center;text-align:center">
     <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? '<button class="plain" id="retry">Try again</button>' : ''}</div>`;
 }
+/* ---------- Analytics: GoatCounter (no cookies). Counts visits and taps, and how a visit arrived (shared link, QR
+   code, picture card). Nothing about the visitor's location or settings is sent. Runs only on haze.geewax.org, so local
+   copies and previews are not counted. A browser can opt out with localStorage.setItem('skipgc', 't'). ---------- */
+let gcQueue = [];
+function gcSend(vars){
+  const go = () => window.goatcounter.count(vars);
+  if (window.goatcounter && window.goatcounter.count) go(); else if (gcQueue) gcQueue.push(go);
+}
+const track = name => gcSend({path: name, title: name, event: true});
+function trackButton(b){
+  const a = b.dataset.act, where = b.closest('.hdr') ? 'header' : b.closest('#v-day') ? 'my-day' : b.closest('#sheet') ? 'sheet' : 'now';
+  const ids = {copyLink:'share/copy-link', copyMsg:'share/copy-text', shareMore:'share/system-sheet', shareImg:'share/image', geo:'location/asked', reset:'settings/reset'};
+  if (ids[b.id]) return track(ids[b.id]);
+  if (a === 'share') return track('share/open/' + where);
+  if (a === 'def') return track('define/' + b.dataset.k);
+  if (a === 'nea') return track('nea-wording/' + b.dataset.k);
+  if (a === 'explain' || a === 'news' || a === 'region') return track('open/' + a);
+  if (b.dataset.tab && b.dataset.tab !== S.tab) return track('tab/' + b.dataset.tab);
+  if (b.dataset.region) return track('region/' + b.dataset.region);
+  if (b.dataset.group) return track('group/' + b.dataset.group);
+}
+if (location.hostname === 'haze.geewax.org'){
+  const s = document.createElement('script');
+  s.async = true; s.src = 'https://gc.zgo.at/count.js';
+  s.dataset.goatcounter = 'https://geewaxhaze.goatcounter.com/count';
+  s.dataset.goatcounterSettings = JSON.stringify({no_onload: true});   // we send the page view ourselves, with the landing path
+  s.onload = () => { const q = gcQueue; gcQueue = null; q.forEach(f => f()); };
+  document.head.append(s);
+}
+gcSend({path: ARRIVAL.path});
+if (ARRIVAL.via) track(`arrived/${ARRIVAL.via}/${P.region}`);
+
 let loadedAt = 0;
 async function refresh(){
   try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
