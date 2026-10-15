@@ -45,9 +45,7 @@ DEFAULT_META = {
     "image": SITE_URL + "og.png",
     "alt": "Haze Status: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.",
 }
-FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' "
-           "fill='%23AFA796'/%3E%3Ccircle cx='14' cy='11' r='6' fill='%2317222B'/%3E%3Cpath d='M5 18h18M8 22h12' stroke='%2317222B' "
-           "stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")
+FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23A9A493'/%3E%3Cstop offset='1' stop-color='%23E6DCC6'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='.15' stop-color='%23F2742B'/%3E%3Cstop offset='1' stop-color='%23F2742B' stop-opacity='.15'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23b)'/%3E%3Ccircle cx='16' cy='16' r='10' fill='url(%23s)'/%3E%3C/svg%3E"
 
 
 def head(meta):
