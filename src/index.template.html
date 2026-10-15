@@ -65,6 +65,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .link{border:0;background:none;padding:0;color:var(--accent);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:4px}
 .link svg{width:16px;height:16px}
 .foot{font-size:12px;color:var(--muted)}
+.ext{color:var(--accent);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.ext svg{width:.95em;height:.95em}
+.ext:hover{text-decoration:underline}
+.official{font-size:12.5px;color:var(--muted);margin:2px 0 0;line-height:1.45}
 .term{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .for{font-size:12.5px;opacity:.8}
 .for button{border:0;background:none;padding:0;font:inherit;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
@@ -329,6 +333,7 @@ const ICON = {
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>',
   image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.5z"/></svg>',
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg>',
   plane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11.2l6.3 2.3L11.6 20l3.3-4.4 4.6 3.4L21 4zM9.3 13.5 21 4"/></svg>'
 };
 
@@ -463,6 +468,11 @@ function grain(el, pm){
   draw();
 }
 
+/* ---------- Links to the official source ---------- */
+const OFFICIAL = 'https://www.haze.gov.sg/', NEA_GUIDE = 'https://www.haze.gov.sg/docs/default-source/posters/haze-pm-psi-guide-a4-english.pdf';
+const ext = (href, text) => `<a class="ext" href="${href}" target="_blank" rel="noopener">${text}${ICON.out}</a>`;
+const officialLine = () => `<p class="official">Unofficial view of NEA data. For official readings, advisories and the haze situation, see ${ext(OFFICIAL, 'haze.gov.sg')}.</p>`;
+
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
 function psiRange(lo, hi){ const a = psiStart(lo), b = PSI[hi].max; return b === Infinity ? `${a}+` : `${a}–${b}`; }
@@ -508,6 +518,7 @@ function renderNow(){
         <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener">${ICON.chat}Share on WhatsApp</a>
         <button class="more" data-act="share" aria-label="More ways to share">${ICON.share}</button>
       </div>
+      ${officialLine()}
     </div>`;
   grain(el.querySelector('.sky'), n.pm);
 }
@@ -535,6 +546,7 @@ function renderDay(){
     <div class="tl">${steps.join('')}</div>
     ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
     <button class="imgbtn" data-act="share">${ICON.share}Share today’s readings with family</button>
+    ${officialLine()}
   </div>`;
 }
 
@@ -594,7 +606,7 @@ function renderHist(){
     </div>
     <div class="sec"><h3>1-hr PM2.5 <span>· concentration in each hour</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, '1-hr PM2.5 for the last 24 hours, axis 0 to 300 µg/m³')}</div>
     <div class="sec"><h3>24-hr PSI <span>· rolling 24-hour average</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, '24-hr PSI for the last 24 hours, axis 0 to 400')}</div>
-    <p class="foot" style="margin:0">Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency${S.live ? '' : ' (snapshot in this preview)'}.</p></div>`;
+    <p class="foot" style="margin:0">Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency${S.live ? '' : ' (snapshot in this preview)'}; official charts at ${ext(OFFICIAL, 'haze.gov.sg')}.</p></div>`;
   drawSel();
 }
 const histView = document.getElementById('v-hist');
@@ -621,7 +633,8 @@ function renderSet(){
     <div class="sec"><h3>Open the app on</h3>
       <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
     <div class="sec"><h3>About the data</h3>
-      <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} Unofficial prototype.</p>
+      <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} This site is not affiliated with NEA.</p>
+      <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, 'NEA’s activity guide (PDF)')}</p>
       <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">Reset saved settings</button><span class="foot" id="resetmsg"></span></div></div>
   </div>`;
 }
@@ -648,10 +661,10 @@ function explainHTML(){
     </div></div>
     <div><div class="eb" style="color:var(--muted);margin-bottom:8px">1-hr PM2.5 bands · next hour</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">Band ${b.n} · ${b.name}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>Vulnerable:</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
     <div><div class="eb" style="color:var(--muted);margin-bottom:8px">24-hr PSI · next day</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>Elderly, children, pregnant:</b> ${esc(b.elderly)}<br><b>Heart or lung:</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
-    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: NEA, June 2026.</p></div>`;
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: ${ext(NEA_GUIDE, 'NEA, How to plan your outdoor activities during haze (June 2026)')}.</p></div>`;
 }
 function newsHTML(){
-  return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="https://www.haze.gov.sg/" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.right}</a>`;
+  return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="${OFFICIAL}" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.out}</a>`;
 }
 /* Use my location: GPS position → nearest named area → that area's NEA region */
 async function geolocate(){
