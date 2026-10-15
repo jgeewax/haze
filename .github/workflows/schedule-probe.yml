@@ -1,0 +1,13 @@
+# Temporary: tells us whether GitHub runs any scheduled workflow in this repo. Delete once answered.
+name: Schedule probe
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "scheduled run at $(date -u)"

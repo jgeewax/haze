@@ -5,7 +5,8 @@ name: Deploy site
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   schedule:
     - cron: "17,47 * * * *"   # twice an hour, clear of the busy top of the hour; NEA publishes shortly after each hour
   workflow_dispatch:
