@@ -478,7 +478,7 @@ function normalise(aq, adv){
   let li = times.length - 1;
   while (li > 0 && REGIONS.some(r => regions[r].pm[li] == null || regions[r].psi[li] == null)) li--;
   const text = ((adv && adv.AirQualityBlurb) || '').replace(/^[^:]*:\s*/, '').trim();
-  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI_EN.findIndex(b => b.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
+  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI_EN.findIndex(b => b.toLowerCase() === p.trim().replace(/^(low|lower|mid|middle|high|higher|upper)\s+/i, '').toLowerCase())).filter(i => i >= 0);   // NEA writes e.g. 'Unhealthy to Low Very Unhealthy'
   const issued = adv && adv.DateOfArticle ? new Date(adv.DateOfArticle) : null;
   // NEA's evening forecast covers the next day; a morning one covers the same day
   const fcDate = issued ? new Date(issued.getTime() + (sg(issued).getUTCHours() >= 12 ? 86400e3 : 0)) : null;
@@ -616,7 +616,7 @@ function defText(k){
   const n = now(P.region), f = S.d.fc;
   if (k === 'pm') return `<b>${esc(t('def.pm.title', {v:n.pm}))}</b>${esc(t('def.pm.body', {n:n.b.n, band:n.b.name, range:n.b.range}))}`;
   if (k === 'psi') return `<b>${esc(t('def.psi.title', {v:n.psi}))}</b>${esc(t('def.psi.body', {band:n.p.name, range:n.p.range}))}`;
-  return f ? `<b>${esc(t('def.fc.title', {range:psiRange(f.lo, f.hi)}))}</b>${esc(t('def.fc.body', {when:fcFor(), name:fcName()}))}`
+  return f ? `<b>${esc(t('def.fc.title', {range:psiRange(f.lo, f.hi)}))}</b>${esc(t('def.fc.body', {when:fcFor(), name:fcName()}))}${/\b(low|mid|high|upper|lower)\b/i.test(f.text) ? `<br><span lang="en">NEA: “${esc(f.text)}”</span>` : ''}`
            : `<b>${esc(t('def.nofc.title'))}</b>${esc(t('def.nofc.body'))}`;
 }
 const pop = () => document.getElementById('pop');

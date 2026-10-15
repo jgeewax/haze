@@ -183,7 +183,9 @@ def readings(aq, adv):
                       "psiBand": {"name": PSI_BANDS[k][1], "c": PSI_BANDS[k][2], "k": k}}
     fc = None
     text = re.sub(r"^[^:]*:\s*", "", (adv or {}).get("AirQualityBlurb") or "").strip()
-    idx = [i for part in re.split(r"\s+to\s+", text, flags=re.I) for i, b in enumerate(PSI_BANDS) if b[1].lower() == part.strip().lower()]
+    # NEA sometimes qualifies a band, e.g. "Unhealthy to Low Very Unhealthy"; the band is what follows the qualifier
+    parts = [re.sub(r"^(low|lower|mid|middle|high|higher|upper)\s+", "", p.strip(), flags=re.I) for p in re.split(r"\s+to\s+", text, flags=re.I)]
+    idx = [i for part in parts for i, b in enumerate(PSI_BANDS) if b[1].lower() == part.lower()]
     issued = (adv or {}).get("DateOfArticle")
     if idx and issued:
         issued = dt.datetime.fromisoformat(issued).replace(tzinfo=None)  # NEA gives +08:00
