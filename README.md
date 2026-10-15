@@ -5,7 +5,7 @@ A calmer view of Singapore's haze readings, at [haze.geewax.org](https://haze.ge
 It is a single static page. The visitor's browser loads the data straight from the National Environment Agency, with no server involved:
 
 | Data | Endpoint |
-|---|---|
+| --- | --- |
 | 1-hr PM2.5 and PSI sub-indices, 24 hours, five regions | `https://www.haze.gov.sg/api/airquality/jsondata/{timestamp}` |
 | 24-hr PSI forecast and NEA's statement | `https://www.nea.gov.sg/api/advisory/latesthazesituationupdate/{timestamp}` |
 
