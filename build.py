@@ -13,6 +13,7 @@ The page itself always fetches its data in the visitor's browser. Only the link 
 because WhatsApp, Telegram and the rest read a page's preview tags without running its scripts.
 """
 import datetime as dt
+import hashlib
 import html
 import json
 import os
@@ -224,7 +225,9 @@ def build_site():
                 card.write_text(tpl.replace("/*DATA*/null", js({**R, "target": target, "sky": sky(R["regions"][target]["pm"])})))
                 screenshot(card.as_uri(), out / "og" / f"{target}.png")
             title, desc, alt = preview_text(R, target)
-            meta.update(title=title, description=desc, alt=alt, image=f"{SITE_URL}og/{target}.png?v={R['stamp']}")
+            # chat apps also cache images by address, so the address changes whenever the image does
+            v = hashlib.sha1((out / "og" / f"{target}.png").read_bytes()).hexdigest()[:10]
+            meta.update(title=title, description=desc, alt=alt, image=f"{SITE_URL}og/{target}.png?v={v}")
         dest = out / target / "index.html" if target else out / "index.html"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(full_page(meta))
