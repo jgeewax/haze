@@ -1,0 +1,39 @@
+# Builds and deploys haze.geewax.org to GitHub Pages.
+# Runs on every push to main, and every 30 minutes so the link-preview images carry NEA's latest readings.
+# The page itself still loads its data in the visitor's browser; see build.py.
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "12,42 * * * *"   # NEA publishes shortly after each hour
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build pages and link previews
+        run: python3 build.py --site
+        env:
+          CHROME: google-chrome
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

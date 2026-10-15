@@ -340,15 +340,16 @@ try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
   if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
-/* A shared link like haze.geewax.org/#west opens on that region. It becomes the default only for a first-time
-   visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
+/* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
+   first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
 let keepRegion = null;
-{ const linked = (location.hash || '').slice(1).toLowerCase();
+{ const fromPath = (/^\/(north|south|east|west|central)\/?$/i.exec(location.pathname) || [])[1];
+  const linked = (fromPath || (location.hash || '').slice(1)).toLowerCase();
   if (REGIONS.includes(linked)){
     let stored = null; try { stored = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
     if (stored && REGIONS.includes(stored.region) && stored.region !== linked) keepRegion = stored.region;
     P.region = linked;
-    try { history.replaceState(null, '', location.pathname + location.search); } catch(e) {}
+    try { history.replaceState(null, '', (fromPath ? '/' : location.pathname) + location.search); } catch(e) {}
     if (!stored) try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {}
   } }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(keepRegion ? {...P, region:keepRegion} : P)); } catch(e) {} }
@@ -708,7 +709,7 @@ function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); re
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
 const SITE = 'https://haze.geewax.org/';
-const shareURL = () => SITE + '#' + P.region;
+const shareURL = () => SITE + P.region + '/';   // each region has its own page, so link previews show that region
 function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
 /* Short plain text for any chat app: the two numbers, the forecast, the link. Coloured squares match NEA's band colours. */
 function shareText(withURL = true){
