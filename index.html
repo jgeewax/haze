@@ -17,6 +17,11 @@
 <meta property="og:image:alt" content="Haze Status: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23A9A493'/%3E%3Cstop offset='1' stop-color='%23E6DCC6'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='.15' stop-color='%23F2742B'/%3E%3Cstop offset='1' stop-color='%23F2742B' stop-opacity='.15'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23b)'/%3E%3Ccircle cx='16' cy='16' r='10' fill='url(%23s)'/%3E%3C/svg%3E">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Haze">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Haze Status</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,6 +136,17 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
+/* install as an app */
+.inst{display:flex;align-items:center;gap:10px;margin-top:18px;padding:10px 4px 10px 10px;border-radius:14px;background:var(--sky-chip);color:var(--sky-ink);font-size:12.5px;line-height:1.3}
+.inst > span{flex:1;min-width:0}
+.inst b{display:block;font-size:13.5px}
+.apptile{width:36px;height:36px;flex:none;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.locbtn .apptile{width:24px;height:24px;border-radius:6px}
+.instgo{border:0;border-radius:999px;background:var(--sky-ink);color:var(--sky-top);font-weight:800;padding:7px 15px;font-size:13px}
+.instx{width:30px;height:30px}
+.instx svg{width:15px;height:15px}
+.steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
+.steps svg{width:18px;height:18px;vertical-align:-3px}
 /* the share panel: the picture card's thumbnail beside a big Share picture button */
 .share2{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;margin-top:4px;padding:14px 14px 12px 16px;border-radius:18px;background:var(--surface-2);border:1px solid var(--line)}
 .thumb{width:66px;aspect-ratio:4/5;border:3px solid #FFFFFF;border-radius:9px;padding:0;background:linear-gradient(#C9BFA9,#EDE5D3) center/cover no-repeat;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);transform:rotate(-5deg);transition:transform .2s}
@@ -2672,6 +2688,8 @@ const ICON = {
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>',
   image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.3-4.1A8 8 0 1 1 20 11.5z"/></svg>',
+  tile:'<svg class="apptile" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9A493"/><stop offset="1" stop-color="#E6DCC6"/></linearGradient><linearGradient id="ts" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#F2742B"/><stop offset="1" stop-color="#F2742B" stop-opacity=".15"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#tb)"/><circle cx="16" cy="16" r="10" fill="url(#ts)"/></svg>',
+  iosShare:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></svg>',
   out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg>',
   plane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11.2l6.3 2.3L11.6 20l3.3-4.4 4.6 3.4L21 4zM9.3 13.5 21 4"/></svg>'
 };
@@ -2846,6 +2864,7 @@ function renderNow(){
       ${trendLine(P.region)}
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
         <div class="nea" id="nea-pm" hidden>NEA: “${esc(pmAdvice(n.b))}”</div></div>
+      ${installBanner()}
     </div>
     <div class="ahead">
       <div class="eb" style="color:var(--muted)">${r === 1 ? 'Tomorrow' : 'Today'}</div>
@@ -3000,6 +3019,7 @@ function renderSet(){
       <p class="msg">NEA gives stricter advice for children, pregnant women, the elderly and people with heart or lung conditions.</p></div>
     <div class="sec"><h3>Open the app on</h3>
       <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
+    ${installSection()}
     <div class="sec"><h3>About the data</h3>
       <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} This site is not affiliated with NEA.</p>
       <p style="font-size:14px;margin:0 0 10px">Visits and button taps are counted with ${ext('https://www.goatcounter.com/', 'GoatCounter')}, which uses no cookies. Your location, region and settings stay on this device.</p>
@@ -3314,6 +3334,8 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.id === 'shareMore'){ navigator.share({title:'Haze Status', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
   if (b.id === 'shareImg' || b.dataset.act === 'pic') return sharePicture(b);
   if (b.dataset.act === 'copylink') return copy(shareURL(), b);
+  if (b.dataset.act === 'install') return doInstall();
+  if (b.dataset.act === 'install-dismiss'){ try { localStorage.setItem('haze-sky:install-dismissed', '1'); } catch(e) {} return render(); }
   if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
   if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
   if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
@@ -3371,6 +3393,8 @@ function trackButton(b){
   if (ids[b.id]) return track(ids[b.id]);
   if (a === 'share') return track('share/open/' + where);
   if (a === 'pic') return track('share/picture/' + where);
+  if (a === 'install') return track('install/asked/' + where);
+  if (a === 'install-dismiss') return track('install/dismissed');
   if (a === 'copylink') return track('share/copy-link/' + where);
   if (a === 'def') return track('define/' + b.dataset.k);
   if (a === 'nea') return track('nea-wording/' + b.dataset.k);
@@ -3389,6 +3413,37 @@ if (location.hostname === 'haze.geewax.org'){
 }
 gcSend({path: ARRIVAL.path});
 if (ARRIVAL.via) track(`arrived/${ARRIVAL.via}/${P.region}`);
+
+/* ---------- Install as an app ---------- */
+let installPrompt = null;   // Chrome, Edge and Android offer their own install dialog; Safari on iPhone does not
+const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; render(); });
+addEventListener('appinstalled', () => { installPrompt = null; track('install/installed'); render(); });
+if ('serviceWorker' in navigator && location.hostname === 'haze.geewax.org') navigator.serviceWorker.register('/sw.js').catch(() => {});
+let visits = 0;
+try { visits = +(localStorage.getItem('haze-sky:visits') || 0) + 1; localStorage.setItem('haze-sky:visits', String(visits)); } catch(e) {}
+const installDismissed = () => { try { return localStorage.getItem('haze-sky:install-dismissed') === '1'; } catch(e) { return false; } };
+const canInstall = () => !STANDALONE && (installPrompt || IOS);
+/* a quiet prompt on Now, on phones, from the second visit, until it is used or dismissed */
+function installBanner(){
+  if (!canInstall() || visits < 2 || installDismissed() || matchMedia('(min-width:960px)').matches) return '';
+  return `<div class="inst">${ICON.tile}<span><b>Add Haze Status to your home screen</b>Opens like an app, straight to your region.</span>
+    <button class="instgo" data-act="install">Add</button><button class="iconbtn instx" data-act="install-dismiss" aria-label="Not now">${ICON.close}</button></div>`;
+}
+const iosSteps = () => `<ol class="steps"><li>Tap the <b>Share</b> button ${ICON.iosShare} in Safari’s toolbar.</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>
+  <p class="msg">Haze Status then opens from your home screen like an app.</p>`;
+async function doInstall(){
+  if (installPrompt){ installPrompt.prompt(); const r = await installPrompt.userChoice; track('install/' + r.outcome); installPrompt = null; return render(); }
+  openSheet('Add to home screen', iosSteps());
+}
+function installSection(){
+  const body = STANDALONE ? '<p style="font-size:14px;margin:0">You’re using the installed app.</p>'
+    : installPrompt ? `<button class="locbtn" data-act="install">${ICON.tile} Install Haze Status</button>`
+    : IOS ? iosSteps()
+    : '<p style="font-size:14px;margin:0">In your browser’s menu, choose <b>Install</b> or <b>Add to Home Screen</b>.</p>';
+  return `<div class="sec"><h3>Install as an app</h3>${body}</div>`;
+}
 
 let loadedAt = 0;
 async function refresh(){

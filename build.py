@@ -5,6 +5,7 @@
     python3 build.py --preview   writes preview.html: an HTML fragment that falls back to src/snapshot/*.json
                                  when NEA can't be reached (used for sandboxed previews such as Claude artifacts)
     python3 build.py --og        renders src/og.html to og.png (the fixed link-preview image) with headless Chrome
+    python3 build.py --icons     renders src/icon.html to the app icons in icons/ (Chrome, plus macOS `sips` to resize)
     python3 build.py --site      writes _site/, what GitHub Pages serves: the page at / and at /north/, /west/ ...,
                                  region pages with link-preview tags and a dated image of NEA's latest readings.
                                  GitHub Actions runs this every 30 minutes (.github/workflows/pages.yml).
@@ -70,6 +71,11 @@ def head(meta):
 <meta property="og:image:alt" content="{a['alt']}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="{FAVICON}">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Haze">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 """
 
 
@@ -103,6 +109,19 @@ def screenshot(src_uri, out, size="1200,630"):
     if os.environ.get("CI"):
         args.insert(1, "--no-sandbox")
     subprocess.run(args, check=True, capture_output=True, timeout=120)
+
+
+def render_icons():
+    out = ROOT / "icons"
+    out.mkdir(exist_ok=True)
+    src = (SRC / "icon.html").as_uri()
+    screenshot(src, out / "icon-512.png", "512,512")
+    screenshot(src + "#maskable", out / "maskable-512.png", "512,512")
+    # headless Chrome won't lay out a window narrower than about 500px, so draw at 512 and scale down
+    for name, px in [("icon-192.png", 192), ("apple-touch-icon.png", 180)]:
+        subprocess.run(["sips", "-z", str(px), str(px), str(out / "icon-512.png"), "--out", str(out / name)], check=True, capture_output=True)
+    for f in sorted(out.iterdir()):
+        print(f"wrote {f.relative_to(ROOT)} ({f.stat().st_size:,} bytes)")
 
 
 def render_og():
@@ -232,14 +251,17 @@ def build_site():
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(full_page(meta))
         print(f"wrote {dest.relative_to(ROOT)}: {meta['title']}")
-    for f in ["og.png", "CNAME"]:
+    for f in ["og.png", "CNAME", "manifest.webmanifest", "sw.js"]:
         shutil.copy(ROOT / f, out / f)
+    shutil.copytree(ROOT / "icons", out / "icons")
 
 
 def main():
     flags = sys.argv[1:]
     if "--og" in flags:
         return render_og()
+    if "--icons" in flags:
+        return render_icons()
     if "--site" in flags:
         return build_site()
     if "--preview" in flags:
