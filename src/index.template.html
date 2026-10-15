@@ -88,7 +88,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lnum .k{display:flex;flex-direction:column;line-height:1.15;padding-bottom:4px}
 .lnum .k b{font-size:16px;font-weight:800}
 .lnum .k small{font-size:12px;font-weight:600;opacity:.8}
-.trend{font-size:13.5px;margin-top:8px;opacity:.92}
+.trend{font-size:13.5px;line-height:1.3;margin-top:10px}
+.trend b{display:inline-block;padding:3px 10px 4px;margin-right:4px;border-radius:999px;background:var(--sky-chip)}
+.trend b.up{background:var(--c4);color:var(--on4)}
+.trend b.down{background:var(--c0);color:var(--on0)}
+.trend span{display:inline-block}
 .lbw{margin-top:10px}
 .lpair{display:grid;grid-template-columns:fit-content(48%) minmax(0,1fr);gap:20px}
 .lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
@@ -103,13 +107,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lb .tick{position:absolute;top:0;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--tick)}
 .lb .br{position:relative;height:12px;margin-top:3px}
 .lb .br span{position:absolute;top:0;height:8px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 6px 6px}
+.lb .br:has(.fcl){height:29px}
+.lb .fcl{position:absolute;top:13px;font-size:12px;font-weight:800;line-height:1.2;color:var(--ink);white-space:nowrap}
 .advw{margin-top:14px}
 .adv{border:0;background:none;padding:0;color:inherit;text-align:left;font-family:var(--display);font-weight:600;font-size:21px;line-height:1.22;text-wrap:balance}
 .adv::after{content:" ⓘ";font-family:var(--body);font-size:.65em;opacity:.55;vertical-align:.15em}
 .adv.plan{font-size:19px}
 .nea{font-size:12.5px;line-height:1.4;opacity:.85;margin-top:6px}
 .lfoot{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
-.lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+.lfoot .nw{white-space:nowrap}
+.whosel{position:relative;display:inline-block;max-width:100%;color:var(--ink);font-weight:700;text-decoration:underline dotted;text-underline-offset:3px}
+.whosel svg{width:13px;height:13px;vertical-align:-2px;margin-left:1px}
+.whosel select{position:absolute;inset:0;width:100%;opacity:0;font-size:16px;cursor:pointer}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
 /* language switch: a quiet row under the Now footer, and a segmented control in Settings */
@@ -345,9 +354,9 @@ const GROUPS = [
   {id:'chronic', name:'Heart or lung condition', pm:'vul', psi:'chronic', plural:'people with heart or lung conditions'}];
 const PM = [
   {max:55, n:1, c:0, name:'Normal', range:'0–55', lo:0, hi:55, gen:'Continue with normal activities.', vul:'Continue with normal activities.', sGen:'Normal activities are fine.', sVul:'Normal activities are fine.'},
-  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.', sGen:'Cut back on hard exercise outdoors this hour.', sVul:'Avoid hard exercise outdoors this hour.'},
-  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Avoid hard exercise outdoors this hour.', sVul:'Stay indoors this hour.'},
-  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Spend as little time outdoors as you can this hour.', sVul:'Stay indoors this hour.'}];
+  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.', sGen:'Cut back on hard exercise outdoors for the next hour.', sVul:'Avoid hard exercise outdoors for the next hour.'},
+  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Avoid hard exercise outdoors for the next hour.', sVul:'Stay indoors for the next hour.'},
+  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'For the next hour, spend as little time outdoors as you can.', sVul:'Stay indoors for the next hour.'}];
 const PSI = [
   {max:50, c:0, name:'Good', range:'0–50', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
   {max:100, c:1, name:'Moderate', range:'51–100', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
@@ -553,27 +562,28 @@ const officialLine = () => `<p class="official">${t('official', {link:ext(OFFICI
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
 function psiRange(lo, hi){ const a = psiStart(lo), b = PSI[hi].max; return b === Infinity ? `${a}+` : `${a}–${b}`; }
-/* A bar drawn by band: a small marker for the reading, and a bracket under the forecast bands. No labels: the number,
-   the band word and the colours above it already say what they would. */
+/* A bar drawn by band: a small marker for the reading, and a bracket under the forecast bands, labelled Forecast.
+   No band labels: the number, the band word and the colours above it already say what they would. */
 const bandLo = (B, k) => k === 0 ? 0 : B[k-1].max + 1;
 const bandHi = (B, k) => B[k].max === Infinity ? (B === PM ? 350 : 400) : B[k].max;
 function lbar({B, v, fc, tick}){
   const N = B.length, k = B.findIndex(x => v <= x.max), lo = bandLo(B, k), hi = bandHi(B, k);
-  const t = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
-  return `<div class="lb" style="--tick:${tick}" aria-hidden="true"><span class="tick" style="left:${(Math.max(.03, Math.min(.97, t)) * 100).toFixed(1)}%"></span>
+  const at = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
+  // the label sits under the bracket's middle, or against its outer end at either edge of the bar
+  const fcl = fc && (fc.lo === 0 ? 'left:0' : fc.hi === N - 1 ? 'right:0' : `left:${((fc.lo + fc.hi + 1) / 2 / N * 100).toFixed(1)}%;transform:translateX(-50%)`);
+  return `<div class="lb" style="--tick:${tick}" aria-hidden="true"><span class="tick" style="left:${(Math.max(.03, Math.min(.97, at)) * 100).toFixed(1)}%"></span>
     <div class="track" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<i style="background:var(--c${x.c});opacity:${on(i) ? 1 : .3}"></i>`).join('')}</div>
-    ${fc ? `<div class="br"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span></div>` : ''}</div>`;
+    ${fc ? `<div class="br"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span><b class="fcl" style="${fcl}">${t('now.forecast')}</b></div>` : ''}</div>`;
 }
 function renderNow(){
   const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel(), plan = f ? PSI[f.hi] : n.p;
-  const who = G().who;
   el.innerHTML = `
     <div class="sky">
       <div class="eb">${t('now.eb')}</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.thisHour')}</b><small>PM2.5 · µg/m³</small></span></button>
-      <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
+      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.at', {time:sgHour(S.d.asOf)})}</b><small>PM2.5 · µg/m³</small></span></button>
       ${trendLine(P.region)}
+      <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
         <div class="nea" id="nea-pm" hidden>${esc(t('nea.prefix', {text:pmAdvice(n.b)}))}</div></div>
       ${installBanner()}
@@ -589,12 +599,15 @@ function renderNow(){
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
         <div class="nea" id="nea-psi" hidden>${esc(t('nea.prefix', {text:psiAdvice(plan)}))}${f && f.lo !== f.hi ? esc(t('nea.upper', {band:PSI[f.hi].name})) : f ? '' : esc(t('nea.nofc'))}</div></div>
       ${shareBlock()}
-      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="lfoot">${whoPicker()} <span class="nw">· ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</span></div>
       <div class="langs" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${k === 'ms' ? 'Melayu' : nm}</button>`).join('')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
 }
+/* who the advice is for: reads as a line of text, and opens the phone's own picker */
+const whoPicker = () => `<label class="whosel">${esc(t('for.line', {who:G().plural}))}${ICON.down}<select data-pick="group">${GROUPS.map(g =>
+  `<option value="${g.id}"${g.id === P.group ? ' selected' : ''}>${esc(t('for.line', {who:g.plural}))}</option>`).join('')}</select></label>`;
 /* Which way the haze is heading. The 24-hr PSI lags by design, so compare this hour's PM2.5 with three hours ago;
    small changes (under 10 µg/m³ or 15%) count as steady. */
 function pmTrend(r){
@@ -606,7 +619,7 @@ function pmTrend(r){
 function trendLine(r){
   const tr = pmTrend(r); if (!tr) return '';
   const word = t(['trend.clear', 'trend.steady', 'trend.worse'][tr.dir + 1]);
-  return `<div class="trend num"><b>${word}</b> · ${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</div>`;
+  return `<div class="trend num"><b class="${['down', 'flat', 'up'][tr.dir + 1]}">${word}</b> <span>${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</span></div>`;
 }
 /* what each number means, shown when it is tapped */
 function defText(k){
@@ -933,7 +946,7 @@ async function cardBlob(){
   x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
   x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
   font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
-  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n}), pad, 562); x.globalAlpha = 1;
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n, time:sgHour(S.d.asOf)}), pad, 562); x.globalAlpha = 1;
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
@@ -1085,6 +1098,11 @@ document.getElementById('app').addEventListener('click', e => {
   if (a === 'explain') openSheet(t('ex.title'), explainHTML());
   if (a === 'news') openSheet(t('news.title'), newsHTML());
   if (a === 'share') openShare();
+});
+
+document.getElementById('app').addEventListener('change', e => {
+  if (e.target.dataset.pick !== 'group') return;
+  P.group = e.target.value; save(); track('group/' + P.group); render();
 });
 
 /* Longer languages (Tamil, Malay) can outgrow the big type: shrink a number or band word until it fits its box,

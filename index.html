@@ -112,7 +112,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lnum .k{display:flex;flex-direction:column;line-height:1.15;padding-bottom:4px}
 .lnum .k b{font-size:16px;font-weight:800}
 .lnum .k small{font-size:12px;font-weight:600;opacity:.8}
-.trend{font-size:13.5px;margin-top:8px;opacity:.92}
+.trend{font-size:13.5px;line-height:1.3;margin-top:10px}
+.trend b{display:inline-block;padding:3px 10px 4px;margin-right:4px;border-radius:999px;background:var(--sky-chip)}
+.trend b.up{background:var(--c4);color:var(--on4)}
+.trend b.down{background:var(--c0);color:var(--on0)}
+.trend span{display:inline-block}
 .lbw{margin-top:10px}
 .lpair{display:grid;grid-template-columns:fit-content(48%) minmax(0,1fr);gap:20px}
 .lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
@@ -127,13 +131,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lb .tick{position:absolute;top:0;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--tick)}
 .lb .br{position:relative;height:12px;margin-top:3px}
 .lb .br span{position:absolute;top:0;height:8px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 6px 6px}
+.lb .br:has(.fcl){height:29px}
+.lb .fcl{position:absolute;top:13px;font-size:12px;font-weight:800;line-height:1.2;color:var(--ink);white-space:nowrap}
 .advw{margin-top:14px}
 .adv{border:0;background:none;padding:0;color:inherit;text-align:left;font-family:var(--display);font-weight:600;font-size:21px;line-height:1.22;text-wrap:balance}
 .adv::after{content:" ⓘ";font-family:var(--body);font-size:.65em;opacity:.55;vertical-align:.15em}
 .adv.plan{font-size:19px}
 .nea{font-size:12.5px;line-height:1.4;opacity:.85;margin-top:6px}
 .lfoot{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
-.lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+.lfoot .nw{white-space:nowrap}
+.whosel{position:relative;display:inline-block;max-width:100%;color:var(--ink);font-weight:700;text-decoration:underline dotted;text-underline-offset:3px}
+.whosel svg{width:13px;height:13px;vertical-align:-2px;margin-left:1px}
+.whosel select{position:absolute;inset:0;width:100%;opacity:0;font-size:16px;cursor:pointer}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
 /* language switch: a quiet row under the Now footer, and a segmented control in Settings */
@@ -370,9 +379,9 @@ en: {
   "pm.3.gen": "Avoid strenuous outdoor activity for the next hour.", "pm.3.vul": "Avoid all outdoor activity for the next hour.",
   "pm.4.gen": "Minimise all outdoor activity for the next hour.", "pm.4.vul": "Avoid all outdoor activity for the next hour.",
   "pm.1.sgen": "Normal activities are fine.", "pm.1.svul": "Normal activities are fine.",
-  "pm.2.sgen": "Cut back on hard exercise outdoors this hour.", "pm.2.svul": "Avoid hard exercise outdoors this hour.",
-  "pm.3.sgen": "Avoid hard exercise outdoors this hour.", "pm.3.svul": "Stay indoors this hour.",
-  "pm.4.sgen": "Spend as little time outdoors as you can this hour.", "pm.4.svul": "Stay indoors this hour.",
+  "pm.2.sgen": "Cut back on hard exercise outdoors for the next hour.", "pm.2.svul": "Avoid hard exercise outdoors for the next hour.",
+  "pm.3.sgen": "Avoid hard exercise outdoors for the next hour.", "pm.3.svul": "Stay indoors for the next hour.",
+  "pm.4.sgen": "For the next hour, spend as little time outdoors as you can.", "pm.4.svul": "Stay indoors for the next hour.",
   "psi.0": "Good", "psi.1": "Moderate", "psi.2": "Unhealthy", "psi.3": "Very Unhealthy", "psi.4": "Hazardous",
   "psi.0.healthy": "Normal activities.", "psi.0.elderly": "Normal activities.", "psi.0.chronic": "Normal activities.",
   "psi.1.healthy": "Normal activities.", "psi.1.elderly": "Normal activities.", "psi.1.chronic": "Normal activities.",
@@ -389,7 +398,7 @@ en: {
   "group.pregnant.name": "Pregnant", "group.pregnant.plural": "pregnant women", "group.pregnant.who": "Pregnant women",
   "group.elderly.name": "Elderly", "group.elderly.plural": "the elderly", "group.elderly.who": "The elderly",
   "group.chronic.name": "Heart or lung condition", "group.chronic.plural": "people with heart or lung conditions", "group.chronic.who": "People with heart or lung conditions",
-  "now.eb": "Now", "now.thisHour": "This hour", "now.past24": "Past 24 hours", "now.forecast": "Forecast", "now.none": "None",
+  "now.eb": "Now", "now.at": "At {time}", "now.past24": "Past 24 hours", "now.forecast": "Forecast", "now.none": "None",
   "today": "Today", "tomorrow": "Tomorrow",
   "aria.pmdef": "1-hr PM2.5 {v}. What does this mean?", "aria.psidef": "24-hr PSI {v}. What does this mean?", "aria.fcdef": "PSI forecast. What does this mean?",
   "nea.prefix": "NEA: “{text}”", "nea.upper": " For the upper end of the forecast, {band}.", "nea.nofc": " For the current 24-hr PSI; no forecast has been issued.",
@@ -446,7 +455,7 @@ en: {
   "ex.pmBands": "1-hr PM2.5 bands · next hour", "ex.psiBands": "24-hr PSI · next day", "ex.vul": "Vulnerable:", "ex.elderly": "Elderly, children, pregnant:", "ex.chronic": "Heart or lung:",
   "ex.note": "Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: {link}.",
   "ex.guide": "NEA, How to plan your outdoor activities during haze (June 2026)",
-  "share.title": "Share", "share.head": "Haze in {region}, {time} {day}", "share.pm": "{sq} This hour: PM2.5 {v} ({band})", "share.psi": "{sq} Past 24 hours: PSI {v} ({band})",
+  "share.title": "Share", "share.head": "Haze in {region}, {time} {day}", "share.pm": "{sq} Now: PM2.5 {v} ({band})", "share.psi": "{sq} Past 24 hours: PSI {v} ({band})",
   "share.fcToday": "Forecast today: {name}", "share.fcTomorrow": "Forecast tomorrow: {name}", "share.fcOn": "Forecast for {day}: {name}",
   "share.none": "Live haze readings for Singapore, by region.", "share.copyLink": "Copy link", "share.copyText": "Copy text", "share.more": "More",
   "share.scan": "Scan to open", "share.scanBody": "Show this screen to someone nearby. It opens on {region}.", "share.copied": "Copied", "share.selected": "Text selected",
@@ -454,7 +463,7 @@ en: {
   "pic.share": "Share picture", "pic.copy": "Copy picture",
   "pic.save": "Save picture", "pic.preparing": "Preparing picture…", "pic.copied": "Copied. Paste it into a chat.",
   "pic.alt": "Haze picture for {region}: {band}", "pic.hold": "On a phone, press and hold the picture to save or share it.",
-  "card.now": "NOW · THE NEXT HOUR", "card.pmLabel": "This hour · PM2.5 µg/m³ · Band {n}", "card.past": "Past 24 hours · PSI",
+  "card.now": "NOW · THE NEXT HOUR", "card.pmLabel": "At {time} · PM2.5 µg/m³ · Band {n}", "card.past": "Past 24 hours · PSI",
   "card.fcToday": "Forecast today · PSI", "card.fcTomorrow": "Forecast tomorrow · PSI", "card.nofc": "No forecast issued", "card.nowPin": "{v} now",
   "card.fcRange": "Forecast {range}", "card.live": "Live readings for your area", "card.data": "Data: National Environment Agency. Unofficial.",
   "card.today": "TODAY", "card.tomorrow": "TOMORROW"
@@ -478,9 +487,9 @@ zh: {
   "pm.3.gen": "在接下来一小时内，避免剧烈的户外活动。", "pm.3.vul": "在接下来一小时内，避免一切户外活动。",
   "pm.4.gen": "在接下来一小时内，尽量减少一切户外活动。", "pm.4.vul": "在接下来一小时内，避免一切户外活动。",
   "pm.1.sgen": "可以照常活动。", "pm.1.svul": "可以照常活动。",
-  "pm.2.sgen": "这一小时少做剧烈的户外运动。", "pm.2.svul": "这一小时不要做剧烈的户外运动。",
-  "pm.3.sgen": "这一小时不要做剧烈的户外运动。", "pm.3.svul": "这一小时请留在室内。",
-  "pm.4.sgen": "这一小时尽量少待在户外。", "pm.4.svul": "这一小时请留在室内。",
+  "pm.2.sgen": "接下来一小时少做剧烈的户外运动。", "pm.2.svul": "接下来一小时不要做剧烈的户外运动。",
+  "pm.3.sgen": "接下来一小时不要做剧烈的户外运动。", "pm.3.svul": "接下来一小时请留在室内。",
+  "pm.4.sgen": "接下来一小时尽量少待在户外。", "pm.4.svul": "接下来一小时请留在室内。",
   "psi.0": "良好", "psi.1": "中等", "psi.2": "不健康", "psi.3": "非常不健康", "psi.4": "危险",
   "psi.0.healthy": "照常进行活动。", "psi.0.elderly": "照常进行活动。", "psi.0.chronic": "照常进行活动。",
   "psi.1.healthy": "照常进行活动。", "psi.1.elderly": "照常进行活动。", "psi.1.chronic": "照常进行活动。",
@@ -497,7 +506,7 @@ zh: {
   "group.pregnant.name": "孕妇", "group.pregnant.plural": "孕妇", "group.pregnant.who": "孕妇",
   "group.elderly.name": "年长者", "group.elderly.plural": "年长者", "group.elderly.who": "年长者",
   "group.chronic.name": "心脏或肺部疾病患者", "group.chronic.plural": "心脏或肺部疾病患者", "group.chronic.who": "心脏或肺部疾病患者",
-  "now.eb": "现在", "now.thisHour": "这一小时", "now.past24": "过去24小时", "now.forecast": "预测", "now.none": "无",
+  "now.eb": "现在", "now.at": "{time}", "now.past24": "过去24小时", "now.forecast": "预测", "now.none": "无",
   "today": "今天", "tomorrow": "明天",
   "aria.pmdef": "1小时PM2.5为{v}。这是什么意思？", "aria.psidef": "24小时PSI为{v}。这是什么意思？", "aria.fcdef": "PSI预测。这是什么意思？",
   "nea.prefix": "环境局：“{text}”", "nea.upper": " 按预测范围的较高值（{band}）给出。", "nea.nofc": " 按目前的24小时PSI给出；尚未发布预测。",
@@ -509,7 +518,7 @@ zh: {
   "def.nofc.title": "尚未发布预测", "def.nofc.body": "空气质量达到“不健康”时，环境局会发布24小时PSI预测。",
   "def.more": "更多读数说明",
   "fc.range": "{lo}至{hi}", "when.today": "今天（{day}）", "when.tomorrow": "明天（{day}）", "to": "至",
-  "for.line": "以下建议适用于{who}", "for.change": "更改",
+  "for.line": "给{who}的建议", "for.change": "更改",
   "verdict.0": "照常活动", "verdict.1": "减少体力消耗", "verdict.2": "限制体力消耗", "verdict.3": "减少户外时间",
   "day.head.0": "今天可以照常活动。", "day.head.1": "今天请减少剧烈的户外活动。",
   "day.head.2": "今天请限制长时间或剧烈的户外运动。", "day.head.3": "今天请尽量减少户外时间。",
@@ -554,7 +563,7 @@ zh: {
   "ex.pmBands": "1小时PM2.5等级 · 接下来一小时", "ex.psiBands": "24小时PSI · 第二天", "ex.vul": "易受影响人士：", "ex.elderly": "年长者、儿童、孕妇：", "ex.chronic": "心肺疾病患者：",
   "ex.note": "框出的是你目前的等级和预测范围。减少：少做一点。尽量减少：越少越好。避免：不要做。来源：{link}。",
   "ex.guide": "环境局《烟霾期间如何安排户外活动》（2026年6月）",
-  "share.title": "分享", "share.head": "{region}烟霾情况，{day} {time}", "share.pm": "{sq} 这一小时：PM2.5 {v}（{band}）", "share.psi": "{sq} 过去24小时：PSI {v}（{band}）",
+  "share.title": "分享", "share.head": "{region}烟霾情况，{day} {time}", "share.pm": "{sq} 现在：PM2.5 {v}（{band}）", "share.psi": "{sq} 过去24小时：PSI {v}（{band}）",
   "share.fcToday": "今天预测：{name}", "share.fcTomorrow": "明天预测：{name}", "share.fcOn": "{day}预测：{name}",
   "share.none": "新加坡各地区的实时烟霾读数。", "share.copyLink": "复制链接", "share.copyText": "复制文字", "share.more": "更多",
   "share.scan": "扫描打开", "share.scanBody": "把这个画面给身边的人看。打开后显示{region}。", "share.copied": "已复制", "share.selected": "已选取文字",
@@ -562,7 +571,7 @@ zh: {
   "pic.share": "分享图片", "pic.copy": "复制图片",
   "pic.save": "保存图片", "pic.preparing": "正在准备图片…", "pic.copied": "已复制，可粘贴到聊天中。",
   "pic.alt": "{region}烟霾图片：{band}", "pic.hold": "在手机上，长按图片即可保存或分享。",
-  "card.now": "现在 · 接下来一小时", "card.pmLabel": "这一小时 · PM2.5 µg/m³ · 第{n}级", "card.past": "过去24小时 · PSI",
+  "card.now": "现在 · 接下来一小时", "card.pmLabel": "{time} · PM2.5 µg/m³ · 第{n}级", "card.past": "过去24小时 · PSI",
   "card.fcToday": "今天预测 · PSI", "card.fcTomorrow": "明天预测 · PSI", "card.nofc": "尚未发布预测", "card.nowPin": "目前 {v}",
   "card.fcRange": "预测 {range}", "card.live": "查看你所在地区的实时读数", "card.data": "数据：国家环境局。非官方。",
   "card.today": "今天", "card.tomorrow": "明天"
@@ -586,9 +595,9 @@ ms: {
   "pm.3.gen": "Elakkan aktiviti luar yang berat untuk sejam akan datang.", "pm.3.vul": "Elakkan semua aktiviti luar untuk sejam akan datang.",
   "pm.4.gen": "Kurangkan semua aktiviti luar sebanyak mungkin untuk sejam akan datang.", "pm.4.vul": "Elakkan semua aktiviti luar untuk sejam akan datang.",
   "pm.1.sgen": "Aktiviti biasa boleh diteruskan.", "pm.1.svul": "Aktiviti biasa boleh diteruskan.",
-  "pm.2.sgen": "Kurangkan senaman berat di luar untuk sejam ini.", "pm.2.svul": "Elakkan senaman berat di luar untuk sejam ini.",
-  "pm.3.sgen": "Elakkan senaman berat di luar untuk sejam ini.", "pm.3.svul": "Duduk di dalam rumah untuk sejam ini.",
-  "pm.4.sgen": "Kurangkan masa di luar sebanyak mungkin untuk sejam ini.", "pm.4.svul": "Duduk di dalam rumah untuk sejam ini.",
+  "pm.2.sgen": "Kurangkan senaman berat di luar untuk sejam akan datang.", "pm.2.svul": "Elakkan senaman berat di luar untuk sejam akan datang.",
+  "pm.3.sgen": "Elakkan senaman berat di luar untuk sejam akan datang.", "pm.3.svul": "Duduk di dalam rumah untuk sejam akan datang.",
+  "pm.4.sgen": "Kurangkan masa di luar sebanyak mungkin untuk sejam akan datang.", "pm.4.svul": "Duduk di dalam rumah untuk sejam akan datang.",
   "psi.0": "Baik", "psi.1": "Sederhana", "psi.2": "Tidak Sihat", "psi.3": "Sangat Tidak Sihat", "psi.4": "Berbahaya",
   "psi.0.healthy": "Aktiviti biasa.", "psi.0.elderly": "Aktiviti biasa.", "psi.0.chronic": "Aktiviti biasa.",
   "psi.1.healthy": "Aktiviti biasa.", "psi.1.elderly": "Aktiviti biasa.", "psi.1.chronic": "Aktiviti biasa.",
@@ -605,7 +614,7 @@ ms: {
   "group.pregnant.name": "Hamil", "group.pregnant.plural": "wanita hamil", "group.pregnant.who": "Wanita hamil",
   "group.elderly.name": "Warga emas", "group.elderly.plural": "warga emas", "group.elderly.who": "Warga emas",
   "group.chronic.name": "Penyakit jantung atau paru-paru", "group.chronic.plural": "penghidap penyakit jantung atau paru-paru", "group.chronic.who": "Penghidap penyakit jantung atau paru-paru",
-  "now.eb": "Kini", "now.thisHour": "Sejam ini", "now.past24": "24 jam lalu", "now.forecast": "Ramalan", "now.none": "Tiada",
+  "now.eb": "Kini", "now.at": "Pukul {time}", "now.past24": "24 jam lalu", "now.forecast": "Ramalan", "now.none": "Tiada",
   "today": "Hari ini", "tomorrow": "Esok",
   "aria.pmdef": "PM2.5 1 jam {v}. Apakah maksudnya?", "aria.psidef": "PSI 24 jam {v}. Apakah maksudnya?", "aria.fcdef": "Ramalan PSI. Apakah maksudnya?",
   "nea.prefix": "NEA: “{text}”", "nea.upper": " Untuk had atas ramalan, {band}.", "nea.nofc": " Untuk PSI 24 jam semasa; tiada ramalan dikeluarkan.",
@@ -662,7 +671,7 @@ ms: {
   "ex.pmBands": "Jalur PM2.5 1 jam · sejam akan datang", "ex.psiBands": "PSI 24 jam · hari berikutnya", "ex.vul": "Golongan mudah terjejas:", "ex.elderly": "Warga emas, kanak-kanak, wanita hamil:", "ex.chronic": "Penyakit jantung atau paru-paru:",
   "ex.note": "Bertanda: jalur anda sekarang dan julat ramalan. Kurangkan: buat lebih sedikit. Kurangkan sebanyak mungkin: buat sesedikit mungkin. Elakkan: jangan buat. Sumber: {link}.",
   "ex.guide": "NEA, Cara merancang aktiviti luar semasa jerebu (Jun 2026)",
-  "share.title": "Kongsi", "share.head": "Jerebu di {region}, {time} {day}", "share.pm": "{sq} Sejam ini: PM2.5 {v} ({band})", "share.psi": "{sq} 24 jam lalu: PSI {v} ({band})",
+  "share.title": "Kongsi", "share.head": "Jerebu di {region}, {time} {day}", "share.pm": "{sq} Kini: PM2.5 {v} ({band})", "share.psi": "{sq} 24 jam lalu: PSI {v} ({band})",
   "share.fcToday": "Ramalan hari ini: {name}", "share.fcTomorrow": "Ramalan esok: {name}", "share.fcOn": "Ramalan untuk {day}: {name}",
   "share.none": "Bacaan jerebu langsung untuk Singapura, mengikut kawasan.", "share.copyLink": "Salin pautan", "share.copyText": "Salin teks", "share.more": "Lagi",
   "share.scan": "Imbas untuk buka", "share.scanBody": "Tunjukkan skrin ini kepada orang berdekatan. Ia dibuka pada {region}.", "share.copied": "Disalin", "share.selected": "Teks dipilih",
@@ -670,7 +679,7 @@ ms: {
   "pic.share": "Kongsi gambar", "pic.copy": "Salin gambar",
   "pic.save": "Simpan gambar", "pic.preparing": "Menyediakan gambar…", "pic.copied": "Disalin. Tampal dalam sembang.",
   "pic.alt": "Gambar jerebu untuk {region}: {band}", "pic.hold": "Pada telefon, tekan dan tahan gambar untuk menyimpan atau berkongsi.",
-  "card.now": "KINI · SEJAM AKAN DATANG", "card.pmLabel": "Sejam ini · PM2.5 µg/m³ · Jalur {n}", "card.past": "24 jam lalu · PSI",
+  "card.now": "KINI · SEJAM AKAN DATANG", "card.pmLabel": "Pukul {time} · PM2.5 µg/m³ · Jalur {n}", "card.past": "24 jam lalu · PSI",
   "card.fcToday": "Ramalan hari ini · PSI", "card.fcTomorrow": "Ramalan esok · PSI", "card.nofc": "Tiada ramalan dikeluarkan", "card.nowPin": "{v} kini",
   "card.fcRange": "Ramalan {range}", "card.live": "Bacaan langsung untuk kawasan anda", "card.data": "Data: Agensi Sekitaran Kebangsaan. Tidak rasmi.",
   "card.today": "HARI INI", "card.tomorrow": "ESOK"
@@ -694,9 +703,9 @@ ta: {
   "pm.3.gen": "அடுத்த ஒரு மணி நேரத்திற்குக் கடுமையான வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.", "pm.3.vul": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் தவிர்க்கவும்.",
   "pm.4.gen": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் முடிந்தவரை குறைக்கவும்.", "pm.4.vul": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் தவிர்க்கவும்.",
   "pm.1.sgen": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "pm.1.svul": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.",
-  "pm.2.sgen": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைக் குறைக்கவும்.", "pm.2.svul": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.",
-  "pm.3.sgen": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.", "pm.3.svul": "இந்த மணி நேரம் வீட்டுக்குள்ளேயே இருக்கவும்.",
-  "pm.4.sgen": "இந்த மணி நேரம் வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.", "pm.4.svul": "இந்த மணி நேரம் வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "pm.2.sgen": "அடுத்த ஒரு மணி நேரத்திற்கு வெளியே கடும் உடற்பயிற்சியைக் குறைக்கவும்.", "pm.2.svul": "அடுத்த ஒரு மணி நேரத்திற்கு வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.",
+  "pm.3.sgen": "அடுத்த ஒரு மணி நேரத்திற்கு வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.", "pm.3.svul": "அடுத்த ஒரு மணி நேரத்திற்கு வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "pm.4.sgen": "அடுத்த ஒரு மணி நேரத்திற்கு வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.", "pm.4.svul": "அடுத்த ஒரு மணி நேரத்திற்கு வீட்டுக்குள்ளேயே இருக்கவும்.",
   "psi.0": "நல்லது", "psi.1": "மிதமானது", "psi.2": "ஆரோக்கியமற்றது", "psi.3": "மிகவும் ஆரோக்கியமற்றது", "psi.4": "அபாயகரமானது",
   "psi.0.healthy": "வழக்கமான நடவடிக்கைகள்.", "psi.0.elderly": "வழக்கமான நடவடிக்கைகள்.", "psi.0.chronic": "வழக்கமான நடவடிக்கைகள்.",
   "psi.1.healthy": "வழக்கமான நடவடிக்கைகள்.", "psi.1.elderly": "வழக்கமான நடவடிக்கைகள்.", "psi.1.chronic": "வழக்கமான நடவடிக்கைகள்.",
@@ -713,7 +722,7 @@ ta: {
   "group.pregnant.name": "கர்ப்பிணி", "group.pregnant.plural": "கர்ப்பிணிப் பெண்கள்", "group.pregnant.who": "கர்ப்பிணிப் பெண்கள்",
   "group.elderly.name": "முதியவர்", "group.elderly.plural": "முதியவர்கள்", "group.elderly.who": "முதியவர்கள்",
   "group.chronic.name": "இதயம் அல்லது நுரையீரல் நோய்", "group.chronic.plural": "இதயம் அல்லது நுரையீரல் நோய் உள்ளவர்கள்", "group.chronic.who": "இதயம் அல்லது நுரையீரல் நோய் உள்ளவர்கள்",
-  "now.eb": "இப்போது", "now.thisHour": "இந்த மணி நேரம்", "now.past24": "கடந்த 24 மணி நேரம்", "now.forecast": "முன்னறிவிப்பு", "now.none": "இல்லை",
+  "now.eb": "இப்போது", "now.at": "{time} அளவீடு", "now.past24": "கடந்த 24 மணி நேரம்", "now.forecast": "முன்னறிவிப்பு", "now.none": "இல்லை",
   "today": "இன்று", "tomorrow": "நாளை",
   "aria.pmdef": "1 மணி நேர PM2.5 {v}. இதன் பொருள் என்ன?", "aria.psidef": "24 மணி நேர PSI {v}. இதன் பொருள் என்ன?", "aria.fcdef": "PSI முன்னறிவிப்பு. இதன் பொருள் என்ன?",
   "nea.prefix": "NEA: “{text}”", "nea.upper": " முன்னறிவிப்பின் உயர் வரம்பான {band} நிலைக்கு.", "nea.nofc": " தற்போதைய 24 மணி நேர PSI-க்கு; முன்னறிவிப்பு எதுவும் வெளியிடப்படவில்லை.",
@@ -770,7 +779,7 @@ ta: {
   "ex.pmBands": "1 மணி நேர PM2.5 நிலைகள் · அடுத்த ஒரு மணி நேரம்", "ex.psiBands": "24 மணி நேர PSI · அடுத்த நாள்", "ex.vul": "எளிதில் பாதிக்கப்படக்கூடியவர்கள்:", "ex.elderly": "முதியவர்கள், குழந்தைகள், கர்ப்பிணிகள்:", "ex.chronic": "இதயம் அல்லது நுரையீரல் நோய்:",
   "ex.note": "கட்டமிடப்பட்டவை: உங்கள் தற்போதைய நிலையும் முன்னறிவிப்பு வரம்பும். குறைக்கவும்: குறைவாகச் செய்யுங்கள். முடிந்தவரை குறைக்கவும்: மிகக் குறைவாகச் செய்யுங்கள். தவிர்க்கவும்: செய்ய வேண்டாம். ஆதாரம்: {link}.",
   "ex.guide": "NEA, புகைமூட்டத்தின்போது வெளிப்புற நடவடிக்கைகளைத் திட்டமிடுவது எப்படி (ஜூன் 2026)",
-  "share.title": "பகிர்", "share.head": "{region} புகைமூட்டம், {day} {time}", "share.pm": "{sq} இந்த மணி நேரம்: PM2.5 {v} ({band})", "share.psi": "{sq} கடந்த 24 மணி நேரம்: PSI {v} ({band})",
+  "share.title": "பகிர்", "share.head": "{region} புகைமூட்டம், {day} {time}", "share.pm": "{sq} இப்போது: PM2.5 {v} ({band})", "share.psi": "{sq} கடந்த 24 மணி நேரம்: PSI {v} ({band})",
   "share.fcToday": "இன்றைய முன்னறிவிப்பு: {name}", "share.fcTomorrow": "நாளைய முன்னறிவிப்பு: {name}", "share.fcOn": "{day}க்கான முன்னறிவிப்பு: {name}",
   "share.none": "சிங்கப்பூரின் ஒவ்வொரு பகுதிக்குமான நேரலை புகைமூட்ட அளவீடுகள்.", "share.copyLink": "இணைப்பை நகலெடு", "share.copyText": "உரையை நகலெடு", "share.more": "மேலும்",
   "share.scan": "திறக்க ஸ்கேன் செய்யவும்", "share.scanBody": "இந்தத் திரையை அருகில் உள்ளவருக்குக் காட்டுங்கள். அது {region} பகுதியில் திறக்கும்.", "share.copied": "நகலெடுக்கப்பட்டது", "share.selected": "உரை தேர்ந்தெடுக்கப்பட்டது",
@@ -778,7 +787,7 @@ ta: {
   "pic.share": "படத்தைப் பகிர்", "pic.copy": "படத்தை நகலெடு",
   "pic.save": "படத்தைச் சேமி", "pic.preparing": "படம் தயாராகிறது…", "pic.copied": "நகலெடுக்கப்பட்டது. உரையாடலில் ஒட்டவும்.",
   "pic.alt": "{region} புகைமூட்டப் படம்: {band}", "pic.hold": "கைபேசியில், படத்தைச் சேமிக்க அல்லது பகிர அதை அழுத்திப் பிடிக்கவும்.",
-  "card.now": "இப்போது · அடுத்த ஒரு மணி நேரம்", "card.pmLabel": "இந்த மணி நேரம் · PM2.5 µg/m³ · நிலை {n}", "card.past": "கடந்த 24 மணி நேரம் · PSI",
+  "card.now": "இப்போது · அடுத்த ஒரு மணி நேரம்", "card.pmLabel": "{time} · PM2.5 µg/m³ · நிலை {n}", "card.past": "கடந்த 24 மணி நேரம் · PSI",
   "card.fcToday": "இன்றைய முன்னறிவிப்பு · PSI", "card.fcTomorrow": "நாளைய முன்னறிவிப்பு · PSI", "card.nofc": "முன்னறிவிப்பு வெளியிடப்படவில்லை", "card.nowPin": "இப்போது {v}",
   "card.fcRange": "முன்னறிவிப்பு {range}", "card.live": "உங்கள் பகுதிக்கான நேரலை அளவீடுகள்", "card.data": "தரவு: தேசியச் சுற்றுப்புற வாரியம். அதிகாரப்பூர்வமற்றது.",
   "card.today": "இன்று", "card.tomorrow": "நாளை"
@@ -3104,9 +3113,9 @@ const GROUPS = [
   {id:'chronic', name:'Heart or lung condition', pm:'vul', psi:'chronic', plural:'people with heart or lung conditions'}];
 const PM = [
   {max:55, n:1, c:0, name:'Normal', range:'0–55', lo:0, hi:55, gen:'Continue with normal activities.', vul:'Continue with normal activities.', sGen:'Normal activities are fine.', sVul:'Normal activities are fine.'},
-  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.', sGen:'Cut back on hard exercise outdoors this hour.', sVul:'Avoid hard exercise outdoors this hour.'},
-  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Avoid hard exercise outdoors this hour.', sVul:'Stay indoors this hour.'},
-  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Spend as little time outdoors as you can this hour.', sVul:'Stay indoors this hour.'}];
+  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.', sGen:'Cut back on hard exercise outdoors for the next hour.', sVul:'Avoid hard exercise outdoors for the next hour.'},
+  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Avoid hard exercise outdoors for the next hour.', sVul:'Stay indoors for the next hour.'},
+  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'For the next hour, spend as little time outdoors as you can.', sVul:'Stay indoors for the next hour.'}];
 const PSI = [
   {max:50, c:0, name:'Good', range:'0–50', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
   {max:100, c:1, name:'Moderate', range:'51–100', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
@@ -3312,27 +3321,28 @@ const officialLine = () => `<p class="official">${t('official', {link:ext(OFFICI
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
 function psiRange(lo, hi){ const a = psiStart(lo), b = PSI[hi].max; return b === Infinity ? `${a}+` : `${a}–${b}`; }
-/* A bar drawn by band: a small marker for the reading, and a bracket under the forecast bands. No labels: the number,
-   the band word and the colours above it already say what they would. */
+/* A bar drawn by band: a small marker for the reading, and a bracket under the forecast bands, labelled Forecast.
+   No band labels: the number, the band word and the colours above it already say what they would. */
 const bandLo = (B, k) => k === 0 ? 0 : B[k-1].max + 1;
 const bandHi = (B, k) => B[k].max === Infinity ? (B === PM ? 350 : 400) : B[k].max;
 function lbar({B, v, fc, tick}){
   const N = B.length, k = B.findIndex(x => v <= x.max), lo = bandLo(B, k), hi = bandHi(B, k);
-  const t = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
-  return `<div class="lb" style="--tick:${tick}" aria-hidden="true"><span class="tick" style="left:${(Math.max(.03, Math.min(.97, t)) * 100).toFixed(1)}%"></span>
+  const at = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
+  // the label sits under the bracket's middle, or against its outer end at either edge of the bar
+  const fcl = fc && (fc.lo === 0 ? 'left:0' : fc.hi === N - 1 ? 'right:0' : `left:${((fc.lo + fc.hi + 1) / 2 / N * 100).toFixed(1)}%;transform:translateX(-50%)`);
+  return `<div class="lb" style="--tick:${tick}" aria-hidden="true"><span class="tick" style="left:${(Math.max(.03, Math.min(.97, at)) * 100).toFixed(1)}%"></span>
     <div class="track" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<i style="background:var(--c${x.c});opacity:${on(i) ? 1 : .3}"></i>`).join('')}</div>
-    ${fc ? `<div class="br"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span></div>` : ''}</div>`;
+    ${fc ? `<div class="br"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span><b class="fcl" style="${fcl}">${t('now.forecast')}</b></div>` : ''}</div>`;
 }
 function renderNow(){
   const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel(), plan = f ? PSI[f.hi] : n.p;
-  const who = G().who;
   el.innerHTML = `
     <div class="sky">
       <div class="eb">${t('now.eb')}</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.thisHour')}</b><small>PM2.5 · µg/m³</small></span></button>
-      <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
+      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.at', {time:sgHour(S.d.asOf)})}</b><small>PM2.5 · µg/m³</small></span></button>
       ${trendLine(P.region)}
+      <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
         <div class="nea" id="nea-pm" hidden>${esc(t('nea.prefix', {text:pmAdvice(n.b)}))}</div></div>
       ${installBanner()}
@@ -3348,12 +3358,15 @@ function renderNow(){
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
         <div class="nea" id="nea-psi" hidden>${esc(t('nea.prefix', {text:psiAdvice(plan)}))}${f && f.lo !== f.hi ? esc(t('nea.upper', {band:PSI[f.hi].name})) : f ? '' : esc(t('nea.nofc'))}</div></div>
       ${shareBlock()}
-      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="lfoot">${whoPicker()} <span class="nw">· ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</span></div>
       <div class="langs" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${k === 'ms' ? 'Melayu' : nm}</button>`).join('')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
 }
+/* who the advice is for: reads as a line of text, and opens the phone's own picker */
+const whoPicker = () => `<label class="whosel">${esc(t('for.line', {who:G().plural}))}${ICON.down}<select data-pick="group">${GROUPS.map(g =>
+  `<option value="${g.id}"${g.id === P.group ? ' selected' : ''}>${esc(t('for.line', {who:g.plural}))}</option>`).join('')}</select></label>`;
 /* Which way the haze is heading. The 24-hr PSI lags by design, so compare this hour's PM2.5 with three hours ago;
    small changes (under 10 µg/m³ or 15%) count as steady. */
 function pmTrend(r){
@@ -3365,7 +3378,7 @@ function pmTrend(r){
 function trendLine(r){
   const tr = pmTrend(r); if (!tr) return '';
   const word = t(['trend.clear', 'trend.steady', 'trend.worse'][tr.dir + 1]);
-  return `<div class="trend num"><b>${word}</b> · ${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</div>`;
+  return `<div class="trend num"><b class="${['down', 'flat', 'up'][tr.dir + 1]}">${word}</b> <span>${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</span></div>`;
 }
 /* what each number means, shown when it is tapped */
 function defText(k){
@@ -3692,7 +3705,7 @@ async function cardBlob(){
   x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
   x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
   font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
-  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n}), pad, 562); x.globalAlpha = 1;
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n, time:sgHour(S.d.asOf)}), pad, 562); x.globalAlpha = 1;
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
@@ -3844,6 +3857,11 @@ document.getElementById('app').addEventListener('click', e => {
   if (a === 'explain') openSheet(t('ex.title'), explainHTML());
   if (a === 'news') openSheet(t('news.title'), newsHTML());
   if (a === 'share') openShare();
+});
+
+document.getElementById('app').addEventListener('change', e => {
+  if (e.target.dataset.pick !== 'group') return;
+  P.group = e.target.value; save(); track('group/' + P.group); render();
 });
 
 /* Longer languages (Tamil, Malay) can outgrow the big type: shrink a number or band word until it fits its box,
