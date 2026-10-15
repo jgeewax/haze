@@ -530,28 +530,227 @@ function skyOf(pm, dark = isDark()){
   const pick = i => t < .5 ? mix(clear[i], hazy[i], t*2) : mix(hazy[i], thick[i], (t-.5)*2);
   return {top:pick(0), bot:pick(1), t, ink: dark ? '#F3EEE6' : '#17222B', chip: dark ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.5)', halo: dark ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.75)'};
 }
-function applySky(pm){
-  const s = skyOf(pm), st = document.documentElement.style;
-  for (const [k, v] of Object.entries({'--sky-top':s.top, '--sky-bot':s.bot, '--sky-ink':s.ink, '--sky-chip':s.chip, '--sky-halo':s.halo})) st.setProperty(k, v);
+/* The Now screen's sky follows Singapore's sun and moon, tinted by the haze in it. Clear air gives blue days, gold
+   evenings and stars; haze flattens the light to beige, turns the sun into a dull orange disc and hides the stars.
+   (The share picture above keeps skyOf's fixed daytime sky, so it looks the same whenever it is sent.) */
+const RAD = Math.PI / 180, SG_LAT = 1.35 * RAD, SG_LON = 103.82;
+const wrap180 = a => ((a % 360) + 540) % 360 - 180;
+/* the sun's height over Singapore and its hour angle (about −90° at sunrise, +90° at sunset), in degrees;
+   the almanac's low-precision formulas, good to a fraction of a degree */
+function sunAt(d){
+  const n = d.getTime() / 86400e3 - 10957.5;   // days since noon UTC, 1 January 2000
+  const g = (357.529 + .98560028 * n) * RAD, e = (23.439 - 3.6e-7 * n) * RAD;
+  const L = (280.459 + .98564736 * n + 1.915 * Math.sin(g) + .02 * Math.sin(2 * g)) * RAD;
+  const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)) / RAD, dec = Math.asin(Math.sin(e) * Math.sin(L));
+  const ha = wrap180(280.46061837 + 360.98564736629 * n + SG_LON - ra);
+  return {ha, alt: Math.asin(Math.sin(SG_LAT) * Math.sin(dec) + Math.cos(SG_LAT) * Math.cos(dec) * Math.cos(ha * RAD)) / RAD};
 }
-let raf = 0;
-function grain(el, pm){
-  cancelAnimationFrame(raf); if (!el) return;
+/* the moon's phase (0 new, .5 full) and, near enough for a picture, where it is: it trails the sun by its phase */
+function moonAt(d, sun){
+  const p = ((d.getTime() - Date.UTC(2000, 0, 6, 18, 14)) / (29.530588853 * 86400e3) % 1 + 1) % 1, ha = wrap180(sun.ha - p * 360);
+  return {p, ha, alt: Math.asin(Math.cos(SG_LAT) * Math.cos(ha * RAD)) / RAD};
+}
+/* by the sun's height: the sky's top and bottom in clear air, in haze (PM2.5 about 130) and in thick haze (260 and up) */
+const SKYK = [
+  [-90, '#070D1F','#16244A', '#14121A','#3A2A24', '#1A120E','#4A2E1C'],
+  [-12, '#0B1633','#22325E', '#18161F','#45322A', '#1E140F','#553420'],
+  [-6,  '#172A5C','#5B4B7E', '#2A2430','#6E4A3A', '#2A1A12','#74442A'],
+  [-1.5,'#3B5A9A','#E39A7C', '#6A5A5E','#D08A5C', '#5A3A28','#C0642E'],
+  [4,   '#6D9AD6','#F6C99C', '#A08C78','#EDBA86', '#87603F','#D88A4E'],
+  [12,  '#5EA2E4','#EBDDC4', '#AA9F8C','#E8D6BC', '#8C6C50','#D9AF86'],
+  [25,  '#5BA6E6','#D4EAF9', '#AFA796','#E6DFD1', '#8E7258','#D9BE9C'],
+  [90,  '#4A9BE3','#CDE6F8', '#ADA693','#E4DED0', '#8C7157','#D8BD9B']];
+const INK = ['#17222B', '#F3EEE6'];
+const lum = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0);
+const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+const rgb = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)).join(',');
+function skyTime(){ return new Date(); }
+function skyWeather(){ return (S.wx && S.wx[P.region]) || 'fair'; }
+/* The weather in the sky: NEA's 2-hour forecast for each neighbourhood (from data.gov.sg), grouped into the five regions
+   by AREAS below; the most common forecast in a region wins, a tie going to the wetter. Only the sky uses it, and the sky
+   stays fair when it can't be fetched. */
+const WX = ['fair', 'partly', 'cloudy', 'rain', 'storm'];
+const wxOf = s => /thunder/i.test(s) ? 'storm' : /rain|shower|drizzle/i.test(s) ? 'rain' : /partly/i.test(s) ? 'partly' : /cloud|overcast|mist|fog/i.test(s) ? 'cloudy' : 'fair';
+async function loadWeather(){
+  const d = (await fetchJSON('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast', 7000)).data, it = d.items[0];
+  if (Date.parse(it.valid_period.end) < Date.now() - 3600e3) return null;   // an old forecast says nothing about now
+  const region = Object.fromEntries(d.area_metadata.map(a => [a.name, nearestArea(a.label_location.latitude, a.label_location.longitude)[1]]));
+  const n = {};
+  for (const f of it.forecasts){ const r = region[f.area], w = wxOf(typeof f.forecast === 'string' ? f.forecast : (f.forecast || {}).text || '');
+    if (r) (n[r] = n[r] || {})[w] = (n[r][w] || 0) + 1; }
+  return Object.fromEntries(Object.entries(n).map(([r, c]) => [r, Object.keys(c).sort((a, b) => c[b] - c[a] || WX.indexOf(b) - WX.indexOf(a))[0]]));
+}
+const SKY_OPTS = {rays:true, skyline:false};
+function skyAt(pm, d = skyTime(), dark = isDark(), wx = skyWeather()){
+  const t = Math.min(1, pm / 260), sun = sunAt(d), moon = moonAt(d, sun);
+  const j = Math.max(1, SKYK.findIndex(k => k[0] >= sun.alt)), A = SKYK[j - 1], B = SKYK[j], f = (sun.alt - A[0]) / (B[0] - A[0]);
+  const c = i => mix(A[i], B[i], f), pick = i => t < .5 ? mix(c(1 + i), c(3 + i), t * 2) : mix(c(3 + i), c(5 + i), (t - .5) * 2);
+  let top = pick(0), bot = pick(1);
+  const day = Math.max(0, Math.min(1, (sun.alt + 4) / 10)), cloud = {cloudy:.35, rain:.6, storm:.75}[wx] || 0;   // day: 0 at night, 1 once the sun is up
+  if (cloud){ top = mix(top, mix('#1C2128', '#8E98A3', day), cloud); bot = mix(bot, mix('#2A3038', '#B9C0C7', day), cloud); }
+  if (dark){ top = mix(top, '#0A0F14', .62 * day); bot = mix(bot, '#0A0F14', .58 * day); }
+  // the text colour that reads better at both ends, then each end nudged until it reads well
+  const worst = k => Math.min(contrast(k, top), contrast(k, bot)), ink = worst(INK[1]) > worst(INK[0]) ? INK[1] : INK[0], away = ink === INK[0] ? '#FFFFFF' : '#000000';
+  for (let i = 0; i < 30 && contrast(ink, top) < 4.5; i++) top = mix(top, away, .05);
+  for (let i = 0; i < 30 && contrast(ink, bot) < 4; i++) bot = mix(bot, away, .05);
+  const lightSky = ink === INK[0];
+  return {top, bot, ink, t, sun, moon, day, cloud, wx, lightSky,
+    chip: lightSky ? 'rgba(255,255,255,.5)' : 'rgba(0,0,0,.28)', halo: lightSky ? 'rgba(255,255,255,.75)' : 'rgba(0,0,0,.35)'};
+}
+function applySky(s){
+  const st = document.documentElement.style;
+  for (const [k, v] of Object.entries({'--sky-top':s.top, '--sky-bot':s.bot, '--sky-ink':s.ink, '--sky-chip':s.chip, '--sky-halo':s.halo}))
+    if (st.getPropertyValue(k) !== v) st.setProperty(k, v);
+  const m = document.querySelector('meta[name="theme-color"]'); if (m && m.content !== s.top) m.content = s.top;   // the phone's status bar
+}
+/* soft sprites, drawn once per colour: a round glow, and a fair-weather cumulus lit from above */
+const sprites = new Map();
+const q8 = c => '#' + [1, 3, 5].map(i => (Math.min(255, Math.round(parseInt(c.slice(i, i + 2), 16) / 8) * 8)).toString(16).padStart(2, '0')).join('');
+function sprite(key, w, h, draw){
+  let c = sprites.get(key); if (c) return c;
+  if (sprites.size > 80) sprites.clear();
+  c = Object.assign(document.createElement('canvas'), {width:w, height:h}); draw(c.getContext('2d')); sprites.set(key, c); return c;
+}
+const glow = (col, n = 32) => sprite(`g${col}${n}`, n, n, x => { const g = x.createRadialGradient(n/2, n/2, 0, n/2, n/2, n/2);
+  g.addColorStop(0, `rgba(${col},1)`); g.addColorStop(.35, `rgba(${col},.6)`); g.addColorStop(1, `rgba(${col},0)`); x.fillStyle = g; x.fillRect(0, 0, n, n); });
+const puff = (lit, shade) => sprite(`p${lit}${shade}`, 240, 112, x => {
+  x.filter = 'blur(1.5px)'; x.fillStyle = '#FFFFFF';
+  for (const [cx, cy, r] of [[58,74,24],[92,58,34],[136,46,40],[176,62,30],[118,80,28],[204,78,19],[36,82,15]]){ x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); }
+  x.filter = 'none'; x.globalCompositeOperation = 'destination-out';
+  let g = x.createLinearGradient(0, 84, 0, 100); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); x.fillStyle = g; x.fillRect(0, 84, 240, 28);
+  x.globalCompositeOperation = 'source-atop';
+  g = x.createLinearGradient(0, 8, 0, 98); g.addColorStop(0, lit); g.addColorStop(.5, lit); g.addColorStop(1, shade); x.fillStyle = g; x.fillRect(0, 0, 240, 112); });
+/* a low Singapore skyline that the haze swallows: towers, and Marina Bay Sands' three with the SkyPark across them */
+function skylinePath(W, h){
+  const p = new Path2D(); let s = 11, X = -4; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  while (X < W){ const w = 8 + r() * 20, k = .2 + r() * r() * .8; p.rect(X, -h * k, w, h * k); X += w + r() * 4; }
+  const m = W * .7, u = h / 60;
+  for (let i = 0; i < 3; i++) p.rect(m + i * 15 * u, -h, 9 * u, h);
+  p.moveTo(m - 7 * u, -h - 2 * u); p.lineTo(m + 46 * u, -h - 5 * u); p.lineTo(m + 46 * u, -h - 1 * u); p.lineTo(m - 7 * u, -h + 2 * u); p.closePath();
+  return p;
+}
+let skyRaf = 0, skyWait = 0, skyBorn = 0, skyKeep = null;
+function stopSky(){ cancelAnimationFrame(skyRaf); clearTimeout(skyWait); }
+function paintSky(el, pm){
+  stopSky(); if (!el) return;
   const cv = document.createElement('canvas'); el.prepend(cv);
-  const box = el.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
-  cv.width = box.width * dpr; cv.height = box.height * dpr;
-  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-  const s = skyOf(pm), N = Math.round(20 + pm * 1.6);
-  const pts = Array.from({length:N}, () => ({x:Math.random()*box.width, y:Math.random()*box.height, r:.5+Math.random()*1.6, a:.12+Math.random()*.3, vx:.08+Math.random()*.25, vy:(Math.random()-.5)*.08}));
-  const col = isDark() ? '255,235,205' : (s.t > .3 ? '100,80,55' : '255,255,255');
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const draw = () => {
-    ctx.clearRect(0, 0, box.width, box.height);
-    for (const p of pts){ if (!still){ p.x += p.vx; p.y += p.vy; if (p.x > box.width + 2) p.x = -2; }
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fillStyle = `rgba(${col},${p.a})`; ctx.fill(); }
-    if (!still && S.tab === 'now') raf = requestAnimationFrame(draw);
+  const box = el.getBoundingClientRect(), W = box.width, H = box.height, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const x = cv.getContext('2d'); x.scale(dpr, dpr);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches, wide = W > 900, R = Math.max(16, Math.min(W, H) * .06);
+  const area = Math.max(.6, Math.min(3, W * H / 190000)), rand = Math.random;
+  // what drifts keeps drifting across re-renders (a new region, a new language); only the number of motes follows the haze
+  if (!skyKeep || skyKeep.W !== W || skyKeep.H !== H){
+    let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    skyKeep = {W, H, motes:[],
+      stars: Array.from({length: Math.round(110 * area)}, () => ({x: r() * W, y: r() * H * .8, r: .35 + r() ** 3 * 1.3, ph: r() * 7, sp: .4 + r() * 1.6})),
+      banks: Array.from({length: 7}, () => ({x: rand() * W, y: H * (.4 + rand() * .55), w: W * (.45 + rand() * .55), z: .3 + rand() * .7})),
+      drops: Array.from({length: Math.round(130 * area)}, () => ({x: rand() * W, y: rand() * H, z: .4 + rand() * .6})),
+      rays: Array.from({length: 9}, (_, i) => ({a: (i - 4) * 15 + rand() * 8, w: .8 + rand() * 1.8, ph: rand() * 7}))};
+  }
+  const K = skyKeep, N = Math.round((14 + Math.min(pm, 320)) * area);
+  while (K.motes.length < N) K.motes.push({x: rand() * W, y: rand() * H, z: .2 + rand() * .8, ph: rand() * 7});
+  K.motes.length = N;
+  const city = SKY_OPTS.skyline ? skylinePath(W, Math.min(64, H * .13)) : null;
+  // where the sun or moon sits: rising at the left, setting at the right, high near midday
+  const place = (ha, alt) => { const h = Math.sin(alt * RAD); return {x: W * (wide ? .5 + ha / 95 * .44 : .66 + ha / 95 * .34), y: H * (1 - .88 * Math.sign(h) * Math.abs(h) ** .6)}; };
+  let last = performance.now(), flash = 0, bolt = 3000;
+  if (!skyBorn) skyBorn = last;
+  const frame = now => {
+    const dt = still ? 0 : Math.min(64, now - last); last = now;
+    const s = skyAt(pm); applySky(s);
+    const {t, sun, moon, day, cloud, wx, lightSky} = s, night = 1 - day, wet = wx === 'rain' || wx === 'storm';
+    const ease = still ? 1 : 1 - (1 - Math.min(1, (now - skyBorn) / 1800)) ** 3;   // the first time Now opens, the sky fades in and the sun lifts into place
+    const gold = Math.max(0, 1 - Math.abs(sun.alt - 3) / 13);                      // strongest just after sunrise and before sunset
+    const sp = place(sun.ha, sun.alt), mp = place(moon.ha, moon.alt); sp.y += (1 - ease) * 40;
+    const core = mix(mix('#FFFBF0', '#FFB060', gold), mix('#FFC48A', '#E2542A', Math.max(gold, t * .5)), Math.min(1, t * 1.4)), cc = rgb(core);
+    const veil = 1 - cloud * .8;
+    x.clearRect(0, 0, W, H); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+    // dawn and dusk: a glow along the horizon under the sun, peach in clear air, a deep red-orange in haze
+    const hg = Math.max(0, 1 - Math.abs(sun.alt + 1) / 11) * veil;
+    if (hg > .01){ const g = x.createRadialGradient(sp.x, H, 0, sp.x, H, Math.max(W, H) * .95), c = rgb(mix('#FF9F75', '#E5602E', t));
+      g.addColorStop(0, `rgba(${c},${.38 * hg})`); g.addColorStop(.5, `rgba(${c},${.12 * hg})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+    // night: the city's light on the sky, faint and blue when clear, a sodium-orange murk in haze
+    if (night > .01){ const g = x.createLinearGradient(0, H, 0, H * .3), c = rgb(mix('#6F79B8', '#E08840', Math.min(1, t * 1.6)));
+      g.addColorStop(0, `rgba(${c},${night * (.12 + .3 * t)})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+    // stars, only on a clear night
+    const sa = night ** 1.5 * (1 - t) ** 2.5 * (1 - cloud) * ease;
+    if (sa > .01){ const st = glow('255,255,255', 16);
+      for (const p of K.stars){ x.globalAlpha = sa * (.55 + .45 * Math.sin(now * .001 * p.sp + p.ph)) * (1 - p.y / H * .7); x.drawImage(st, p.x - p.r * 2, p.y - p.r * 2, p.r * 4, p.r * 4); } }
+    // the moon, in its phase, its lit side turned to the sun; orange through haze
+    if (moon.alt > -4 && night > .2){
+      const r = R * .62, k = (1 - Math.cos(2 * Math.PI * moon.p)) / 2, a = Math.min(1, night * 1.4) * (1 - cloud * .85) * ease, mc = mix('#F6F2E4', '#F2A868', Math.min(1, t * 1.3)), m = rgb(mc);
+      const g = x.createRadialGradient(mp.x, mp.y, r, mp.x, mp.y, r * (5 + 3 * t));
+      g.addColorStop(0, `rgba(${m},${a * (.08 + .22 * k)})`); g.addColorStop(1, `rgba(${m},0)`);
+      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(mp.x, mp.y, r * (5 + 3 * t), 0, 7); x.fill();
+      x.globalAlpha = a * .16; x.fillStyle = mc; x.beginPath(); x.arc(mp.x, mp.y, r, 0, 7); x.fill();
+      const cs = Math.cos(2 * Math.PI * moon.p);
+      x.save(); x.translate(mp.x, mp.y); x.rotate(Math.atan2(sp.y - mp.y, sp.x - mp.x));
+      x.beginPath(); x.arc(0, 0, r, -Math.PI / 2, Math.PI / 2); x.ellipse(0, 0, Math.abs(cs) * r, r, 0, Math.PI / 2, -Math.PI / 2, cs > 0);
+      x.globalAlpha = a; x.fill(); x.restore();
+    }
+    // the sun: a wide white glow in clear air; in haze a tighter, warmer glow, beams through the murk, and a flat disc you could look at
+    if (sun.alt > -3){
+      // under light text (dark theme, dusk) the sun is dimmer, so a low sun behind the words never drowns them
+      const a = Math.min(1, (sun.alt + 3) / 4) * (1 - cloud * .75) * ease * (lightSky ? 1 : .6 + .4 * Math.min(1, Math.max(0, (sun.alt - 5) / 15))), rr = R * (1 + .25 * t + .2 * gold), gr = rr * (7 - 3 * t);
+      let g = x.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, gr);
+      g.addColorStop(0, `rgba(${cc},${a * (.6 - .25 * t)})`); g.addColorStop(.18, `rgba(${cc},${a * .22})`); g.addColorStop(1, `rgba(${cc},0)`);
+      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, gr, 0, 7); x.fill();
+      const rs = SKY_OPTS.rays ? Math.max(Math.sin(Math.PI * Math.min(1, Math.max(0, (t - .05) / .9))), .35 * gold) * Math.max(0, 1 - sun.alt / 60) * Math.min(1, (sun.alt + 2) / 4) * (1 - cloud * .7) * a : 0;
+      if (rs > .02){
+        const L = Math.hypot(W, H), base = Math.atan2(H * .5 - sp.y, W * .45 - sp.x) / RAD;
+        g = x.createRadialGradient(sp.x, sp.y, rr, sp.x, sp.y, L * .85); g.addColorStop(0, `rgba(${cc},${.2 * rs})`); g.addColorStop(1, `rgba(${cc},0)`);
+        x.save(); x.globalCompositeOperation = 'screen'; x.fillStyle = g;
+        for (const ray of K.rays){ const an = (base + ray.a + Math.sin(now * .00012 + ray.ph) * 3) * RAD, w = ray.w * RAD;
+          x.globalAlpha = .55 + .45 * Math.sin(now * .0004 + ray.ph * 3);
+          x.beginPath(); x.moveTo(sp.x, sp.y); x.lineTo(sp.x + Math.cos(an - w) * L, sp.y + Math.sin(an - w) * L); x.lineTo(sp.x + Math.cos(an + w) * L, sp.y + Math.sin(an + w) * L); x.fill(); }
+        x.restore();
+      }
+      g = x.createLinearGradient(0, sp.y - rr, 0, sp.y + rr);
+      g.addColorStop(.1, `rgba(${cc},${a})`); g.addColorStop(1, `rgba(${cc},${a * (1 - .75 * t)})`);
+      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, rr, 0, 7); x.fill();
+      if (t < .6 && lightSky){ x.globalAlpha = a * (1 - t / .6) * .9; const b = glow('255,255,250', 64); x.drawImage(b, sp.x - rr * 2.2, sp.y - rr * 2.2, rr * 4.4, rr * 4.4); }
+    }
+    // the skyline, fading as the haze thickens
+    if (city){ x.save(); x.translate(0, H); x.globalAlpha = (1 - .9 * t) * .55 * ease; x.fillStyle = mix(s.bot, lightSky ? '#3A4654' : '#05070A', .45); x.fill(city); x.restore(); }
+    // haze banks drifting low across the sky, veiling the sun
+    for (const b of K.banks){ b.x += (.003 + .008 * b.z) * dt; if (b.x - b.w > W) b.x = -b.w; }
+    const ba = Math.min(1, t * 1.5) * .5 * ease;
+    if (ba > .01){ const hz = glow(rgb(q8(mix(s.bot, day > .5 ? '#BFA27E' : '#6A4A34', .4))), 128);
+      for (const b of K.banks){ const w = b.w * 1.7, h = w * .22; x.globalAlpha = ba * (.4 + .6 * b.z); x.drawImage(hz, b.x - w / 2, b.y - h / 2, w, h); } }
+    // clouds: a few fair-weather puffs in clear air, more when partly cloudy; a lid of grey under rain
+    const ca = (cloud ? 1 : Math.max(0, 1 - t * 1.8) * .85) * ease, nc = {fair:3, partly:5, cloudy:6}[wx] || 7;
+    if (ca > .01){
+      const lit = q8(cloud > .5 ? mix(s.top, mix('#2E343C', '#9AA3AD', day), .7) : mix(s.bot, mix(mix('#B09080', s.top, .6), mix('#FFFFFF', core, gold * .5), day), lightSky ? .85 : .3));
+      const shade = q8(cloud > .5 ? mix(s.top, mix('#1E2228', '#5B636D', day), .7) : mix(s.top, mix(s.bot, '#7F8FA3', .45), lightSky ? .8 : .25));
+      const pf = puff(lit, shade);
+      K.banks.slice(0, nc).forEach((b, i) => { const w = b.w * (cloud ? 1.1 : .55 + .25 * b.z), h = w * .47, y = cloud ? H * (.05 + i * .1) : b.y;
+        x.globalAlpha = ca * (.6 + .4 * b.z); x.drawImage(pf, b.x - w / 2, y - h / 2, w, h); });
+    }
+    // motes of haze, lit up where they cross the sun
+    const md = glow(lightSky ? (t > .3 ? '108,86,60' : '255,255,255') : '255,226,190'), ld = glow(cc), ma = (lightSky && t <= .3 ? .55 : 1) * ease * (wet ? .4 : 1);
+    for (const p of K.motes){
+      p.x += (.006 + .022 * p.z) * dt; p.y += Math.sin(now * .0005 + p.ph) * .012 * p.z * dt;
+      if (p.x > W + 4) p.x = -4; if (p.y < -4) p.y = H + 4; else if (p.y > H + 4) p.y = -4;
+      const r = (.5 + 1.6 * p.z) * (1 + .3 * t), a = (.1 + .26 * p.z) * ma;
+      x.globalAlpha = a; x.drawImage(md, p.x - r * 2, p.y - r * 2, r * 4, r * 4);
+      if (sun.alt > -2){ const dx = p.x - sp.x, dy = p.y - sp.y, lit = Math.exp(-(dx * dx + dy * dy) / (R * R * 30)) * veil;
+        if (lit > .05){ x.globalAlpha = Math.min(1, a * lit * 1.8); x.drawImage(ld, p.x - r * 3, p.y - r * 3, r * 6, r * 6); } }
+    }
+    // rain, and in a storm the odd flash of lightning
+    if (wet){ x.strokeStyle = lightSky ? '#FFFFFF' : '#BECDE1'; x.lineCap = 'round';
+      for (const d of K.drops){ const v = .55 + .5 * d.z; d.y += v * dt; d.x -= .12 * v * dt;
+        if (d.y > H + 20){ d.y = -20; d.x = rand() * (W + 40); } if (d.x < -20) d.x += W + 40;
+        const len = 10 + 14 * d.z; x.globalAlpha = (.14 + .24 * d.z) * ease; x.lineWidth = .6 + .8 * d.z;
+        x.beginPath(); x.moveTo(d.x, d.y); x.lineTo(d.x + .12 * len, d.y - len); x.stroke(); } }
+    if (wx === 'storm' && !still){ bolt -= dt; if (bolt < 0){ flash = 1; bolt = 5000 + rand() * 9000; }
+      if (flash > 0){ x.globalAlpha = .45 * (flash > .75 ? 1 : flash > .55 ? .15 : flash); x.fillStyle = '#EEF2FF'; x.fillRect(0, 0, W, H); flash -= dt / 650; } }
+    x.globalAlpha = 1;
+    if (S.tab !== 'now') return;
+    if (still) skyWait = setTimeout(() => { skyRaf = requestAnimationFrame(frame); }, 60e3);   // no motion: repaint once a minute as the light changes
+    else skyRaf = requestAnimationFrame(frame);
   };
-  draw();
+  frame(last);
 }
 
 /* ---------- Links to the official source ---------- */
@@ -603,7 +802,7 @@ function renderNow(){
       <div class="langs" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${k === 'ms' ? 'Melayu' : nm}</button>`).join('')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
-  grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
+  paintSky(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
 }
 /* who the advice is for: reads as a line of text, and opens the phone's own picker */
 const whoPicker = () => `<label class="whosel">${esc(t('for.line', {who:G().plural}))}${ICON.down}<select data-pick="group">${GROUPS.map(g =>
@@ -748,7 +947,7 @@ function renderSet(){
       <div class="seg" role="group" aria-label="${t('set.start')}">${[['now','tab.now'],['day','tab.day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${t(v)}</button>`).join('')}</div></div>
     ${installSection()}
     <div class="sec"><h3>${t('set.about')}</h3>
-      <p style="font-size:14px;margin:0 0 10px">${esc(t('set.aboutBody', {state:t(S.live ? 'set.live' : 'set.snap', {time:sgAt(S.d.asOf, true)})}))}</p>
+      <p style="font-size:14px;margin:0 0 10px">${esc(t('set.aboutBody', {state:t(S.live ? 'set.live' : 'set.snap', {time:sgAt(S.d.asOf, true)})}))} ${esc(t('set.sky'))}</p>
       <p style="font-size:14px;margin:0 0 10px">${t('set.privacy', {link:ext('https://www.goatcounter.com/', 'GoatCounter')})}</p>
       <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, t('set.guide'))}</p>
       <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">${t('set.reset')}</button><span class="foot" id="resetmsg"></span></div></div>
@@ -1129,14 +1328,14 @@ if (document.fonts) document.fonts.addEventListener('loadingdone', () => { if (S
 function render(){
   if (!S.d) return;
   const n = now(P.region);
-  applySky(n.pm);
+  applySky(skyAt(n.pm));
   document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   const late = S.live && Date.now() - S.d.asOf.getTime() > 3 * 3600e3;   // NEA normally publishes within the hour
   document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${t(!S.live ? 'snapshot' : late ? 'delayed' : 'live')} · ${sgAt(S.d.asOf)}`;
   document.querySelectorAll('#tabbar button, .topnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
-  if (S.tab !== 'now') cancelAnimationFrame(raf);
+  if (S.tab !== 'now') stopSky();
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
   fitAll();
   if (cardCache.key === cardKey()) paintThumbs(); else setTimeout(() => ensureCard().catch(() => {}), 80);
@@ -1223,6 +1422,7 @@ function installSection(){
 
 let loadedAt = 0;
 async function refresh(){
+  loadWeather().then(w => { S.wx = w; }, () => {});   // the sky picks it up on its next frame
   try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
   catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }

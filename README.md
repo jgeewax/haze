@@ -8,12 +8,15 @@ It is a single static page. The visitor's browser loads the data straight from t
 | --- | --- |
 | 1-hr PM2.5 and PSI sub-indices, 24 hours, five regions | `https://www.haze.gov.sg/api/airquality/jsondata/{timestamp}` |
 | 24-hr PSI forecast and NEA's statement | `https://www.nea.gov.sg/api/advisory/latesthazesituationupdate/{timestamp}` |
+| 2-hour weather forecast for 47 neighbourhoods (only the sky uses it) | `https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast` |
 
-Both endpoints send `Access-Control-Allow-Origin: *`. The `{timestamp}` is only a cache-buster. The 24-hr PSI is the highest of the PM2.5, PM10, O3, CO and SO2 sub-indices. Advice text follows NEA's poster *How to plan your outdoor activities during haze* (June 2026).
+All three endpoints send `Access-Control-Allow-Origin: *`. The `{timestamp}` is only a cache-buster. The 24-hr PSI is the highest of the PM2.5, PM10, O3, CO and SO2 sub-indices. Advice text follows NEA's poster *How to plan your outdoor activities during haze* (June 2026).
 
 Settings (region, group, start tab) are saved in the browser's `localStorage`.
 
 **Languages.** English, Chinese (Simplified), Malay and Tamil, on every screen, the share message and the picture card. All strings live in `src/i18n.js`, bundled into the page at build time; missing keys fall back to English. The first visit follows the browser's language; the choice is in Settings and under the Now screen. Dates use the browser's own formatting for each language (`Intl.DateTimeFormat`, Singapore time). Chinese and Tamil load Noto Sans from Google Fonts only when chosen. NEA's own statement is published in English, so it stays in English, with a note. Link previews stay in English. The translations were written by Claude and are worth a review by native speakers, especially the health advice.
+
+**The sky.** The Now screen's sky follows Singapore's sun and moon, worked out in the browser from the time (low-precision almanac formulas: sunrise, sunset and the moon's phase come out within minutes of the published times). Its colours mix by the sun's height and by the 1-hr PM2.5: blue days, gold sunrises and sunsets and starry nights in clear air; in haze a flat beige light, an orange sun disc, beams through the murk and an orange glow over the city at night. The text on the sky switches between dark and light, and the sky is nudged until the text keeps at least 4.5:1 contrast at the top and 4:1 at the bottom. Weather comes from NEA's 2-hour forecast: each neighbourhood is given the region of its nearest place in `AREAS`, and the most common forecast in the region decides between fair, partly cloudy, cloudy, rain and thunderstorm. If the forecast can't be fetched the sky stays fair. With reduced motion the sky is still, repainted once a minute. The share picture and link previews keep a fixed daytime sky, so they look the same whenever they are sent.
 
 **Location.** "Use my location" asks the browser for its position (this only works on https), then picks the nearest named neighbourhood in `AREAS` and uses that neighbourhood's NEA region.
 
@@ -36,7 +39,8 @@ Edit `src/index.template.html`, then:
 
 ```sh
 python3 build.py             # writes index.html, the page on its own, for opening locally
-python3 build.py --preview   # writes preview.html, which falls back to src/snapshot/ when NEA is unreachable
+python3 build.py --preview   # writes preview.html, which falls back to src/snapshot/ when NEA is unreachable,
+                             # with the sky lab (src/sky-lab.js) for trying any time of day, haze level and weather
 python3 build.py --og        # re-renders og.png from src/og.html (needs Google Chrome)
 python3 build.py --site      # writes _site/: the page at / and /north/ … /south/, with live link previews
 ```

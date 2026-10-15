@@ -3,7 +3,8 @@
 
     python3 build.py             writes index.html: the production page, which always loads live NEA data
     python3 build.py --preview   writes preview.html: an HTML fragment that falls back to src/snapshot/*.json
-                                 when NEA can't be reached (used for sandboxed previews such as Claude artifacts)
+                                 when NEA can't be reached (used for sandboxed previews such as Claude artifacts),
+                                 with the sky lab (src/sky-lab.js) for trying the sky at any time and haze level
     python3 build.py --og        renders src/og.html to og.png (the fixed link-preview image) with headless Chrome
     python3 build.py --icons     renders src/icon.html to the app icons in icons/ (Chrome, plus macOS `sips` to resize)
     python3 build.py --site      writes _site/, what GitHub Pages serves: the page at / and at /north/, /west/ ...,
@@ -275,6 +276,10 @@ def main():
         aq = json.loads((SRC / "snapshot" / "aq.json").read_text())
         adv = json.loads((SRC / "snapshot" / "adv.json").read_text())
         page = page.replace("/*AQ*/null", js(aq)).replace("/*ADV*/null", js(adv))
+        # the sky lab: a panel for trying the sky at any time of day, haze level and weather (previews only)
+        lab = (SRC / "sky-lab.js").read_text()
+        assert "</script" not in lab
+        page += f"<script>\n{lab}</script>\n"
         out = ROOT / "preview.html"
     else:
         page = full_page(DEFAULT_META)
