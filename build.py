@@ -88,7 +88,11 @@ def app_source():
     # Bundle the QR code library into the page so the site has no third-party script dependency
     qr = (ROOT / "vendor" / "qrcode-generator-2.0.4.js").read_text()
     assert "</script" not in qr
-    return page.replace("/*VENDOR:qrcode*/", qr)
+    page = page.replace("/*VENDOR:qrcode*/", qr)
+    # Translations (English, Chinese, Malay, Tamil), kept in their own file so they are easy to review
+    i18n = (SRC / "i18n.js").read_text()
+    assert "</script" not in i18n
+    return page.replace("/*I18N*/", i18n)
 
 
 def full_page(meta):

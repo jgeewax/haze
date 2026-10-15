@@ -12,8 +12,8 @@
   --on0:#FFFFFF; --on1:#FFFFFF; --on2:#1F1A00; --on3:#1F1400; --on4:#FFFFFF;
   --fg0:#3A7F02; --fg1:#006FA1; --fg2:#8A6D00; --fg3:#A86200; --fg4:#C00000;      /* as text on surface */
   --tn0:#DDEFD3; --tn1:#D4E8F4; --tn2:#FFF5C9; --tn3:#FFEBC6; --tn4:#F8D3CE;
-  --display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
-  --body:'Public Sans','Helvetica Neue','Segoe UI',system-ui,sans-serif;
+  --display:'Bricolage Grotesque','Noto Sans SC','Noto Sans Tamil','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --body:'Public Sans','Noto Sans SC','Noto Sans Tamil','Helvetica Neue','Segoe UI',system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0B1116; --surface:#141D25; --surface-2:#1A242D; --ink:#E5ECF1; --muted:#93A3B0; --line:#26333E;
@@ -90,7 +90,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lnum .k small{font-size:12px;font-weight:600;opacity:.8}
 .trend{font-size:13.5px;margin-top:8px;opacity:.92}
 .lbw{margin-top:10px}
-.lpair{display:grid;grid-template-columns:auto 1fr;gap:20px}
+.lpair{display:grid;grid-template-columns:fit-content(48%) minmax(0,1fr);gap:20px}
 .lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
 .lpair > button + button{padding-left:20px;border-left:1px solid var(--line)}
 .lpair .v{font-family:var(--display);font-weight:700;font-size:clamp(36px,11vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
@@ -112,6 +112,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
+/* language switch: a quiet row under the Now footer, and a segmented control in Settings */
+.langs{display:flex;justify-content:center;flex-wrap:wrap;gap:2px 4px;margin-top:2px}
+.langs button{border:0;background:none;padding:4px 8px;border-radius:999px;font-size:12.5px;color:var(--muted)}
+.langs button[aria-pressed="true"]{color:var(--ink);font-weight:700;background:var(--surface-2)}
+.langseg{flex-wrap:wrap}
+.langseg button{flex:1 1 40%}
 /* install as an app */
 .inst{display:flex;align-items:center;gap:10px;margin-top:18px;padding:10px 4px 10px 10px;border-radius:14px;background:var(--sky-chip);color:var(--sky-ink);font-size:12.5px;line-height:1.3}
 .inst > span{flex:1;min-width:0}
@@ -296,30 +302,31 @@ button{font:inherit;color:inherit;cursor:pointer}
       <svg viewBox="0 0 28 28" aria-hidden="true"><defs><linearGradient id="sunfade" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF8A3D" stop-opacity=".12"/></linearGradient></defs><circle cx="14" cy="14" r="10" fill="url(#sunfade)"/></svg>
       <div><b>Haze Status</b><small id="upd"></small></div>
     </div>
-    <nav class="topnav" aria-label="Sections"><button data-tab="now">Now</button><button data-tab="day">My day</button><button data-tab="hist">History</button><button data-tab="set">Settings</button></nav>
+    <nav class="topnav" aria-label="Sections"><button data-tab="now" data-i="tab.now">Now</button><button data-tab="day" data-i="tab.day">My day</button><button data-tab="hist" data-i="tab.hist">History</button><button data-tab="set" data-i="tab.set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
-    <button class="iconbtn" data-act="share" aria-label="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
-    <button class="iconbtn" data-act="explain" aria-label="Understanding the readings"></button>
+    <button class="iconbtn" data-act="share" aria-label="Share" data-ia="aria.share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
+    <button class="iconbtn" data-act="explain" aria-label="Understanding the readings" data-ia="aria.explain"></button>
   </header>
-  <section class="view" id="v-now" aria-label="Now"></section>
-  <section class="view" id="v-day" aria-label="My day" hidden></section>
-  <section class="view" id="v-hist" aria-label="History" hidden></section>
-  <section class="view" id="v-set" aria-label="Settings" hidden></section>
+  <section class="view" id="v-now" aria-label="Now" data-ia="tab.now"></section>
+  <section class="view" id="v-day" aria-label="My day" data-ia="tab.day" hidden></section>
+  <section class="view" id="v-hist" aria-label="History" data-ia="tab.hist" hidden></section>
+  <section class="view" id="v-set" aria-label="Settings" data-ia="tab.set" hidden></section>
   <nav class="tabbar" role="tablist" id="tabbar">
-    <button role="tab" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Now</button>
-    <button role="tab" data-tab="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 12h9M11 18h9"/></svg>My day</button>
-    <button role="tab" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>History</button>
-    <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    <button role="tab" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg><span data-i="tab.now">Now</span></button>
+    <button role="tab" data-tab="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 12h9M11 18h9"/></svg><span data-i="tab.day">My day</span></button>
+    <button role="tab" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span data-i="tab.hist">History</span></button>
+    <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i="tab.set">Settings</span></button>
   </nav>
   <div class="scrim" id="scrim"></div>
   <div class="pop" id="pop" role="status" hidden></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="grab"></div>
-    <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close"></button></div>
+    <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close" data-ia="aria.close"></button></div>
     <div class="sb" id="sheetBody"></div>
   </div>
 </div>
 
+<script>/*I18N*/</script>
 <script>/*VENDOR:qrcode*/</script>
 <script>
 /* ---------- Snapshot of real NEA responses (used only when the live fetch is unavailable) ---------- */
@@ -328,7 +335,9 @@ const SNAP_ADV = /*ADV*/null;
 
 /* ---------- Reference data (NEA, "How to plan your outdoor activities during haze", June 2026) ---------- */
 const REGIONS = ['north','west','central','east','south'];
-const RNAME = {north:'North',south:'South',east:'East',west:'West',central:'Central'};
+const RKEY = {north:'North',south:'South',east:'East',west:'West',central:'Central'};   // NEA's keys, never translated
+const RNAME = {...RKEY};                                                                   // what we show; set by applyLang()
+const PSI_EN = ['Good','Moderate','Unhealthy','Very Unhealthy','Hazardous'];              // NEA's forecast wording
 const REX = {north:'Woodlands, Yishun, Sembawang', west:'Jurong, Clementi, Choa Chu Kang', central:'Bishan, Toa Payoh, Ang Mo Kio, Orchard', east:'Tampines, Bedok, Pasir Ris, Punggol', south:'CBD, Bukit Merah, Queenstown, Sentosa'};
 const SUBS = [['pm25','ChartPM25'],['pm10','ChartPM10'],['o3','ChartO3'],['co','ChartCO'],['so2','ChartSO2']];
 /* who → which column of NEA's guide applies */
@@ -373,12 +382,15 @@ const ICON = {
 
 /* ---------- Settings, saved in this browser ---------- */
 const KEY = 'haze-sky:v2';
-const DEFAULTS = {region:'central', group:'healthy', start:'now'};
+const LANGS = [['en','English'],['zh','中文'],['ms','Bahasa Melayu'],['ta','தமிழ்']];
+const browserLang = () => { for (const l of navigator.languages || [navigator.language || '']){ const k = String(l).slice(0, 2).toLowerCase(); if (['zh','ms','ta','en'].includes(k)) return k; } return 'en'; };
+const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang()};
 const P = {...DEFAULTS};
 try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
-  if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
+  if (['now','day'].includes(p.start)) P.start = p.start;
+  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang; } catch(e) {}
 /* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
    first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
 const ARRIVAL = (() => { const q = new URLSearchParams(location.search);
@@ -399,6 +411,29 @@ let keepRegion = null;
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(keepRegion ? {...P, region:keepRegion} : P)); } catch(e) {} }
 const S = {tab:P.start, d:null, live:false};
 const G = () => GROUPS.find(g => g.id === P.group);
+
+/* ---------- Language. Strings live in src/i18n.js; missing keys fall back to English. ---------- */
+const LOCALE = {en:'en-SG', zh:'zh-SG', ms:'ms-SG', ta:'ta-SG'};
+function t(key, vars){
+  let s = (I18N[P.lang] && I18N[P.lang][key] != null) ? I18N[P.lang][key] : (I18N.en[key] != null ? I18N.en[key] : key);
+  return vars ? s.replace(/\{(\w+)\}/g, (_, k) => vars[k] != null ? vars[k] : '') : s;
+}
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
+/* Put the current language's words into the data the screens read, and into the page's fixed labels */
+function applyLang(){
+  for (const r of REGIONS){ RNAME[r] = t('region.' + r); REX[r] = t('areas.' + r); }
+  for (const b of PM){ const k = 'pm.' + b.n; b.name = t(k); b.gen = t(k + '.gen'); b.vul = t(k + '.vul'); b.sGen = t(k + '.sgen'); b.sVul = t(k + '.svul'); }
+  PSI.forEach((b, i) => { const k = 'psi.' + i; b.name = t(k); for (const g of ['healthy','elderly','chronic']){ b[g] = t(`${k}.${g}`); b['s' + capFirst(g)] = t(`${k}.s${g}`); } });
+  for (const g of GROUPS){ g.name = t(`group.${g.id}.name`); g.plural = t(`group.${g.id}.plural`); g.who = t(`group.${g.id}.who`); }
+  document.documentElement.lang = {en:'en', zh:'zh-Hans-SG', ms:'ms', ta:'ta'}[P.lang];
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.querySelectorAll('[data-ia]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.ia)); });
+  const fam = {zh:'Noto+Sans+SC', ta:'Noto+Sans+Tamil'}[P.lang];   // only fetched when a language needs it
+  if (fam && !document.getElementById('font-' + P.lang)){
+    const l = Object.assign(document.createElement('link'), {id:'font-' + P.lang, rel:'stylesheet', href:`https://fonts.googleapis.com/css2?family=${fam}:wght@400;500;600;700;800&display=swap`});
+    document.head.append(l);
+  }
+}
 
 /* ---------- Data: fetched by the browser from NEA, snapshot as fallback ---------- */
 async function fetchJSON(url, ms){
@@ -421,14 +456,18 @@ function parseNea(s){
   return new Date(Date.UTC(+m[3], MON[m[2]], +m[1], h - 8));
 }
 const sg = d => new Date(d.getTime() + 8*3600e3);
-function sgHour(d){ const h = sg(d).getUTCHours(); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); }
-function sgDay(d, dow){ const x = sg(d); return (dow ? DOW[x.getUTCDay()] + ' ' : '') + x.getUTCDate() + ' ' + Object.keys(MON)[x.getUTCMonth()]; }
+function sgHourEN(d){ const h = sg(d).getUTCHours(); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); }
+function sgDayEN(d, dow){ const x = sg(d); return (dow ? DOW[x.getUTCDay()] + ' ' : '') + x.getUTCDate() + ' ' + Object.keys(MON)[x.getUTCMonth()]; }
+/* times and dates in Singapore time, in the visitor's language */
+function sgHour(d){ return P.lang === 'en' ? sgHourEN(d) : new Intl.DateTimeFormat(LOCALE[P.lang], {hour:'numeric', timeZone:'Asia/Singapore'}).format(d); }
+function sgDay(d, dow){ return P.lang === 'en' ? sgDayEN(d, dow) : new Intl.DateTimeFormat(LOCALE[P.lang], {...(dow ? {weekday:'short'} : {}), day:'numeric', month:'short', timeZone:'Asia/Singapore'}).format(d); }
+const sgAt = (d, dow) => t('fmt.at', {time:sgHour(d), day:sgDay(d, dow)});
 const dayNum = d => Math.floor(sg(d).getTime() / 86400e3);
 function normalise(aq, adv){
   const times = aq.Chart1HRPM25.North.Data.map(p => parseNea(p.dateTime));
   const regions = {};
   for (const r of REGIONS){
-    const K = RNAME[r];
+    const K = RKEY[r];
     const pm = aq.Chart1HRPM25[K].Data.map(p => p.value > 0 ? p.value : null);
     const sub = {};
     for (const [k, c] of SUBS) sub[k] = ((aq[c] || {})[K] || {Data:[]}).Data.map(p => p.value > 0 ? p.value : null);
@@ -439,7 +478,7 @@ function normalise(aq, adv){
   let li = times.length - 1;
   while (li > 0 && REGIONS.some(r => regions[r].pm[li] == null || regions[r].psi[li] == null)) li--;
   const text = ((adv && adv.AirQualityBlurb) || '').replace(/^[^:]*:\s*/, '').trim();
-  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI.findIndex(b => b.name.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
+  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI_EN.findIndex(b => b.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
   const issued = adv && adv.DateOfArticle ? new Date(adv.DateOfArticle) : null;
   // NEA's evening forecast covers the next day; a morning one covers the same day
   const fcDate = issued ? new Date(issued.getTime() + (sg(issued).getUTCHours() >= 12 ? 86400e3 : 0)) : null;
@@ -464,17 +503,16 @@ const pmAdvice = b => b[G().pm], psiAdvice = b => b[G().psi];
 const plain = (b, key) => b['s' + key[0].toUpperCase() + key.slice(1)];
 const pmShort = b => plain(b, G().pm), psiShort = b => plain(b, G().psi);
 function fcRel(){ const f = S.d.fc; return f ? dayNum(f.date) - dayNum(S.d.asOf) : null; }
-function fcWhen(){ const f = S.d.fc, r = fcRel(); return sgDay(f.date, true) + (r === 0 ? ' · today' : r === 1 ? ' · tomorrow' : r < 0 ? ' · out of date' : ''); }
-function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} to ${PSI[f.hi].name}`; }
-function fcBadges(){ const f = S.d.fc; return f.lo === f.hi ? badge(PSI[f.lo].c, PSI[f.lo].name) : badge(PSI[f.lo].c, PSI[f.lo].name) + ' to ' + badge(PSI[f.hi].c, PSI[f.hi].name); }
-const forLine = () => `<div class="for">Advice for ${esc(G().plural)} · <button data-tab="set">Change</button></div>`;
+function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : t('fc.range', {lo:PSI[f.lo].name, hi:PSI[f.hi].name}); }
+function fcBadges(){ const f = S.d.fc; return f.lo === f.hi ? badge(PSI[f.lo].c, PSI[f.lo].name) : badge(PSI[f.lo].c, PSI[f.lo].name) + ' ' + t('to') + ' ' + badge(PSI[f.hi].c, PSI[f.hi].name); }
+const forLine = () => `<div class="for">${esc(t('for.line', {who:G().plural}))} · <button data-tab="set">${t('for.change')}</button></div>`;
 function isDark(){ const t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
-function verdict(t){
-  if (/^(Continue|Normal)/.test(t)) return {w:'Normal activities', i:'go', k:0};
-  if (/^Reduce/.test(t)) return {w:'Reduce exertion', i:'ease', k:1};
-  if (/^(Avoid|Minimise) (prolonged|strenuous)/.test(t)) return {w:'Limit exertion', i:'light', k:2};
-  return {w:'Limit time outdoors', i:'home', k:3};
-}
+/* How strong NEA's advice is, by band and group: 0 normal, 1 reduce, 2 avoid or minimise exertion, 3 limit time outdoors */
+const VLEV = {gen:[0,1,2,3], vul:[0,2,3,3], healthy:[0,0,1,2,3], elderly:[0,0,2,3,3], chronic:[0,0,2,3,3]};
+const VICON = ['go','ease','light','home'];
+function verdictOf(k){ return {k, i:VICON[k], w:t('verdict.' + k)}; }
+const pmVerdict = b => verdictOf(VLEV[G().pm][PM.indexOf(b)]);
+const psiVerdict = b => verdictOf(VLEV[G().psi][PSI.indexOf(b)]);
 
 /* ---------- Sky ---------- */
 function mix(a, b, t){ const p = x => [1,3,5].map(i => parseInt(x.slice(i, i+2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2, '0')).join(''); }
@@ -513,7 +551,7 @@ function grain(el, pm){
 /* ---------- Links to the official source ---------- */
 const OFFICIAL = 'https://www.haze.gov.sg/', NEA_GUIDE = 'https://www.haze.gov.sg/docs/default-source/posters/haze-pm-psi-guide-a4-english.pdf';
 const ext = (href, text) => `<a class="ext" href="${href}" target="_blank" rel="noopener" data-track="out/${new URL(href).hostname}">${text}${ICON.out}</a>`;
-const officialLine = () => `<p class="official">Unofficial view of NEA data. For official readings, advisories and the haze situation, see ${ext(OFFICIAL, 'haze.gov.sg')}.</p>`;
+const officialLine = () => `<p class="official">${t('official', {link:ext(OFFICIAL, 'haze.gov.sg')})}</p>`;
 
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
@@ -531,30 +569,31 @@ function lbar({B, v, fc, tick}){
 }
 function renderNow(){
   const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel(), plan = f ? PSI[f.hi] : n.p;
-  const who = G().plural.charAt(0).toUpperCase() + G().plural.slice(1);
+  const who = G().who;
   el.innerHTML = `
     <div class="sky">
-      <div class="eb">Now</div>
+      <div class="eb">${t('now.eb')}</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <button class="lnum" data-act="def" data-k="pm" aria-label="1-hr PM2.5 ${n.pm}. What does this mean?"><span class="v num">${n.pm}</span><span class="k"><b>This hour</b><small>PM2.5 · µg/m³</small></span></button>
+      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.thisHour')}</b><small>PM2.5 · µg/m³</small></span></button>
       <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
       ${trendLine(P.region)}
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
-        <div class="nea" id="nea-pm" hidden>NEA: “${esc(pmAdvice(n.b))}”</div></div>
+        <div class="nea" id="nea-pm" hidden>${esc(t('nea.prefix', {text:pmAdvice(n.b)}))}</div></div>
       ${installBanner()}
     </div>
     <div class="ahead">
-      <div class="eb" style="color:var(--muted)">${r === 1 ? 'Tomorrow' : 'Today'}</div>
+      <div class="eb" style="color:var(--muted)">${t(r === 1 ? 'tomorrow' : 'today')}</div>
       <div class="head2" style="color:var(--fg${plan.c})">${f ? (f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} → ${PSI[f.hi].name}`) : n.p.name}</div>
       <div class="lpair">
-        <button data-act="def" data-k="psi" aria-label="24-hr PSI ${n.psi}. What does this mean?"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k"><b>Past 24 hours</b><small>PSI</small></span></button>
-        <button data-act="def" data-k="fc" aria-label="PSI forecast. What does this mean?"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="k"><b>Forecast</b><small>PSI</small></span></button>
+        <button data-act="def" data-k="psi" aria-label="${esc(t('aria.psidef', {v:n.psi}))}"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k"><b>${t('now.past24')}</b><small>PSI</small></span></button>
+        <button data-act="def" data-k="fc" aria-label="${esc(t('aria.fcdef'))}"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : t('now.none')}</span><span class="k"><b>${t('now.forecast')}</b><small>PSI</small></span></button>
       </div>
       ${lbar({B:PSI, v:n.psi, fc:f, tick:'var(--ink)'})}
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
-        <div class="nea" id="nea-psi" hidden>NEA: “${esc(psiAdvice(plan))}”${f && f.lo !== f.hi ? ` For the upper end of the forecast, ${PSI[f.hi].name}.` : f ? '' : ' For the current 24-hr PSI; no forecast has been issued.'}</div></div>
+        <div class="nea" id="nea-psi" hidden>${esc(t('nea.prefix', {text:psiAdvice(plan)}))}${f && f.lo !== f.hi ? esc(t('nea.upper', {band:PSI[f.hi].name})) : f ? '' : esc(t('nea.nofc'))}</div></div>
       ${shareBlock()}
-      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · Source: NEA, ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="langs" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${k === 'ms' ? 'Melayu' : nm}</button>`).join('')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
@@ -569,27 +608,26 @@ function pmTrend(r){
 }
 function trendLine(r){
   const tr = pmTrend(r); if (!tr) return '';
-  const word = ['↓ Starting to clear', '→ Holding steady', '↑ Getting worse'][tr.dir + 1];
-  return `<div class="trend num"><b>${word}</b> · ${tr.from} → ${tr.to} since ${sgHour(tr.since)}</div>`;
+  const word = t(['trend.clear', 'trend.steady', 'trend.worse'][tr.dir + 1]);
+  return `<div class="trend num"><b>${word}</b> · ${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</div>`;
 }
 /* what each number means, shown when it is tapped */
 function defText(k){
   const n = now(P.region), f = S.d.fc;
-  if (k === 'pm') return `<b>1-hr PM2.5: ${n.pm} µg/m³</b>Fine smoke particles in the air, averaged over the past hour. Band ${n.b.n} of 4, ${n.b.name} (${n.b.range} µg/m³). Use it for what you do in the next hour.`;
-  if (k === 'psi') return `<b>24-hr PSI: ${n.psi}</b>NEA’s Pollutant Standards Index, averaged over the past 24 hours. ${n.p.name} (${n.p.range}). It moves slowly, so it describes the day.`;
-  return f ? `<b>PSI forecast: ${psiRange(f.lo, f.hi)}</b>NEA’s 24-hr PSI forecast for ${fcFor()}: ${fcName()}. The advice is for the upper end.`
-           : `<b>No forecast issued</b>NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.`;
+  if (k === 'pm') return `<b>${esc(t('def.pm.title', {v:n.pm}))}</b>${esc(t('def.pm.body', {n:n.b.n, band:n.b.name, range:n.b.range}))}`;
+  if (k === 'psi') return `<b>${esc(t('def.psi.title', {v:n.psi}))}</b>${esc(t('def.psi.body', {band:n.p.name, range:n.p.range}))}`;
+  return f ? `<b>${esc(t('def.fc.title', {range:psiRange(f.lo, f.hi)}))}</b>${esc(t('def.fc.body', {when:fcFor(), name:fcName()}))}`
+           : `<b>${esc(t('def.nofc.title'))}</b>${esc(t('def.nofc.body'))}`;
 }
 const pop = () => document.getElementById('pop');
 function showDef(k){
   const el = pop(), same = !el.hidden && el.dataset.k === k;
   el.dataset.k = k; el.hidden = same;
-  el.innerHTML = `${defText(k)}<button class="link" data-act="explain" style="display:flex;margin-top:8px;font-size:13px">More about the readings ${ICON.right}</button>`;
+  el.innerHTML = `${defText(k)}<button class="link" data-act="explain" style="display:flex;margin-top:8px;font-size:13px">${t('def.more')} ${ICON.right}</button>`;
 }
 
 /* ---------- My day ---------- */
-function step(when, sub, advice, c, why){
-  const V = verdict(advice);
+function step(when, sub, advice, c, why, V){
   return `<div class="step"><span class="mk" style="background:var(--c${c});color:var(--on${c})">${ICON[V.i]}</span>
     <div><div class="when">${when} <span>${sub}</span></div><div class="v">${V.w}</div><div class="a">${esc(advice)}</div><div class="why num">${why}</div></div></div>`;
 }
@@ -597,18 +635,18 @@ function renderDay(){
   const el = document.getElementById('v-day'), n = now(P.region), f = S.d.fc, rel = fcRel();
   const todayB = f && rel === 0 ? PSI[f.hi] : n.p;   // forecast if it covers today, else the current reading
   const steps = [
-    step('Next hour', `· from ${sgHour(S.d.asOf)}`, pmAdvice(n.b), n.b.c, `${badge(n.b.c, 'Band ' + n.b.n + ' · ' + n.b.name)} 1-hr PM2.5 ${n.pm} µg/m³`),
-    step('Rest of today', `· ${sgDay(S.d.asOf, true)}`, psiAdvice(todayB), todayB.c, f && rel === 0 ? `${fcBadges()} PSI forecast` : `${badge(n.p.c, n.p.name)} 24-hr PSI now ${n.psi}`)];
-  if (f && rel === 1) steps.push(step('Tomorrow', `· ${sgDay(f.date, true)}`, psiAdvice(PSI[f.hi]), PSI[f.hi].c, `${fcBadges()} PSI forecast`));
+    step(t('day.next'), t('day.from', {time:sgHour(S.d.asOf)}), pmAdvice(n.b), n.b.c, `${badge(n.b.c, t('band.label', {n:n.b.n, name:n.b.name}))} ${esc(t('why.pm', {v:n.pm}))}`, pmVerdict(n.b)),
+    step(t('day.rest'), `· ${sgDay(S.d.asOf, true)}`, psiAdvice(todayB), todayB.c, f && rel === 0 ? `${fcBadges()} ${t('why.fc')}` : `${badge(n.p.c, n.p.name)} ${esc(t('why.psi', {v:n.psi}))}`, psiVerdict(todayB))];
+  if (f && rel === 1) steps.push(step(t('day.tomorrow'), `· ${sgDay(f.date, true)}`, psiAdvice(PSI[f.hi]), PSI[f.hi].c, `${fcBadges()} ${t('why.fc')}`, psiVerdict(PSI[f.hi])));
   else steps.push(`<div class="step"><span class="mk" style="background:var(--surface-2);color:var(--muted);border:1px dashed var(--line)">${ICON.light}</span>
-      <div><div class="when">Tomorrow <span>· ${sgDay(new Date(S.d.asOf.getTime() + 86400e3), true)}</span></div><div class="v" style="color:var(--muted)">Not yet issued</div>
-      <div class="a" style="color:var(--muted)">NEA usually issues the next day’s PSI forecast in the evening.</div></div></div>`);
-  const worst = Math.max(verdict(pmAdvice(n.b)).k, verdict(psiAdvice(todayB)).k);
-  const head = ['Normal activities can continue today.', 'Reduce strenuous outdoor activity today.', 'Limit prolonged or strenuous outdoor exertion today.', 'Minimise time outdoors today.'][worst];
+      <div><div class="when">${t('day.tomorrow')} <span>· ${sgDay(new Date(S.d.asOf.getTime() + 86400e3), true)}</span></div><div class="v" style="color:var(--muted)">${t('day.notyet')}</div>
+      <div class="a" style="color:var(--muted)">${t('day.notyetBody')}</div></div></div>`);
+  const worst = Math.max(pmVerdict(n.b).k, psiVerdict(todayB).k);
+  const head = t('day.head.' + worst);
   el.innerHTML = `<div class="day">
     <div><h2>${head}</h2><div style="margin-top:6px;color:var(--muted)">${forLine()}</div></div>
     <div class="tl">${steps.join('')}</div>
-    ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
+    ${S.d.statement[0] ? `<button class="news" data-act="news" lang="en"><b lang="${P.lang}">${t('news.title')}${S.d.issued ? ' · ' + sgAt(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px" lang="${P.lang}">${t('news.more')}</span></button>` : ''}
     ${shareBlock()}
     ${officialLine()}
   </div>`;
@@ -619,7 +657,7 @@ const HG = {W:340, H:200, pl:28, pr:8, pt:6, pb:22};
 const hx = (i, n) => HG.pl + (HG.W - HG.pl - HG.pr) * i / (n - 1);
 const hy = (v, top) => HG.pt + (HG.H - HG.pt - HG.pb) * (1 - Math.min(v, top) / top);
 const SERIES = () => { const R = S.d.regions[P.region], n = S.d.li + 1;
-  return [{key:'pm', vals:R.pm.slice(0, n), bands:PM, top:300, unit:'µg/m³', band:v => PM[pmIdx(v)], lab:b => `Band ${b.n} · ${b.name}`},
+  return [{key:'pm', vals:R.pm.slice(0, n), bands:PM, top:300, unit:'µg/m³', band:v => PM[pmIdx(v)], lab:b => t('band.label', {n:b.n, name:b.name})},
           {key:'psi', vals:R.psi.slice(0, n), bands:PSI, top:400, unit:'PSI', band:v => PSI[psiIdx(v)], lab:b => b.name}]; };
 function chart(s, title){
   const {W, H, pl, pr, pb} = HG, n = s.vals.length;
@@ -633,19 +671,19 @@ function chart(s, title){
   }
   const pts = s.vals.map((v, i) => v == null ? null : [hx(i, n), hy(v, s.top), v]).filter(Boolean);
   const dots = pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6" fill="var(--c${s.band(p[2]).c})" stroke="var(--ink)" stroke-width=".8"/>`).join('');
-  const xl = [0, 6, 12, 18, n-1].map(i => `<text x="${hx(i, n)}" y="${H-6}" text-anchor="${i === 0 ? 'start' : i === n-1 ? 'end' : 'middle'}">${i === n-1 ? 'Now' : sgHour(S.d.times[i])}</text>`).join('');
-  return `<svg class="chart" data-chart="${s.key}" viewBox="0 0 ${W} ${H}" tabindex="0" role="img" aria-label="${esc(title)}. Tap, drag or use the arrow keys to read each hour.">${g}<text x="${pl-5}" y="${hy(0, s.top)+3.5}" text-anchor="end">0</text>
+  const xl = [0, 6, 12, 18, n-1].map(i => `<text x="${hx(i, n)}" y="${H-6}" text-anchor="${i === 0 ? 'start' : i === n-1 ? 'end' : 'middle'}">${i === n-1 ? t('hist.axisNow') : sgHour(S.d.times[i])}</text>`).join('');
+  return `<svg class="chart" data-chart="${s.key}" viewBox="0 0 ${W} ${H}" tabindex="0" role="img" aria-label="${esc(title + '. ' + t('hist.hint'))}">${g}<text x="${pl-5}" y="${hy(0, s.top)+3.5}" text-anchor="end">0</text>
     <path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>${dots}${xl}<g class="cross"></g></svg>`;
 }
 function drawSel(){
-  const i = S.hi, t = S.d.times[i], when = `${i === S.d.li ? 'Now · ' : ''}${sgHour(t)}, ${sgDay(t, true)}`;
+  const i = S.hi, at = S.d.times[i], when = `${i === S.d.li ? t('hist.nowPrefix') : ''}${sgAt(at, true)}`;
   for (const s of SERIES()){
     const svg = document.querySelector(`[data-chart="${s.key}"]`), ro = document.getElementById('ro-' + s.key);
     if (!svg || !ro) continue;
     const v = s.vals[i], X = hx(i, s.vals.length);
     svg.querySelector('.cross').innerHTML = `<line x1="${X}" x2="${X}" y1="${HG.pt}" y2="${HG.H-HG.pb}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3"/>`
       + (v == null ? '' : `<circle cx="${X}" cy="${hy(v, s.top)}" r="6.5" fill="var(--c${s.band(v).c})" stroke="var(--ink)" stroke-width="2.5"/>`);
-    ro.innerHTML = v == null ? `<span class="rn">–</span><span class="rt">No reading at ${when}</span>`
+    ro.innerHTML = v == null ? `<span class="rn">–</span><span class="rt">${esc(t('hist.noReading', {when}))}</span>`
       : `<span class="rn" style="color:var(--fg${s.band(v).c})">${v}</span><span class="rd"><span>${s.unit} ${badge(s.band(v).c, s.lab(s.band(v)))}</span><span class="rt">${when}</span></span>`;
   }
 }
@@ -662,15 +700,15 @@ function renderHist(){
   const peak = ok.reduce((a, b) => b[0] > a[0] ? b : a), low = ok.reduce((a, b) => b[0] < a[0] ? b : a);
   const hrs = ok.filter(a => a[0] > 55).length;
   el.innerHTML = `<div class="hist">
-    <div><h2>${RNAME[P.region]}, last 24 hours</h2><p class="lead">${sgHour(S.d.times[0])} ${sgDay(S.d.times[0], true)} to ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}. Tap or drag across a chart to read any hour.</p></div>
+    <div><h2>${esc(t('hist.title', {region:RNAME[P.region]}))}</h2><p class="lead">${esc(t('hist.lead', {from:sgAt(S.d.times[0], true), to:sgAt(S.d.asOf, true)}))}</p></div>
     <div class="stats num">
-      <button data-hour="${peak[1]}"><div class="k">Peak PM2.5</div><div class="n" style="color:var(--fg${PM[pmIdx(peak[0])].c})">${peak[0]}</div><div class="t">at ${sgHour(S.d.times[peak[1]])}</div></button>
-      <button data-hour="${low[1]}"><div class="k">Lowest</div><div class="n" style="color:var(--fg${PM[pmIdx(low[0])].c})">${low[0]}</div><div class="t">at ${sgHour(S.d.times[low[1]])}</div></button>
-      <div><div class="k">Above Band 1</div><div class="n">${hrs}<span style="font-size:15px"> h</span></div><div class="t">of ${ok.length} hours</div></div>
+      <button data-hour="${peak[1]}"><div class="k">${t('hist.peak')}</div><div class="n" style="color:var(--fg${PM[pmIdx(peak[0])].c})">${peak[0]}</div><div class="t">${esc(t('hist.at', {time:sgHour(S.d.times[peak[1]])}))}</div></button>
+      <button data-hour="${low[1]}"><div class="k">${t('hist.low')}</div><div class="n" style="color:var(--fg${PM[pmIdx(low[0])].c})">${low[0]}</div><div class="t">${esc(t('hist.at', {time:sgHour(S.d.times[low[1]])}))}</div></button>
+      <div><div class="k">${t('hist.above')}</div><div class="n">${hrs}<span style="font-size:15px"> ${t('hist.h')}</span></div><div class="t">${esc(t('hist.of', {n:ok.length}))}</div></div>
     </div>
-    <div class="sec"><h3>1-hr PM2.5 <span>· concentration in each hour</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, '1-hr PM2.5 for the last 24 hours, axis 0 to 300 µg/m³')}</div>
-    <div class="sec"><h3>24-hr PSI <span>· rolling 24-hour average</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, '24-hr PSI for the last 24 hours, axis 0 to 400')}</div>
-    <p class="foot" style="margin:0">Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency${S.live ? '' : ' (snapshot in this preview)'}; official charts at ${ext(OFFICIAL, 'haze.gov.sg')}.</p></div>`;
+    <div class="sec"><h3>${t('hist.pmTitle')} <span>${t('hist.pmSub')}</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, t('hist.pmAria'))}</div>
+    <div class="sec"><h3>${t('hist.psiTitle')} <span>${t('hist.psiSub')}</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, t('hist.psiAria'))}</div>
+    <p class="foot" style="margin:0">${t('hist.foot', {snap:S.live ? '' : t('hist.snap'), link:ext(OFFICIAL, 'haze.gov.sg')})}</p></div>`;
   drawSel();
 }
 const histView = document.getElementById('v-hist');
@@ -686,31 +724,33 @@ histView.addEventListener('keydown', e => {
 function renderSet(){
   const el = document.getElementById('v-set');
   el.innerHTML = `<div class="set">
-    <h2>Settings</h2>
-    <div class="sec"><h3>Your region</h3>
-      <button class="locbtn" id="geo">${ICON.locate} Use my location</button>
-      <p class="msg" id="geomsg">Your location stays on this device. It only picks the nearest of NEA’s five regions.</p>
+    <h2>${t('set.title')}</h2>
+    <div class="sec"><h3>${t('set.lang')}</h3>
+      <div class="seg langseg" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${nm}</button>`).join('')}</div></div>
+    <div class="sec"><h3>${t('set.region')}</h3>
+      <button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button>
+      <p class="msg" id="geomsg">${t('set.geomsg')}</p>
       ${regionOpts()}</div>
-    <div class="sec"><h3>Advice for</h3>
+    <div class="sec"><h3>${t('set.advice')}</h3>
       <div class="group">${GROUPS.map(g => `<button class="opt" data-group="${g.id}" aria-pressed="${g.id === P.group}"><span class="nm">${g.name}</span><span class="ex">${esc(sampleFor(g))}</span><span class="side"><span class="radio"></span></span></button>`).join('')}</div>
-      <p class="msg">NEA gives stricter advice for children, pregnant women, the elderly and people with heart or lung conditions.</p></div>
-    <div class="sec"><h3>Open the app on</h3>
-      <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
+      <p class="msg">${t('set.adviceNote')}</p></div>
+    <div class="sec"><h3>${t('set.start')}</h3>
+      <div class="seg" role="group" aria-label="${t('set.start')}">${[['now','tab.now'],['day','tab.day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${t(v)}</button>`).join('')}</div></div>
     ${installSection()}
-    <div class="sec"><h3>About the data</h3>
-      <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} This site is not affiliated with NEA.</p>
-      <p style="font-size:14px;margin:0 0 10px">Visits and button taps are counted with ${ext('https://www.goatcounter.com/', 'GoatCounter')}, which uses no cookies. Your location, region and settings stay on this device.</p>
-      <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, 'NEA’s activity guide (PDF)')}</p>
-      <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">Reset saved settings</button><span class="foot" id="resetmsg"></span></div></div>
+    <div class="sec"><h3>${t('set.about')}</h3>
+      <p style="font-size:14px;margin:0 0 10px">${esc(t('set.aboutBody', {state:t(S.live ? 'set.live' : 'set.snap', {time:sgAt(S.d.asOf, true)})}))}</p>
+      <p style="font-size:14px;margin:0 0 10px">${t('set.privacy', {link:ext('https://www.goatcounter.com/', 'GoatCounter')})}</p>
+      <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, t('set.guide'))}</p>
+      <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">${t('set.reset')}</button><span class="foot" id="resetmsg"></span></div></div>
   </div>`;
 }
 /* the five regions laid out as a +, as on NEA's map */
 function regionOpts(){
-  return `<div class="xgrid" role="group" aria-label="Region">${REGIONS.map(r => { const q = now(r);
-    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${RNAME[r]}: ${REX[r]}. 1-hr PM2.5 ${q.pm}, ${q.b.name}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
-    <p class="msg" style="text-align:center;margin:10px 0 0">${RNAME[P.region]} includes ${REX[P.region]}. Readings are 1-hr PM2.5 in µg/m³.</p>`;
+  return `<div class="xgrid" role="group" aria-label="${t('aria.region')}">${REGIONS.map(r => { const q = now(r);
+    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
+    <p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[P.region], areas:REX[P.region]}))}</p>`;
 }
-function sampleFor(g){ const n = now(P.region); return 'Now: ' + n.b[g.pm]; }
+function sampleFor(g){ const n = now(P.region); return t('set.sample', {advice:n.b[g.pm]}); }
 
 /* ---------- Sheet ---------- */
 const sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
@@ -722,38 +762,38 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeSheet(
 function explainHTML(){
   const n = now(P.region), f = S.d.fc;
   return `<div><div class="two">
-      <div><b>1-hr PM2.5</b>Fine smoke particles in the air over the last hour, in µg/m³. Changes hour to hour.<br><br><b style="font-size:13px">Use it for what you do in the next few hours.</b></div>
-      <div><b>24-hr PSI forecast</b>NEA’s outlook for the day ahead on the Pollutant Standards Index. Published when air quality is Unhealthy.<br><br><b style="font-size:13px">Use it to plan the next day.</b></div>
+      <div><b>${t('ex.pmTitle')}</b>${t('ex.pmBody')}<br><br><b style="font-size:13px">${t('ex.pmUse')}</b></div>
+      <div><b>${t('ex.fcTitle')}</b>${t('ex.fcBody')}<br><br><b style="font-size:13px">${t('ex.fcUse')}</b></div>
     </div></div>
-    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">1-hr PM2.5 bands · next hour</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">Band ${b.n} · ${b.name}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>Vulnerable:</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
-    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">24-hr PSI · next day</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>Elderly, children, pregnant:</b> ${esc(b.elderly)}<br><b>Heart or lung:</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
-    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: ${ext(NEA_GUIDE, 'NEA, How to plan your outdoor activities during haze (June 2026)')}.</p></div>`;
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">${t('ex.pmBands')}</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${esc(t('band.label', {n:b.n, name:b.name}))}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>${t('ex.vul')}</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">${t('ex.psiBands')}</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>${t('ex.elderly')}</b> ${esc(b.elderly)}<br><b>${t('ex.chronic')}</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">${t('ex.note', {link:ext(NEA_GUIDE, t('ex.guide'))})}</p></div>`;
 }
 function newsHTML(){
-  return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="${OFFICIAL}" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.out}</a>`;
+  return `${t('news.en') ? `<p class="msg" style="margin:0">${t('news.en')}</p>` : ''}<div lang="en">${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}</div><a class="link" href="${OFFICIAL}" target="_blank" rel="noopener">${t('news.full')} ${ICON.out}</a>`;
 }
 /* Use my location: GPS position → nearest named area → that area's NEA region */
 async function geolocate(){
   const btn = document.getElementById('geo'), say = t => { const m = document.getElementById('geomsg'); if (m) m.textContent = t; };
-  if (!('geolocation' in navigator)){ track('location/unsupported'); return say('This browser can’t share its location. Pick your region below.'); }
-  if (!window.isSecureContext){ track('location/insecure'); return say('Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.'); }
+  if (!('geolocation' in navigator)){ track('location/unsupported'); return say(t('geo.unsupported')); }
+  if (!window.isSecureContext){ track('location/insecure'); return say(t('geo.insecure')); }
   let state = null;
   try { state = (await navigator.permissions.query({name:'geolocation'})).state; } catch(e) {}
-  if (state === 'denied'){ track('location/blocked'); return say('Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.'); }
-  say('Finding your location…'); if (btn) btn.disabled = true;
+  if (state === 'denied'){ track('location/blocked'); return say(t('geo.blocked')); }
+  say(t('geo.finding')); if (btn) btn.disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
     if (btn) btn.disabled = false;
     const {latitude:la, longitude:lo} = pos.coords;
-    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ track('location/outside-singapore'); return say('You seem to be outside Singapore. Pick a region below.'); }
+    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ track('location/outside-singapore'); return say(t('geo.outside')); }
     const a = nearestArea(la, lo);
     track('location/found/' + a[1]);
     placeFound(a[0], a[1]);
   }, err => {
     if (btn) btn.disabled = false;
     track('location/' + (err.code === 1 ? 'denied' : err.code === 3 ? 'timeout' : 'unavailable'));
-    say(err.code === 1 ? 'Location permission wasn’t given. Allow location for this site in your browser settings, and turn on Location Services for your browser on a phone. Or pick your region below.'
-      : err.code === 3 ? 'Finding your location took too long. Try again, or pick your region below.'
-      : 'Your device couldn’t work out where you are. Try again with Wi-Fi on, or pick your region below.');
+    say(err.code === 1 ? t('geo.denied')
+      : err.code === 3 ? t('geo.timeout')
+      : t('geo.unavailable'));
   }, {enableHighAccuracy:false, timeout:15000, maximumAge:10 * 60e3});
 }
 /* Neighbourhood centres, each assigned to the NEA region that reports for it */
@@ -779,13 +819,13 @@ function nearestArea(la, lo){
 }
 function placeFound(name, r){
   P.region = r; keepRegion = null; S.hi = null; save();
-  const note = `Found you near ${name}, in the ${RNAME[r]} region. Saved on this device.`;
+  const note = t('geo.found', {place:name, region:RNAME[r]});
   render();
   if (sheet.classList.contains('on')){ document.getElementById('sheetBody').innerHTML = regionSheetHTML(note); setTimeout(closeSheet, 1600); }
   else { const m = document.getElementById('geomsg'); if (m) m.textContent = note; }
 }
-const regionSheetHTML = (note = 'Saved on this device.') =>
-  `<button class="locbtn" id="geo">${ICON.locate} Use my location</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
+const regionSheetHTML = (note = t('region.saved')) =>
+  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
 function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); render(); }
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
@@ -796,15 +836,15 @@ const SITE = 'https://haze.geewax.org/';
 const atStamp = d => { const x = sg(d), p2 = v => String(v).padStart(2, '0'); return `${x.getUTCFullYear()}${p2(x.getUTCMonth() + 1)}${p2(x.getUTCDate())}${p2(x.getUTCHours())}`; };
 const plainURL = () => SITE + P.region + '/';
 const shareURL = (via = 'link') => plainURL() + (via === 'link' ? (S.d ? '?at=' + atStamp(S.d.asOf) : '') : '?' + via);
-function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
+function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? t('when.today', {day}) : r === 1 ? t('when.tomorrow', {day}) : day; }
 /* Short plain text for any chat app: the two numbers, the forecast, the link. Coloured squares match NEA's band colours. */
 function shareText(withURL = true){
-  let lines = ['Live haze readings for Singapore, by region.'];
+  let lines = [t('share.none')];
   if (S.d){
     const n = now(P.region), f = S.d.fc, sq = ['🟩','🟦','🟨','🟧','🟥'], r = fcRel();
-    lines = [`Haze in ${RNAME[P.region]}, ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}`,
-      `${sq[n.b.c]} This hour: PM2.5 ${n.pm} (${n.b.name})`, `${sq[n.p.c]} Past 24 hours: PSI ${n.psi} (${n.p.name})`];
-    if (f) lines.push(`Forecast ${r === 0 ? 'today' : r === 1 ? 'tomorrow' : 'for ' + sgDay(f.date, true)}: ${fcName()}`);
+    lines = [t('share.head', {region:RNAME[P.region], time:sgHour(S.d.asOf), day:sgDay(S.d.asOf, true)}),
+      t('share.pm', {sq:sq[n.b.c], v:n.pm, band:n.b.name}), t('share.psi', {sq:sq[n.p.c], v:n.psi, band:n.p.name})];
+    if (f) lines.push(r === 0 ? t('share.fcToday', {name:fcName()}) : r === 1 ? t('share.fcTomorrow', {name:fcName()}) : t('share.fcOn', {day:sgDay(f.date, true), name:fcName()}));
   }
   return withURL ? `${lines.join('\n')}\n${shareURL()}` : lines.join('\n');
 }
@@ -828,15 +868,15 @@ function shareHTML(){
     <div class="shbtns">
       <a class="shb" href="${wa}" target="_blank" rel="noopener" data-track="share/whatsapp"><span class="si" style="background:#25D366">${ICON.chat}</span>WhatsApp</a>
       <a class="shb" href="${tg}" target="_blank" rel="noopener" data-track="share/telegram"><span class="si" style="background:#2AABEE">${ICON.plane}</span>Telegram</a>
-      <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">Copy link</span></button>
-      <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">Copy text</span></button>
-      ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
+      <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">${t('share.copyLink')}</span></button>
+      <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">${t('share.copyText')}</span></button>
+      ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>${t('share.more')}</button>` : ''}
     </div>
-    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${PIC.label}</span></button><div id="imgOut" hidden></div>` : ''}
-    <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
+    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${pic().label}</span></button><div id="imgOut" hidden></div>` : ''}
+    <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>${t('share.scan')}</b><span>${esc(t('share.scanBody', {region:RNAME[P.region]}))}</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
-  openSheet('Share', shareHTML());
+  openSheet(t('share.title'), shareHTML());
   if (S.d) ensureCard().then(paintThumbs).catch(() => {});   // ready before the tap, so the share keeps the tap's permission
 }
 async function copy(text, btn){
@@ -850,7 +890,7 @@ async function copy(text, btn){
     ta.remove();
   }
   if (!ok){ const r = document.createRange(), el = document.getElementById('shareMsg'); r.selectNodeContents(el); getSelection().removeAllRanges(); getSelection().addRange(r); }
-  lbl.textContent = ok ? 'Copied' : 'Text selected';
+  lbl.textContent = t(ok ? 'share.copied' : 'share.selected');
   setTimeout(() => { lbl.textContent = was; }, 2200);
 }
 
@@ -859,13 +899,17 @@ const CARD = {c:['#479B02','#006FA1','#FFCE03','#FFA800','#D60000'], on:['#FFFFF
   fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6'};
 function rr(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X+r, Y); x.arcTo(X+w, Y, X+w, Y+h, r); x.arcTo(X+w, Y+h, X, Y+h, r); x.arcTo(X, Y+h, X, Y, r); x.arcTo(X, Y, X+w, Y, r); x.closePath(); }
 function wrap(x, text, maxW){
+  // languages written without spaces (Chinese) wrap between characters
+  const spaced = text.includes(' '), parts = spaced ? text.split(' ') : Array.from(text), sep = spaced ? ' ' : '';
   const out = []; let line = '';
-  for (const w of text.split(' ')){ const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line){ out.push(line); line = w; } else line = t; }
+  for (const w of parts){ const s = line ? line + sep + w : w; if (x.measureText(s).width > maxW && line){ out.push(line); line = w; } else line = s; }
   return line ? [...out, line] : out;
 }
 async function cardBlob(){
-  const D = "'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Helvetica Neue', system-ui, sans-serif";
-  try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"'].map(f => document.fonts.load(f))); } catch(e) {}
+  const D = "'Bricolage Grotesque', 'Noto Sans SC', 'Noto Sans Tamil', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Noto Sans SC', 'Noto Sans Tamil', 'Helvetica Neue', system-ui, sans-serif";
+  const sample = {zh:'环境现在', ta:'இப்போது'}[P.lang], extra = {zh:'Noto Sans SC', ta:'Noto Sans Tamil'}[P.lang];
+  try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"',
+    ...(extra ? [`700 60px "${extra}"`, `600 30px "${extra}"`].map(f => [f, sample]) : [])].map(f => Array.isArray(f) ? document.fonts.load(f[0], f[1]) : document.fonts.load(f))); } catch(e) {}
   const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, r = fcRel(), sky = skyOf(n.pm, false), SKY = 830;
   const cv = Object.assign(document.createElement('canvas'), {width:W, height:H}), x = cv.getContext('2d');
   const font = (w, px, fam) => { x.font = `${w} ${px}px ${fam}`; };
@@ -883,37 +927,37 @@ async function cardBlob(){
   { const sg = x.createLinearGradient(0, 84, 0, 148); sg.addColorStop(.15, 'rgba(255,138,61,1)'); sg.addColorStop(1, 'rgba(255,138,61,.12)');
     x.fillStyle = sg; x.beginPath(); x.arc(pad + 26, 116, 30, 0, 7); x.fill(); x.fillStyle = sky.ink; }
   font(800, 56, D); x.fillText('Haze Status', pad + 76, 118);
-  font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
+  font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgAt(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
   x.textBaseline = 'alphabetic';
   // NOW: band word, the PM2.5 number, its bar, the advice
-  font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText('NOW · THE NEXT HOUR', pad, 236); x.globalAlpha = 1; space(0);
-  font(750, 132, D); const bw = x.measureText(n.b.name).width;
+  font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText(t('card.now'), pad, 236); x.globalAlpha = 1; space(0);
+  fit(n.b.name, 750, 132, D, cw - 40); const bw = x.measureText(n.b.name).width;
   x.fillStyle = CARD.c[n.b.c]; rr(x, pad - 12, 262, bw + 44, 164, 24); x.fill();
   x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
   x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
   font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
-  font(600, 26, B); x.globalAlpha = .88; x.fillText(`This hour · PM2.5 µg/m³ · Band ${n.b.n}`, pad, 562); x.globalAlpha = 1;
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n}), pad, 562); x.globalAlpha = 1;
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
   x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, m1 - 9, 588, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, m1 - 5, 592, 10, 50, 5); x.fill();
-  font(600, 24, B); PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
+  PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; fit(`${q.n} · ${q.name}`, 600, 24, B, seg - 4); x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
   font(600, 46, D); wrap(x, n.b.gen, cw).slice(0, 2).forEach((l, i) => x.fillText(l, pad, 746 + i*56));
   // TODAY: the PSI pair, the PSI bar with the reading pinned and the forecast bracketed
   const PT = SKY, plan = f ? PSI[f.hi] : n.p, col2 = pad + cw/2 + 24;
   x.fillStyle = '#FFFFFF'; rr(x, 0, PT, W, H, 44); x.fill();
   x.fillStyle = CARD.muted; font(800, 26, B); space(3);
-  x.fillText((f ? `${r === 1 ? 'TOMORROW' : 'TODAY'} · ${sgDay(f.date, true)}` : `TODAY · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
+  x.fillText((f ? `${t(r === 1 ? 'card.tomorrow' : 'card.today')} · ${sgDay(f.date, true)}` : `${t('card.today')} · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
   const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = CARD.fg[plan.c]; x.fillText(head, pad, PT + 126);
   x.fillStyle = CARD.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
-  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : 'None', 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : 'None', col2, PT + 206);
-  x.fillStyle = CARD.muted; font(600, 24, B); x.fillText('Past 24 hours · PSI', pad, PT + 242);
-  x.fillText(f ? `Forecast ${r === 1 ? 'tomorrow' : 'today'} · PSI` : 'No forecast issued', col2, PT + 242);
+  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : t('now.none'), 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : t('now.none'), col2, PT + 206);
+  x.fillStyle = CARD.muted; fit(t('card.past'), 600, 24, B, cw/2 - 34); x.fillText(t('card.past'), pad, PT + 242);
+  { const s = f ? t(r === 1 ? 'card.fcTomorrow' : 'card.fcToday') : t('card.nofc'); fit(s, 600, 24, B, cw/2 - 30); x.fillText(s, col2, PT + 242); }
   x.fillStyle = CARD.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
   const s5 = (cw - 4*8) / 5, by = PT + 306, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
   PSI.forEach((q, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
   x.globalAlpha = 1;
-  { const m = pad + along(PSI, n.psi) * cw, lab = `${n.psi} now`; font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
+  { const m = pad + along(PSI, n.psi) * cw, lab = t('card.nowPin', {v:n.psi}); font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
     x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
     x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
   const q = qrModules(shareURL('card')), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
@@ -921,15 +965,15 @@ async function cardBlob(){
     const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
     x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';
     x.beginPath(); x.moveTo(x0, by + 30); x.lineTo(x0, by + 42); x.lineTo(x1, by + 42); x.lineTo(x1, by + 30); x.stroke();
-    const lab = `Forecast ${psiRange(f.lo, f.hi)}`; font(800, 24, B); const lw = x.measureText(lab).width;
+    const lab = t('card.fcRange', {range:psiRange(f.lo, f.hi)}); font(800, 24, B); const lw = x.measureText(lab).width;
     const cx = Math.min((x0 + x1) / 2, (q ? qx - 20 : W - pad) - lw/2 - 10);
     x.fillStyle = '#FFFFFF'; x.fillRect(cx - lw/2 - 10, by + 32, lw + 20, 30); x.fillStyle = CARD.ink; x.fillText(lab, cx - lw/2, by + 56);
   }
   // footer: where to find it, plus a QR code so a screenshot of this card still leads back
   x.fillStyle = CARD.line; x.fillRect(pad, 1222, (q ? qx - 32 : W - pad) - pad, 2);
-  x.fillStyle = CARD.muted; font(600, 26, B); x.fillText('Live readings for your area', pad, 1262);
+  x.fillStyle = CARD.muted; fit(t('card.live'), 600, 26, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.live'), pad, 1262);
   x.fillStyle = CARD.accent; font(800, 44, B); x.fillText('haze.geewax.org', pad, 1306);
-  x.fillStyle = CARD.muted; font(500, 20, B); x.fillText('Data: National Environment Agency. Unofficial.', pad, 1334);
+  x.fillStyle = CARD.muted; fit(t('card.data'), 500, 20, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.data'), pad, 1334);
   if (q){ x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
 }
@@ -939,7 +983,7 @@ async function cardBlob(){
 const CAN_SHARE_FILES = (() => { try { return !!(navigator.canShare && navigator.canShare({files:[new File([new Blob(['x'])], 'h.png', {type:'image/png'})]})); } catch(e) { return false; } })();
 const CAN_COPY_IMG = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
 let cardCache = {key:null, blob:null, url:null}, cardPending = null, cardPendingKey = null;
-const cardKey = () => S.d ? P.region + '|' + atStamp(S.d.asOf) : null;
+const cardKey = () => S.d ? P.region + '|' + P.lang + '|' + atStamp(S.d.asOf) : null;
 function ensureCard(){
   const k = cardKey();
   if (!k) return Promise.reject(new Error('no data'));
@@ -958,41 +1002,42 @@ function paintThumbs(){
   if (cardCache.key !== cardKey()) return;
   document.querySelectorAll('.thumb').forEach(el => { el.style.backgroundImage = `url(${cardCache.url})`; el.classList.add('ready'); });
 }
-const pictureName = () => `haze-${P.region}-${sgDay(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
+const pictureName = () => `haze-${P.region}-${sgDayEN(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
 function showPicture(blob){
   if (!sheet.classList.contains('on')) openShare();
   const out = document.getElementById('imgOut'); if (!out) return;
   const u = URL.createObjectURL(blob);
   out.hidden = false;
-  out.innerHTML = `<img src="${u}" alt="Haze picture for ${RNAME[P.region]}: ${esc(now(P.region).b.name)}"><a class="plain" href="${u}" download="${pictureName()}">Save picture</a><p class="msg" style="margin:0">On a phone, press and hold the picture to save or share it.</p>`;
+  out.innerHTML = `<img src="${u}" alt="${esc(t('pic.alt', {region:RNAME[P.region], band:now(P.region).b.name}))}"><a class="plain" href="${u}" download="${pictureName()}">${t('pic.save')}</a><p class="msg" style="margin:0">${t('pic.hold')}</p>`;
   out.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 async function sharePicture(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl ? lbl.textContent : '', say = (m, ms) => { if (!lbl) return; lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
   let blob = cardCache.key === cardKey() ? cardCache.blob : null;
-  if (!blob){ say('Preparing picture…'); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
+  if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
   if (CAN_SHARE_FILES){
     try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})], text:shareText()}); track('share/picture/shared'); return; }
     catch(e){ if (e.name === 'AbortError') return; }
   }
   if (CAN_COPY_IMG){
-    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); track('share/picture/copied'); return say('Copied. Paste it into a chat.', 2800); }
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); track('share/picture/copied'); return say(t('pic.copied'), 2800); }
     catch(e) {}
   }
   track('share/picture/shown');
   showPicture(blob);
 }
-const PIC = CAN_SHARE_FILES ? {label:'Share picture', hint:'Opens your share menu. Pick WhatsApp.'}
-          : CAN_COPY_IMG ? {label:'Copy picture', hint:'Then paste it into a WhatsApp chat.'}
-          : {label:'Save picture', hint:'Then send it in WhatsApp.'};
+const pic = () => CAN_SHARE_FILES ? {label:t('pic.share'), hint:t('pic.shareHint')}
+                 : CAN_COPY_IMG ? {label:t('pic.copy'), hint:t('pic.copyHint')}
+                 : {label:t('pic.save'), hint:t('pic.saveHint')};
 /* the share panel on Now and My day: the picture first, the other ways underneath */
 function shareBlock(){
+  const P2 = pic();
   return `<div class="share2">
-    <button class="thumb" data-act="pic" aria-label="${PIC.label}"></button>
+    <button class="thumb" data-act="pic" aria-label="${P2.label}"></button>
     <div class="s2b">
-      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${PIC.label}</span></button>
-      <div class="s2hint">${PIC.hint}</div>
-      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">Send as text</a><button data-act="copylink"><span class="lbl">Copy link</span></button><button data-act="share">More</button></div>
+      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${P2.label}</span></button>
+      <div class="s2hint">${P2.hint}</div>
+      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">${t('share.sendText')}</a><button data-act="copylink"><span class="lbl">${t('share.copyLink')}</span></button><button data-act="share">${t('share.more')}</button></div>
     </div></div>`;
 }
 
@@ -1013,19 +1058,40 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.dataset.act === 'copylink') return copy(shareURL(), b);
   if (b.dataset.act === 'install') return doInstall();
   if (b.dataset.act === 'install-dismiss'){ try { localStorage.setItem('haze-sky:install-dismissed', '1'); } catch(e) {} return render(); }
-  if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
-  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
+  if (b.id === 'retry'){ showStatus(t('status.loading')); return refresh(); }
+  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; applyLang(); render(); document.getElementById('resetmsg').textContent = t('set.resetDone'); return; }
+  if (b.dataset.lang){ P.lang = b.dataset.lang; save(); applyLang(); return render(); }
   if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
   if (b.dataset.region){ S.hi = null; return setRegion(b.dataset.region); }
   if (b.dataset.group){ P.group = b.dataset.group; save(); return render(); }
   if (b.dataset.start){ P.start = b.dataset.start; save(); return render(); }
   if (b.dataset.tab){ closeSheet(); S.tab = b.dataset.tab; render(); document.getElementById('v-' + S.tab).scrollTop = 0; return; }
   const a = b.dataset.act;
-  if (a === 'region') openSheet('Your region', regionSheetHTML());
-  if (a === 'explain') openSheet('Understanding the readings', explainHTML());
-  if (a === 'news') openSheet('NEA update', newsHTML());
+  if (a === 'region') openSheet(t('region.sheet'), regionSheetHTML());
+  if (a === 'explain') openSheet(t('ex.title'), explainHTML());
+  if (a === 'news') openSheet(t('news.title'), newsHTML());
   if (a === 'share') openShare();
 });
+
+/* Longer languages (Tamil, Malay) can outgrow the big type: shrink a number or band word until it fits its box,
+   and keep the forecast headline to two lines */
+function fitAll(){
+  const v = document.getElementById('v-' + S.tab); if (!v) return;
+  v.querySelectorAll('.big, .lnum .v, .lpair .v').forEach(el => {
+    el.style.fontSize = '';
+    const box = el.closest('.lpair > button') || el.parentElement;
+    let s = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > box.clientWidth + 1 && s > 22){ s -= 2; el.style.fontSize = s + 'px'; }
+  });
+  for (const [sel, lines] of [['.head2', 2], ['.day h2', 3]]) v.querySelectorAll(sel).forEach(el => {
+    el.style.fontSize = '';
+    let s = parseFloat(getComputedStyle(el).fontSize);
+    const lh = () => parseFloat(getComputedStyle(el).lineHeight) || s * 1.1;
+    while (el.offsetHeight > lh() * lines + 2 && s > 16){ s -= 1; el.style.fontSize = s + 'px'; }
+  });
+}
+// Chinese and Tamil fonts arrive after the first draw and are wider than the stand-in, so fit again once they load
+if (document.fonts) document.fonts.addEventListener('loadingdone', () => { if (S.d) fitAll(); });
 
 /* ---------- Render ---------- */
 function render(){
@@ -1035,25 +1101,26 @@ function render(){
   document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   const late = S.live && Date.now() - S.d.asOf.getTime() > 3 * 3600e3;   // NEA normally publishes within the hour
-  document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${!S.live ? 'Snapshot' : late ? 'Delayed' : 'Live'} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf)}`;
+  document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${t(!S.live ? 'snapshot' : late ? 'delayed' : 'live')} · ${sgAt(S.d.asOf)}`;
   document.querySelectorAll('#tabbar button, .topnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
   if (S.tab !== 'now') cancelAnimationFrame(raf);
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
+  fitAll();
   if (cardCache.key === cardKey()) paintThumbs(); else setTimeout(() => ensureCard().catch(() => {}), 80);
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-addEventListener('resize', () => { if (S.tab === 'now' && S.d){ renderNow(); paintThumbs(); } });
+addEventListener('resize', () => { if (S.tab === 'now' && S.d){ renderNow(); fitAll(); paintThumbs(); } });
 
 /* ---------- Boot: live data from NEA, refreshed while the page is open ---------- */
 function showStatus(text, retry){
-  document.getElementById('upd').textContent = retry ? 'Offline' : 'Loading…';
+  document.getElementById('upd').textContent = t(retry ? 'offline' : 'loading');
   document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== 'now';
   document.getElementById('v-now').innerHTML = `<div class="day" style="justify-content:center;align-items:center;text-align:center">
-    <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? '<button class="plain" id="retry">Try again</button>' : ''}</div>`;
+    <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? `<button class="plain" id="retry">${t('status.retry')}</button>` : ''}</div>`;
 }
 /* ---------- Analytics: GoatCounter (no cookies). Counts visits and taps, and how a visit arrived (shared link, QR
    code, picture card). Nothing about the visitor's location or settings is sent. Runs only on haze.geewax.org, so local
@@ -1079,6 +1146,7 @@ function trackButton(b){
   if (b.dataset.tab && b.dataset.tab !== S.tab) return track('tab/' + b.dataset.tab);
   if (b.dataset.region) return track('region/' + b.dataset.region);
   if (b.dataset.group) return track('group/' + b.dataset.group);
+  if (b.dataset.lang) return track('lang/' + b.dataset.lang);
 }
 if (location.hostname === 'haze.geewax.org'){
   const s = document.createElement('script');
@@ -1105,30 +1173,31 @@ const canInstall = () => !STANDALONE && (installPrompt || IOS);
 /* a quiet prompt on Now, on phones, from the second visit, until it is used or dismissed */
 function installBanner(){
   if (!canInstall() || visits < 2 || installDismissed() || matchMedia('(min-width:960px)').matches) return '';
-  return `<div class="inst">${ICON.tile}<span><b>Add Haze Status to your home screen</b>Opens like an app, straight to your region.</span>
-    <button class="instgo" data-act="install">Add</button><button class="iconbtn instx" data-act="install-dismiss" aria-label="Not now">${ICON.close}</button></div>`;
+  return `<div class="inst">${ICON.tile}<span><b>${t('inst.title')}</b>${t('inst.body')}</span>
+    <button class="instgo" data-act="install">${t('inst.add')}</button><button class="iconbtn instx" data-act="install-dismiss" aria-label="${t('inst.notnow')}">${ICON.close}</button></div>`;
 }
-const iosSteps = () => `<ol class="steps"><li>Tap the <b>Share</b> button ${ICON.iosShare} in Safari’s toolbar.</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>
-  <p class="msg">Haze Status then opens from your home screen like an app.</p>`;
+const iosSteps = () => `<ol class="steps"><li>${t('inst.ios1', {icon:ICON.iosShare})}</li><li>${t('inst.ios2')}</li><li>${t('inst.ios3')}</li></ol>
+  <p class="msg">${t('inst.after')}</p>`;
 async function doInstall(){
   if (installPrompt){ installPrompt.prompt(); const r = await installPrompt.userChoice; track('install/' + r.outcome); installPrompt = null; return render(); }
-  openSheet('Add to home screen', iosSteps());
+  openSheet(t('inst.sheet'), iosSteps());
 }
 function installSection(){
-  const body = STANDALONE ? '<p style="font-size:14px;margin:0">You’re using the installed app.</p>'
-    : installPrompt ? `<button class="locbtn" data-act="install">${ICON.tile} Install Haze Status</button>`
+  const body = STANDALONE ? `<p style="font-size:14px;margin:0">${t('inst.installed')}</p>`
+    : installPrompt ? `<button class="locbtn" data-act="install">${ICON.tile} ${t('inst.button')}</button>`
     : IOS ? iosSteps()
-    : '<p style="font-size:14px;margin:0">In your browser’s menu, choose <b>Install</b> or <b>Add to Home Screen</b>.</p>';
-  return `<div class="sec"><h3>Install as an app</h3>${body}</div>`;
+    : `<p style="font-size:14px;margin:0">${t('inst.other')}</p>`;
+  return `<div class="sec"><h3>${t('inst.section')}</h3>${body}</div>`;
 }
 
 let loadedAt = 0;
 async function refresh(){
   try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
-  catch(e){ if (!S.d) showStatus('Couldn’t reach NEA’s air quality service. Check your connection and try again.', true); }
+  catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }
 S.d = SNAP_AQ ? normalise(SNAP_AQ, SNAP_ADV) : null;
-if (S.d) render(); else showStatus('Loading the latest readings from NEA…');
+applyLang();
+if (S.d) render(); else showStatus(t('status.loading'));
 refresh();
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });

@@ -36,8 +36,8 @@
   --on0:#FFFFFF; --on1:#FFFFFF; --on2:#1F1A00; --on3:#1F1400; --on4:#FFFFFF;
   --fg0:#3A7F02; --fg1:#006FA1; --fg2:#8A6D00; --fg3:#A86200; --fg4:#C00000;      /* as text on surface */
   --tn0:#DDEFD3; --tn1:#D4E8F4; --tn2:#FFF5C9; --tn3:#FFEBC6; --tn4:#F8D3CE;
-  --display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
-  --body:'Public Sans','Helvetica Neue','Segoe UI',system-ui,sans-serif;
+  --display:'Bricolage Grotesque','Noto Sans SC','Noto Sans Tamil','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --body:'Public Sans','Noto Sans SC','Noto Sans Tamil','Helvetica Neue','Segoe UI',system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0B1116; --surface:#141D25; --surface-2:#1A242D; --ink:#E5ECF1; --muted:#93A3B0; --line:#26333E;
@@ -114,7 +114,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lnum .k small{font-size:12px;font-weight:600;opacity:.8}
 .trend{font-size:13.5px;margin-top:8px;opacity:.92}
 .lbw{margin-top:10px}
-.lpair{display:grid;grid-template-columns:auto 1fr;gap:20px}
+.lpair{display:grid;grid-template-columns:fit-content(48%) minmax(0,1fr);gap:20px}
 .lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
 .lpair > button + button{padding-left:20px;border-left:1px solid var(--line)}
 .lpair .v{font-family:var(--display);font-weight:700;font-size:clamp(36px,11vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
@@ -136,6 +136,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
+/* language switch: a quiet row under the Now footer, and a segmented control in Settings */
+.langs{display:flex;justify-content:center;flex-wrap:wrap;gap:2px 4px;margin-top:2px}
+.langs button{border:0;background:none;padding:4px 8px;border-radius:999px;font-size:12.5px;color:var(--muted)}
+.langs button[aria-pressed="true"]{color:var(--ink);font-weight:700;background:var(--surface-2)}
+.langseg{flex-wrap:wrap}
+.langseg button{flex:1 1 40%}
 /* install as an app */
 .inst{display:flex;align-items:center;gap:10px;margin-top:18px;padding:10px 4px 10px 10px;border-radius:14px;background:var(--sky-chip);color:var(--sky-ink);font-size:12.5px;line-height:1.3}
 .inst > span{flex:1;min-width:0}
@@ -322,30 +328,467 @@ button{font:inherit;color:inherit;cursor:pointer}
       <svg viewBox="0 0 28 28" aria-hidden="true"><defs><linearGradient id="sunfade" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF8A3D" stop-opacity=".12"/></linearGradient></defs><circle cx="14" cy="14" r="10" fill="url(#sunfade)"/></svg>
       <div><b>Haze Status</b><small id="upd"></small></div>
     </div>
-    <nav class="topnav" aria-label="Sections"><button data-tab="now">Now</button><button data-tab="day">My day</button><button data-tab="hist">History</button><button data-tab="set">Settings</button></nav>
+    <nav class="topnav" aria-label="Sections"><button data-tab="now" data-i="tab.now">Now</button><button data-tab="day" data-i="tab.day">My day</button><button data-tab="hist" data-i="tab.hist">History</button><button data-tab="set" data-i="tab.set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
-    <button class="iconbtn" data-act="share" aria-label="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
-    <button class="iconbtn" data-act="explain" aria-label="Understanding the readings"></button>
+    <button class="iconbtn" data-act="share" aria-label="Share" data-ia="aria.share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
+    <button class="iconbtn" data-act="explain" aria-label="Understanding the readings" data-ia="aria.explain"></button>
   </header>
-  <section class="view" id="v-now" aria-label="Now"></section>
-  <section class="view" id="v-day" aria-label="My day" hidden></section>
-  <section class="view" id="v-hist" aria-label="History" hidden></section>
-  <section class="view" id="v-set" aria-label="Settings" hidden></section>
+  <section class="view" id="v-now" aria-label="Now" data-ia="tab.now"></section>
+  <section class="view" id="v-day" aria-label="My day" data-ia="tab.day" hidden></section>
+  <section class="view" id="v-hist" aria-label="History" data-ia="tab.hist" hidden></section>
+  <section class="view" id="v-set" aria-label="Settings" data-ia="tab.set" hidden></section>
   <nav class="tabbar" role="tablist" id="tabbar">
-    <button role="tab" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Now</button>
-    <button role="tab" data-tab="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 12h9M11 18h9"/></svg>My day</button>
-    <button role="tab" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>History</button>
-    <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    <button role="tab" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg><span data-i="tab.now">Now</span></button>
+    <button role="tab" data-tab="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 12h9M11 18h9"/></svg><span data-i="tab.day">My day</span></button>
+    <button role="tab" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span data-i="tab.hist">History</span></button>
+    <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i="tab.set">Settings</span></button>
   </nav>
   <div class="scrim" id="scrim"></div>
   <div class="pop" id="pop" role="status" hidden></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="grab"></div>
-    <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close"></button></div>
+    <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close" data-ia="aria.close"></button></div>
     <div class="sb" id="sheetBody"></div>
   </div>
 </div>
 
+<script>/* Haze Status translations: English, Simplified Chinese, Malay and Tamil.
+   {name} marks a value filled in at run time. A few strings contain <b> tags; keep them.
+   Missing keys fall back to English. Bundled into the page by build.py. */
+const I18N = {
+en: {
+  "live": "Live", "snapshot": "Snapshot", "delayed": "Delayed", "loading": "Loading…", "offline": "Offline",
+  "aria.share": "Share", "aria.explain": "Understanding the readings", "aria.close": "Close", "aria.region": "Region",
+  "tab.now": "Now", "tab.day": "My day", "tab.hist": "History", "tab.set": "Settings",
+  "status.loading": "Loading the latest readings from NEA…",
+  "status.error": "Couldn’t reach NEA’s air quality service. Check your connection and try again.",
+  "status.retry": "Try again",
+  "fmt.at": "{time}, {day}",
+  "region.north": "North", "region.west": "West", "region.central": "Central", "region.east": "East", "region.south": "South",
+  "areas.north": "Woodlands, Yishun, Sembawang", "areas.west": "Jurong, Clementi, Choa Chu Kang",
+  "areas.central": "Bishan, Toa Payoh, Ang Mo Kio, Orchard", "areas.east": "Tampines, Bedok, Pasir Ris, Punggol",
+  "areas.south": "CBD, Bukit Merah, Queenstown, Sentosa",
+  "pm.1": "Normal", "pm.2": "Elevated", "pm.3": "High", "pm.4": "Very High",
+  "pm.1.gen": "Continue with normal activities.", "pm.1.vul": "Continue with normal activities.",
+  "pm.2.gen": "Reduce strenuous outdoor activity for the next hour.", "pm.2.vul": "Avoid strenuous outdoor activity for the next hour.",
+  "pm.3.gen": "Avoid strenuous outdoor activity for the next hour.", "pm.3.vul": "Avoid all outdoor activity for the next hour.",
+  "pm.4.gen": "Minimise all outdoor activity for the next hour.", "pm.4.vul": "Avoid all outdoor activity for the next hour.",
+  "pm.1.sgen": "Normal activities are fine.", "pm.1.svul": "Normal activities are fine.",
+  "pm.2.sgen": "Cut back on hard exercise outdoors this hour.", "pm.2.svul": "Avoid hard exercise outdoors this hour.",
+  "pm.3.sgen": "Avoid hard exercise outdoors this hour.", "pm.3.svul": "Stay indoors this hour.",
+  "pm.4.sgen": "Spend as little time outdoors as you can this hour.", "pm.4.svul": "Stay indoors this hour.",
+  "psi.0": "Good", "psi.1": "Moderate", "psi.2": "Unhealthy", "psi.3": "Very Unhealthy", "psi.4": "Hazardous",
+  "psi.0.healthy": "Normal activities.", "psi.0.elderly": "Normal activities.", "psi.0.chronic": "Normal activities.",
+  "psi.1.healthy": "Normal activities.", "psi.1.elderly": "Normal activities.", "psi.1.chronic": "Normal activities.",
+  "psi.2.healthy": "Reduce prolonged or strenuous outdoor physical exertion.", "psi.2.elderly": "Minimise prolonged or strenuous outdoor physical exertion.", "psi.2.chronic": "Avoid prolonged or strenuous outdoor physical exertion.",
+  "psi.3.healthy": "Avoid prolonged or strenuous outdoor physical exertion.", "psi.3.elderly": "Minimise outdoor activity.", "psi.3.chronic": "Avoid outdoor activity.",
+  "psi.4.healthy": "Minimise outdoor activity.", "psi.4.elderly": "Avoid outdoor activity.", "psi.4.chronic": "Avoid outdoor activity.",
+  "psi.0.shealthy": "Normal activities are fine.", "psi.0.selderly": "Normal activities are fine.", "psi.0.schronic": "Normal activities are fine.",
+  "psi.1.shealthy": "Normal activities are fine.", "psi.1.selderly": "Normal activities are fine.", "psi.1.schronic": "Normal activities are fine.",
+  "psi.2.shealthy": "Cut back on long or hard exercise outdoors.", "psi.2.selderly": "Keep long or hard exercise outdoors to a minimum.", "psi.2.schronic": "Avoid long or hard exercise outdoors.",
+  "psi.3.shealthy": "Avoid long or hard exercise outdoors.", "psi.3.selderly": "Spend as little time outdoors as you can.", "psi.3.schronic": "Stay indoors.",
+  "psi.4.shealthy": "Spend as little time outdoors as you can.", "psi.4.selderly": "Stay indoors.", "psi.4.schronic": "Stay indoors.",
+  "group.healthy.name": "Healthy adult", "group.healthy.plural": "healthy adults", "group.healthy.who": "Healthy adults",
+  "group.child.name": "Child", "group.child.plural": "children", "group.child.who": "Children",
+  "group.pregnant.name": "Pregnant", "group.pregnant.plural": "pregnant women", "group.pregnant.who": "Pregnant women",
+  "group.elderly.name": "Elderly", "group.elderly.plural": "the elderly", "group.elderly.who": "The elderly",
+  "group.chronic.name": "Heart or lung condition", "group.chronic.plural": "people with heart or lung conditions", "group.chronic.who": "People with heart or lung conditions",
+  "now.eb": "Now", "now.thisHour": "This hour", "now.past24": "Past 24 hours", "now.forecast": "Forecast", "now.none": "None",
+  "today": "Today", "tomorrow": "Tomorrow",
+  "aria.pmdef": "1-hr PM2.5 {v}. What does this mean?", "aria.psidef": "24-hr PSI {v}. What does this mean?", "aria.fcdef": "PSI forecast. What does this mean?",
+  "nea.prefix": "NEA: “{text}”", "nea.upper": " For the upper end of the forecast, {band}.", "nea.nofc": " For the current 24-hr PSI; no forecast has been issued.",
+  "foot.source": "Source: NEA,",
+  "trend.clear": "↓ Starting to clear", "trend.steady": "→ Holding steady", "trend.worse": "↑ Getting worse", "trend.since": "{from} → {to} since {time}",
+  "def.pm.title": "1-hr PM2.5: {v} µg/m³", "def.pm.body": "Fine smoke particles in the air, averaged over the past hour. Band {n} of 4, {band} ({range} µg/m³). Use it for what you do in the next hour.",
+  "def.psi.title": "24-hr PSI: {v}", "def.psi.body": "NEA’s Pollutant Standards Index, averaged over the past 24 hours. {band} ({range}). It moves slowly, so it describes the day.",
+  "def.fc.title": "PSI forecast: {range}", "def.fc.body": "NEA’s 24-hr PSI forecast for {when}: {name}. The advice is for the upper end.",
+  "def.nofc.title": "No forecast issued", "def.nofc.body": "NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.",
+  "def.more": "More about the readings",
+  "fc.range": "{lo} to {hi}", "when.today": "today ({day})", "when.tomorrow": "tomorrow ({day})", "to": "to",
+  "for.line": "Advice for {who}", "for.change": "Change",
+  "verdict.0": "Normal activities", "verdict.1": "Reduce exertion", "verdict.2": "Limit exertion", "verdict.3": "Limit time outdoors",
+  "day.head.0": "Normal activities can continue today.", "day.head.1": "Reduce strenuous outdoor activity today.",
+  "day.head.2": "Limit prolonged or strenuous outdoor exertion today.", "day.head.3": "Minimise time outdoors today.",
+  "day.next": "Next hour", "day.from": "· from {time}", "day.rest": "Rest of today", "day.tomorrow": "Tomorrow",
+  "day.notyet": "Not yet issued", "day.notyetBody": "NEA usually issues the next day’s PSI forecast in the evening.",
+  "band.label": "Band {n} · {name}", "why.pm": "1-hr PM2.5 {v} µg/m³", "why.fc": "PSI forecast", "why.psi": "24-hr PSI now {v}",
+  "news.title": "NEA update", "news.more": "Read more", "news.en": "", "news.full": "Full statement on haze.gov.sg",
+  "official": "Unofficial view of NEA data. For official readings, advisories and the haze situation, see {link}.",
+  "hist.title": "{region}, last 24 hours", "hist.lead": "{from} to {to}. Tap or drag across a chart to read any hour.",
+  "hist.peak": "Peak PM2.5", "hist.low": "Lowest", "hist.above": "Above Band 1", "hist.at": "at {time}", "hist.of": "of {n} hours", "hist.h": "h",
+  "hist.pmTitle": "1-hr PM2.5", "hist.pmSub": "· concentration in each hour", "hist.psiTitle": "24-hr PSI", "hist.psiSub": "· rolling 24-hour average",
+  "hist.pmAria": "1-hr PM2.5 for the last 24 hours, axis 0 to 300 µg/m³", "hist.psiAria": "24-hr PSI for the last 24 hours, axis 0 to 400",
+  "hist.hint": "Tap, drag or use the arrow keys to read each hour.", "hist.axisNow": "Now", "hist.nowPrefix": "Now · ", "hist.noReading": "No reading at {when}",
+  "hist.foot": "Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency{snap}; official charts at {link}.",
+  "hist.snap": " (snapshot in this preview)",
+  "set.title": "Settings", "set.region": "Your region", "set.geo": "Use my location",
+  "set.geomsg": "Your location stays on this device. It only picks the nearest of NEA’s five regions.",
+  "set.advice": "Advice for", "set.adviceNote": "NEA gives stricter advice for children, pregnant women, the elderly and people with heart or lung conditions.",
+  "set.sample": "Now: {advice}", "set.start": "Open the app on", "set.lang": "Language", "set.about": "About the data",
+  "set.aboutBody": "Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. {state} This site is not affiliated with NEA.",
+  "set.live": "Live, last reading {time}.", "set.snap": "This preview shows a snapshot from {time}.",
+  "set.privacy": "Visits and button taps are counted with {link}, which uses no cookies. Your location, region and settings stay on this device.",
+  "set.guide": "NEA’s activity guide (PDF)", "set.reset": "Reset saved settings", "set.resetDone": "Settings reset.",
+  "region.aria": "{region}: {areas}. 1-hr PM2.5 {v}, {band}", "region.note": "{region} includes {areas}. Readings are 1-hr PM2.5 in µg/m³.",
+  "region.sheet": "Your region", "region.saved": "Saved on this device.",
+  "geo.unsupported": "This browser can’t share its location. Pick your region below.",
+  "geo.insecure": "Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.",
+  "geo.blocked": "Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.",
+  "geo.finding": "Finding your location…", "geo.outside": "You seem to be outside Singapore. Pick a region below.",
+  "geo.denied": "Location permission wasn’t given. Allow location for this site in your browser settings, and turn on Location Services for your browser on a phone. Or pick your region below.",
+  "geo.timeout": "Finding your location took too long. Try again, or pick your region below.",
+  "geo.unavailable": "Your device couldn’t work out where you are. Try again with Wi-Fi on, or pick your region below.",
+  "geo.found": "Found you near {place}, in the {region} region. Saved on this device.",
+  "inst.title": "Add Haze Status to your home screen", "inst.body": "Opens like an app, straight to your region.", "inst.add": "Add", "inst.notnow": "Not now",
+  "inst.ios1": "Tap the <b>Share</b> button {icon} in Safari’s toolbar.", "inst.ios2": "Scroll down and tap <b>Add to Home Screen</b>.", "inst.ios3": "Tap <b>Add</b>.",
+  "inst.after": "Haze Status then opens from your home screen like an app.", "inst.sheet": "Add to home screen", "inst.section": "Install as an app",
+  "inst.installed": "You’re using the installed app.", "inst.button": "Install Haze Status",
+  "inst.other": "In your browser’s menu, choose <b>Install</b> or <b>Add to Home Screen</b>.",
+  "ex.title": "Understanding the readings", "ex.pmTitle": "1-hr PM2.5", "ex.pmBody": "Fine smoke particles in the air over the last hour, in µg/m³. Changes hour to hour.",
+  "ex.pmUse": "Use it for what you do in the next few hours.", "ex.fcTitle": "24-hr PSI forecast",
+  "ex.fcBody": "NEA’s outlook for the day ahead on the Pollutant Standards Index. Published when air quality is Unhealthy.", "ex.fcUse": "Use it to plan the next day.",
+  "ex.pmBands": "1-hr PM2.5 bands · next hour", "ex.psiBands": "24-hr PSI · next day", "ex.vul": "Vulnerable:", "ex.elderly": "Elderly, children, pregnant:", "ex.chronic": "Heart or lung:",
+  "ex.note": "Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: {link}.",
+  "ex.guide": "NEA, How to plan your outdoor activities during haze (June 2026)",
+  "share.title": "Share", "share.head": "Haze in {region}, {time} {day}", "share.pm": "{sq} This hour: PM2.5 {v} ({band})", "share.psi": "{sq} Past 24 hours: PSI {v} ({band})",
+  "share.fcToday": "Forecast today: {name}", "share.fcTomorrow": "Forecast tomorrow: {name}", "share.fcOn": "Forecast for {day}: {name}",
+  "share.none": "Live haze readings for Singapore, by region.", "share.copyLink": "Copy link", "share.copyText": "Copy text", "share.more": "More",
+  "share.scan": "Scan to open", "share.scanBody": "Show this screen to someone nearby. It opens on {region}.", "share.copied": "Copied", "share.selected": "Text selected",
+  "share.sendText": "Send as text",
+  "pic.share": "Share picture", "pic.shareHint": "Opens your share menu. Pick WhatsApp.", "pic.copy": "Copy picture", "pic.copyHint": "Then paste it into a WhatsApp chat.",
+  "pic.save": "Save picture", "pic.saveHint": "Then send it in WhatsApp.", "pic.preparing": "Preparing picture…", "pic.copied": "Copied. Paste it into a chat.",
+  "pic.alt": "Haze picture for {region}: {band}", "pic.hold": "On a phone, press and hold the picture to save or share it.",
+  "card.now": "NOW · THE NEXT HOUR", "card.pmLabel": "This hour · PM2.5 µg/m³ · Band {n}", "card.past": "Past 24 hours · PSI",
+  "card.fcToday": "Forecast today · PSI", "card.fcTomorrow": "Forecast tomorrow · PSI", "card.nofc": "No forecast issued", "card.nowPin": "{v} now",
+  "card.fcRange": "Forecast {range}", "card.live": "Live readings for your area", "card.data": "Data: National Environment Agency. Unofficial.",
+  "card.today": "TODAY", "card.tomorrow": "TOMORROW"
+},
+
+zh: {
+  "live": "实时", "snapshot": "快照", "delayed": "延迟", "loading": "加载中…", "offline": "离线",
+  "aria.share": "分享", "aria.explain": "读数说明", "aria.close": "关闭", "aria.region": "地区",
+  "tab.now": "现在", "tab.day": "我的一天", "tab.hist": "历史", "tab.set": "设置",
+  "status.loading": "正在加载环境局的最新读数…",
+  "status.error": "无法连接环境局的空气质量服务。请检查网络连接后重试。",
+  "status.retry": "重试",
+  "fmt.at": "{day} {time}",
+  "region.north": "北部", "region.west": "西部", "region.central": "中部", "region.east": "东部", "region.south": "南部",
+  "areas.north": "兀兰、义顺、三巴旺", "areas.west": "裕廊、金文泰、蔡厝港",
+  "areas.central": "碧山、大巴窑、宏茂桥、乌节", "areas.east": "淡滨尼、勿洛、白沙、榜鹅",
+  "areas.south": "中央商业区、红山、女皇镇、圣淘沙",
+  "pm.1": "正常", "pm.2": "偏高", "pm.3": "高", "pm.4": "非常高",
+  "pm.1.gen": "照常进行活动。", "pm.1.vul": "照常进行活动。",
+  "pm.2.gen": "在接下来一小时内，减少剧烈的户外活动。", "pm.2.vul": "在接下来一小时内，避免剧烈的户外活动。",
+  "pm.3.gen": "在接下来一小时内，避免剧烈的户外活动。", "pm.3.vul": "在接下来一小时内，避免一切户外活动。",
+  "pm.4.gen": "在接下来一小时内，尽量减少一切户外活动。", "pm.4.vul": "在接下来一小时内，避免一切户外活动。",
+  "pm.1.sgen": "可以照常活动。", "pm.1.svul": "可以照常活动。",
+  "pm.2.sgen": "这一小时少做剧烈的户外运动。", "pm.2.svul": "这一小时不要做剧烈的户外运动。",
+  "pm.3.sgen": "这一小时不要做剧烈的户外运动。", "pm.3.svul": "这一小时请留在室内。",
+  "pm.4.sgen": "这一小时尽量少待在户外。", "pm.4.svul": "这一小时请留在室内。",
+  "psi.0": "良好", "psi.1": "中等", "psi.2": "不健康", "psi.3": "非常不健康", "psi.4": "危险",
+  "psi.0.healthy": "照常进行活动。", "psi.0.elderly": "照常进行活动。", "psi.0.chronic": "照常进行活动。",
+  "psi.1.healthy": "照常进行活动。", "psi.1.elderly": "照常进行活动。", "psi.1.chronic": "照常进行活动。",
+  "psi.2.healthy": "减少长时间或剧烈的户外体力活动。", "psi.2.elderly": "尽量减少长时间或剧烈的户外体力活动。", "psi.2.chronic": "避免长时间或剧烈的户外体力活动。",
+  "psi.3.healthy": "避免长时间或剧烈的户外体力活动。", "psi.3.elderly": "尽量减少户外活动。", "psi.3.chronic": "避免户外活动。",
+  "psi.4.healthy": "尽量减少户外活动。", "psi.4.elderly": "避免户外活动。", "psi.4.chronic": "避免户外活动。",
+  "psi.0.shealthy": "可以照常活动。", "psi.0.selderly": "可以照常活动。", "psi.0.schronic": "可以照常活动。",
+  "psi.1.shealthy": "可以照常活动。", "psi.1.selderly": "可以照常活动。", "psi.1.schronic": "可以照常活动。",
+  "psi.2.shealthy": "少做长时间或剧烈的户外运动。", "psi.2.selderly": "尽量少做长时间或剧烈的户外运动。", "psi.2.schronic": "不要做长时间或剧烈的户外运动。",
+  "psi.3.shealthy": "不要做长时间或剧烈的户外运动。", "psi.3.selderly": "尽量少待在户外。", "psi.3.schronic": "请留在室内。",
+  "psi.4.shealthy": "尽量少待在户外。", "psi.4.selderly": "请留在室内。", "psi.4.schronic": "请留在室内。",
+  "group.healthy.name": "健康成人", "group.healthy.plural": "健康成人", "group.healthy.who": "健康成人",
+  "group.child.name": "儿童", "group.child.plural": "儿童", "group.child.who": "儿童",
+  "group.pregnant.name": "孕妇", "group.pregnant.plural": "孕妇", "group.pregnant.who": "孕妇",
+  "group.elderly.name": "年长者", "group.elderly.plural": "年长者", "group.elderly.who": "年长者",
+  "group.chronic.name": "心脏或肺部疾病患者", "group.chronic.plural": "心脏或肺部疾病患者", "group.chronic.who": "心脏或肺部疾病患者",
+  "now.eb": "现在", "now.thisHour": "这一小时", "now.past24": "过去24小时", "now.forecast": "预测", "now.none": "无",
+  "today": "今天", "tomorrow": "明天",
+  "aria.pmdef": "1小时PM2.5为{v}。这是什么意思？", "aria.psidef": "24小时PSI为{v}。这是什么意思？", "aria.fcdef": "PSI预测。这是什么意思？",
+  "nea.prefix": "环境局：“{text}”", "nea.upper": " 按预测范围的较高值（{band}）给出。", "nea.nofc": " 按目前的24小时PSI给出；尚未发布预测。",
+  "foot.source": "来源：环境局，",
+  "trend.clear": "↓ 开始好转", "trend.steady": "→ 保持平稳", "trend.worse": "↑ 正在变差", "trend.since": "{time}以来 {from} → {to}",
+  "def.pm.title": "1小时PM2.5：{v} µg/m³", "def.pm.body": "空气中的细小烟尘微粒，取过去一小时的平均值。第{n}级（共4级），{band}（{range} µg/m³）。用它来决定接下来一小时的活动。",
+  "def.psi.title": "24小时PSI：{v}", "def.psi.body": "环境局的空气污染指数，取过去24小时的平均值。{band}（{range}）。它变化较慢，反映的是一整天的情况。",
+  "def.fc.title": "PSI预测：{range}", "def.fc.body": "环境局对{when}的24小时PSI预测：{name}。建议按较高值给出。",
+  "def.nofc.title": "尚未发布预测", "def.nofc.body": "空气质量达到“不健康”时，环境局会发布24小时PSI预测。",
+  "def.more": "更多读数说明",
+  "fc.range": "{lo}至{hi}", "when.today": "今天（{day}）", "when.tomorrow": "明天（{day}）", "to": "至",
+  "for.line": "以下建议适用于{who}", "for.change": "更改",
+  "verdict.0": "照常活动", "verdict.1": "减少体力消耗", "verdict.2": "限制体力消耗", "verdict.3": "减少户外时间",
+  "day.head.0": "今天可以照常活动。", "day.head.1": "今天请减少剧烈的户外活动。",
+  "day.head.2": "今天请限制长时间或剧烈的户外运动。", "day.head.3": "今天请尽量减少户外时间。",
+  "day.next": "接下来一小时", "day.from": "· {time}起", "day.rest": "今天余下时间", "day.tomorrow": "明天",
+  "day.notyet": "尚未发布", "day.notyetBody": "环境局通常在傍晚发布第二天的PSI预测。",
+  "band.label": "第{n}级 · {name}", "why.pm": "1小时PM2.5 {v} µg/m³", "why.fc": "PSI预测", "why.psi": "目前24小时PSI {v}",
+  "news.title": "环境局最新消息", "news.more": "阅读全文", "news.en": "环境局的声明以英文发布。", "news.full": "在haze.gov.sg阅读完整声明",
+  "official": "这是环境局数据的非官方版本。官方读数、建议和烟霾情况，请查看{link}。",
+  "hist.title": "{region}，过去24小时", "hist.lead": "{from}至{to}。在图表上点按或拖动，可查看每一小时的读数。",
+  "hist.peak": "PM2.5最高值", "hist.low": "最低值", "hist.above": "高于第1级", "hist.at": "{time}", "hist.of": "共{n}小时", "hist.h": "小时",
+  "hist.pmTitle": "1小时PM2.5", "hist.pmSub": "· 每小时浓度", "hist.psiTitle": "24小时PSI", "hist.psiSub": "· 24小时滚动平均值",
+  "hist.pmAria": "过去24小时的1小时PM2.5，纵轴0至300 µg/m³", "hist.psiAria": "过去24小时的24小时PSI，纵轴0至400",
+  "hist.hint": "点按、拖动或使用方向键查看每一小时。", "hist.axisNow": "现在", "hist.nowPrefix": "现在 · ", "hist.noReading": "{when}没有读数",
+  "hist.foot": "纵轴固定不变，方便逐日比较。超出纵轴上限的读数画在顶端。数据来自国家环境局{snap}；官方图表见{link}。",
+  "hist.snap": "（此预览为快照）",
+  "set.title": "设置", "set.region": "你的地区", "set.geo": "使用我的位置",
+  "set.geomsg": "你的位置只保存在这部设备上，仅用来找出环境局五个地区中离你最近的一个。",
+  "set.advice": "建议对象", "set.adviceNote": "环境局对儿童、孕妇、年长者以及心脏或肺部疾病患者的建议更严格。",
+  "set.sample": "现在：{advice}", "set.start": "打开应用时显示", "set.lang": "语言", "set.about": "关于数据",
+  "set.aboutBody": "读数和预测来自国家环境局（haze.gov.sg），由你的浏览器直接加载。{state}本网站与环境局无关。",
+  "set.live": "实时数据，最新读数：{time}。", "set.snap": "此预览显示{time}的快照。",
+  "set.privacy": "我们使用{link}统计访问次数和按钮点按次数，它不使用cookie。你的位置、地区和设置只保存在这部设备上。",
+  "set.guide": "环境局活动指南（PDF）", "set.reset": "重置已保存的设置", "set.resetDone": "设置已重置。",
+  "region.aria": "{region}：{areas}。1小时PM2.5 {v}，{band}", "region.note": "{region}包括{areas}。读数为1小时PM2.5，单位µg/m³。",
+  "region.sheet": "你的地区", "region.saved": "已保存在这部设备上。",
+  "geo.unsupported": "这个浏览器无法提供位置。请在下方选择你的地区。",
+  "geo.insecure": "浏览器只会向安全（https）网页提供位置。请打开 https://haze.geewax.org，或在下方选择你的地区。",
+  "geo.blocked": "此网站的位置权限已被阻止。请在浏览器的网站设置中允许，或在下方选择你的地区。",
+  "geo.finding": "正在查找你的位置…", "geo.outside": "你似乎不在新加坡。请在下方选择地区。",
+  "geo.denied": "未获得位置权限。请在浏览器设置中允许此网站使用位置；在手机上，也请为浏览器开启定位服务。或者在下方选择你的地区。",
+  "geo.timeout": "查找位置的时间过长。请重试，或在下方选择你的地区。",
+  "geo.unavailable": "你的设备无法确定你的位置。请开启Wi-Fi后重试，或在下方选择你的地区。",
+  "geo.found": "你在{place}附近，属于{region}。已保存在这部设备上。",
+  "inst.title": "把Haze Status添加到主屏幕", "inst.body": "像应用一样打开，直接显示你的地区。", "inst.add": "添加", "inst.notnow": "以后再说",
+  "inst.ios1": "点按Safari工具栏中的<b>分享</b>按钮 {icon}。", "inst.ios2": "向下滚动，点按<b>添加到主屏幕</b>。", "inst.ios3": "点按<b>添加</b>。",
+  "inst.after": "之后就能像应用一样，从主屏幕打开Haze Status。", "inst.sheet": "添加到主屏幕", "inst.section": "安装为应用",
+  "inst.installed": "你正在使用已安装的应用。", "inst.button": "安装Haze Status",
+  "inst.other": "在浏览器菜单中选择<b>安装</b>或<b>添加到主屏幕</b>。",
+  "ex.title": "读数说明", "ex.pmTitle": "1小时PM2.5", "ex.pmBody": "过去一小时空气中的细小烟尘微粒，单位µg/m³。每小时都在变化。",
+  "ex.pmUse": "用它来决定接下来几小时的活动。", "ex.fcTitle": "24小时PSI预测",
+  "ex.fcBody": "环境局根据空气污染指数对第二天的预测。空气质量处于“不健康”时发布。", "ex.fcUse": "用它来安排第二天的活动。",
+  "ex.pmBands": "1小时PM2.5等级 · 接下来一小时", "ex.psiBands": "24小时PSI · 第二天", "ex.vul": "易受影响人士：", "ex.elderly": "年长者、儿童、孕妇：", "ex.chronic": "心肺疾病患者：",
+  "ex.note": "框出的是你目前的等级和预测范围。减少：少做一点。尽量减少：越少越好。避免：不要做。来源：{link}。",
+  "ex.guide": "环境局《烟霾期间如何安排户外活动》（2026年6月）",
+  "share.title": "分享", "share.head": "{region}烟霾情况，{day} {time}", "share.pm": "{sq} 这一小时：PM2.5 {v}（{band}）", "share.psi": "{sq} 过去24小时：PSI {v}（{band}）",
+  "share.fcToday": "今天预测：{name}", "share.fcTomorrow": "明天预测：{name}", "share.fcOn": "{day}预测：{name}",
+  "share.none": "新加坡各地区的实时烟霾读数。", "share.copyLink": "复制链接", "share.copyText": "复制文字", "share.more": "更多",
+  "share.scan": "扫描打开", "share.scanBody": "把这个画面给身边的人看。打开后显示{region}。", "share.copied": "已复制", "share.selected": "已选取文字",
+  "share.sendText": "以文字发送",
+  "pic.share": "分享图片", "pic.shareHint": "会打开分享菜单，选择WhatsApp即可。", "pic.copy": "复制图片", "pic.copyHint": "然后粘贴到WhatsApp聊天中。",
+  "pic.save": "保存图片", "pic.saveHint": "然后在WhatsApp中发送。", "pic.preparing": "正在准备图片…", "pic.copied": "已复制，可粘贴到聊天中。",
+  "pic.alt": "{region}烟霾图片：{band}", "pic.hold": "在手机上，长按图片即可保存或分享。",
+  "card.now": "现在 · 接下来一小时", "card.pmLabel": "这一小时 · PM2.5 µg/m³ · 第{n}级", "card.past": "过去24小时 · PSI",
+  "card.fcToday": "今天预测 · PSI", "card.fcTomorrow": "明天预测 · PSI", "card.nofc": "尚未发布预测", "card.nowPin": "目前 {v}",
+  "card.fcRange": "预测 {range}", "card.live": "查看你所在地区的实时读数", "card.data": "数据：国家环境局。非官方。",
+  "card.today": "今天", "card.tomorrow": "明天"
+},
+
+ms: {
+  "live": "Langsung", "snapshot": "Petikan", "delayed": "Lewat", "loading": "Memuatkan…", "offline": "Luar talian",
+  "aria.share": "Kongsi", "aria.explain": "Memahami bacaan", "aria.close": "Tutup", "aria.region": "Kawasan",
+  "tab.now": "Kini", "tab.day": "Hari saya", "tab.hist": "Sejarah", "tab.set": "Tetapan",
+  "status.loading": "Memuatkan bacaan terkini daripada NEA…",
+  "status.error": "Tidak dapat menghubungi perkhidmatan kualiti udara NEA. Periksa sambungan anda dan cuba lagi.",
+  "status.retry": "Cuba lagi",
+  "fmt.at": "{time}, {day}",
+  "region.north": "Utara", "region.west": "Barat", "region.central": "Tengah", "region.east": "Timur", "region.south": "Selatan",
+  "areas.north": "Woodlands, Yishun, Sembawang", "areas.west": "Jurong, Clementi, Choa Chu Kang",
+  "areas.central": "Bishan, Toa Payoh, Ang Mo Kio, Orchard", "areas.east": "Tampines, Bedok, Pasir Ris, Punggol",
+  "areas.south": "Pusat bandar (CBD), Bukit Merah, Queenstown, Sentosa",
+  "pm.1": "Normal", "pm.2": "Meningkat", "pm.3": "Tinggi", "pm.4": "Sangat Tinggi",
+  "pm.1.gen": "Teruskan aktiviti biasa.", "pm.1.vul": "Teruskan aktiviti biasa.",
+  "pm.2.gen": "Kurangkan aktiviti luar yang berat untuk sejam akan datang.", "pm.2.vul": "Elakkan aktiviti luar yang berat untuk sejam akan datang.",
+  "pm.3.gen": "Elakkan aktiviti luar yang berat untuk sejam akan datang.", "pm.3.vul": "Elakkan semua aktiviti luar untuk sejam akan datang.",
+  "pm.4.gen": "Kurangkan semua aktiviti luar sebanyak mungkin untuk sejam akan datang.", "pm.4.vul": "Elakkan semua aktiviti luar untuk sejam akan datang.",
+  "pm.1.sgen": "Aktiviti biasa boleh diteruskan.", "pm.1.svul": "Aktiviti biasa boleh diteruskan.",
+  "pm.2.sgen": "Kurangkan senaman berat di luar untuk sejam ini.", "pm.2.svul": "Elakkan senaman berat di luar untuk sejam ini.",
+  "pm.3.sgen": "Elakkan senaman berat di luar untuk sejam ini.", "pm.3.svul": "Duduk di dalam rumah untuk sejam ini.",
+  "pm.4.sgen": "Kurangkan masa di luar sebanyak mungkin untuk sejam ini.", "pm.4.svul": "Duduk di dalam rumah untuk sejam ini.",
+  "psi.0": "Baik", "psi.1": "Sederhana", "psi.2": "Tidak Sihat", "psi.3": "Sangat Tidak Sihat", "psi.4": "Berbahaya",
+  "psi.0.healthy": "Aktiviti biasa.", "psi.0.elderly": "Aktiviti biasa.", "psi.0.chronic": "Aktiviti biasa.",
+  "psi.1.healthy": "Aktiviti biasa.", "psi.1.elderly": "Aktiviti biasa.", "psi.1.chronic": "Aktiviti biasa.",
+  "psi.2.healthy": "Kurangkan aktiviti fizikal luar yang lama atau berat.", "psi.2.elderly": "Kurangkan sebanyak mungkin aktiviti fizikal luar yang lama atau berat.", "psi.2.chronic": "Elakkan aktiviti fizikal luar yang lama atau berat.",
+  "psi.3.healthy": "Elakkan aktiviti fizikal luar yang lama atau berat.", "psi.3.elderly": "Kurangkan aktiviti luar sebanyak mungkin.", "psi.3.chronic": "Elakkan aktiviti luar.",
+  "psi.4.healthy": "Kurangkan aktiviti luar sebanyak mungkin.", "psi.4.elderly": "Elakkan aktiviti luar.", "psi.4.chronic": "Elakkan aktiviti luar.",
+  "psi.0.shealthy": "Aktiviti biasa boleh diteruskan.", "psi.0.selderly": "Aktiviti biasa boleh diteruskan.", "psi.0.schronic": "Aktiviti biasa boleh diteruskan.",
+  "psi.1.shealthy": "Aktiviti biasa boleh diteruskan.", "psi.1.selderly": "Aktiviti biasa boleh diteruskan.", "psi.1.schronic": "Aktiviti biasa boleh diteruskan.",
+  "psi.2.shealthy": "Kurangkan senaman lama atau berat di luar.", "psi.2.selderly": "Kurangkan sebanyak mungkin senaman lama atau berat di luar.", "psi.2.schronic": "Elakkan senaman lama atau berat di luar.",
+  "psi.3.shealthy": "Elakkan senaman lama atau berat di luar.", "psi.3.selderly": "Kurangkan masa di luar sebanyak mungkin.", "psi.3.schronic": "Duduk di dalam rumah.",
+  "psi.4.shealthy": "Kurangkan masa di luar sebanyak mungkin.", "psi.4.selderly": "Duduk di dalam rumah.", "psi.4.schronic": "Duduk di dalam rumah.",
+  "group.healthy.name": "Dewasa yang sihat", "group.healthy.plural": "orang dewasa yang sihat", "group.healthy.who": "Orang dewasa yang sihat",
+  "group.child.name": "Kanak-kanak", "group.child.plural": "kanak-kanak", "group.child.who": "Kanak-kanak",
+  "group.pregnant.name": "Hamil", "group.pregnant.plural": "wanita hamil", "group.pregnant.who": "Wanita hamil",
+  "group.elderly.name": "Warga emas", "group.elderly.plural": "warga emas", "group.elderly.who": "Warga emas",
+  "group.chronic.name": "Penyakit jantung atau paru-paru", "group.chronic.plural": "penghidap penyakit jantung atau paru-paru", "group.chronic.who": "Penghidap penyakit jantung atau paru-paru",
+  "now.eb": "Kini", "now.thisHour": "Sejam ini", "now.past24": "24 jam lalu", "now.forecast": "Ramalan", "now.none": "Tiada",
+  "today": "Hari ini", "tomorrow": "Esok",
+  "aria.pmdef": "PM2.5 1 jam {v}. Apakah maksudnya?", "aria.psidef": "PSI 24 jam {v}. Apakah maksudnya?", "aria.fcdef": "Ramalan PSI. Apakah maksudnya?",
+  "nea.prefix": "NEA: “{text}”", "nea.upper": " Untuk had atas ramalan, {band}.", "nea.nofc": " Untuk PSI 24 jam semasa; tiada ramalan dikeluarkan.",
+  "foot.source": "Sumber: NEA,",
+  "trend.clear": "↓ Mula pulih", "trend.steady": "→ Tidak berubah", "trend.worse": "↑ Semakin teruk", "trend.since": "{from} → {to} sejak {time}",
+  "def.pm.title": "PM2.5 1 jam: {v} µg/m³", "def.pm.body": "Zarah asap halus di udara, purata sejam lalu. Jalur {n} daripada 4, {band} ({range} µg/m³). Gunakannya untuk aktiviti anda dalam sejam akan datang.",
+  "def.psi.title": "PSI 24 jam: {v}", "def.psi.body": "Indeks Piawaian Bahan Pencemar NEA, purata 24 jam lalu. {band} ({range}). Ia berubah perlahan, jadi ia menggambarkan keadaan sepanjang hari.",
+  "def.fc.title": "Ramalan PSI: {range}", "def.fc.body": "Ramalan PSI 24 jam NEA untuk {when}: {name}. Nasihat diberikan berdasarkan had atasnya.",
+  "def.nofc.title": "Tiada ramalan dikeluarkan", "def.nofc.body": "NEA mengeluarkan ramalan PSI 24 jam apabila kualiti udara mencapai julat Tidak Sihat.",
+  "def.more": "Lagi tentang bacaan",
+  "fc.range": "{lo} hingga {hi}", "when.today": "hari ini ({day})", "when.tomorrow": "esok ({day})", "to": "hingga",
+  "for.line": "Nasihat untuk {who}", "for.change": "Tukar",
+  "verdict.0": "Aktiviti biasa", "verdict.1": "Kurangkan usaha", "verdict.2": "Hadkan usaha", "verdict.3": "Hadkan masa di luar",
+  "day.head.0": "Aktiviti biasa boleh diteruskan hari ini.", "day.head.1": "Kurangkan aktiviti luar yang berat hari ini.",
+  "day.head.2": "Hadkan senaman luar yang lama atau berat hari ini.", "day.head.3": "Kurangkan masa di luar sebanyak mungkin hari ini.",
+  "day.next": "Sejam akan datang", "day.from": "· dari {time}", "day.rest": "Sepanjang hari ini", "day.tomorrow": "Esok",
+  "day.notyet": "Belum dikeluarkan", "day.notyetBody": "NEA biasanya mengeluarkan ramalan PSI untuk hari berikutnya pada waktu petang.",
+  "band.label": "Jalur {n} · {name}", "why.pm": "PM2.5 1 jam {v} µg/m³", "why.fc": "Ramalan PSI", "why.psi": "PSI 24 jam kini {v}",
+  "news.title": "Berita NEA", "news.more": "Baca lagi", "news.en": "Kenyataan NEA diterbitkan dalam bahasa Inggeris.", "news.full": "Kenyataan penuh di haze.gov.sg",
+  "official": "Paparan tidak rasmi data NEA. Untuk bacaan, nasihat dan keadaan jerebu yang rasmi, lihat {link}.",
+  "hist.title": "{region}, 24 jam lalu", "hist.lead": "{from} hingga {to}. Ketik atau seret pada carta untuk membaca setiap jam.",
+  "hist.peak": "PM2.5 tertinggi", "hist.low": "Terendah", "hist.above": "Melebihi Jalur 1", "hist.at": "pada {time}", "hist.of": "daripada {n} jam", "hist.h": "j",
+  "hist.pmTitle": "PM2.5 1 jam", "hist.pmSub": "· kepekatan setiap jam", "hist.psiTitle": "PSI 24 jam", "hist.psiSub": "· purata bergerak 24 jam",
+  "hist.pmAria": "PM2.5 1 jam bagi 24 jam lalu, paksi 0 hingga 300 µg/m³", "hist.psiAria": "PSI 24 jam bagi 24 jam lalu, paksi 0 hingga 400",
+  "hist.hint": "Ketik, seret atau gunakan kekunci anak panah untuk membaca setiap jam.", "hist.axisNow": "Kini", "hist.nowPrefix": "Kini · ", "hist.noReading": "Tiada bacaan pada {when}",
+  "hist.foot": "Paksi ditetapkan supaya carta boleh dibandingkan dari hari ke hari. Bacaan yang melebihi paksi dilukis di bahagian atas. Data daripada Agensi Sekitaran Kebangsaan{snap}; carta rasmi di {link}.",
+  "hist.snap": " (petikan dalam pratonton ini)",
+  "set.title": "Tetapan", "set.region": "Kawasan anda", "set.geo": "Gunakan lokasi saya",
+  "set.geomsg": "Lokasi anda kekal pada peranti ini. Ia hanya digunakan untuk memilih kawasan NEA yang terdekat.",
+  "set.advice": "Nasihat untuk", "set.adviceNote": "NEA memberikan nasihat yang lebih ketat untuk kanak-kanak, wanita hamil, warga emas dan penghidap penyakit jantung atau paru-paru.",
+  "set.sample": "Kini: {advice}", "set.start": "Buka aplikasi pada", "set.lang": "Bahasa", "set.about": "Tentang data",
+  "set.aboutBody": "Bacaan dan ramalan datang daripada Agensi Sekitaran Kebangsaan (haze.gov.sg) dan dimuatkan terus oleh pelayar anda. {state} Laman ini tidak bergabung dengan NEA.",
+  "set.live": "Langsung, bacaan terakhir {time}.", "set.snap": "Pratonton ini menunjukkan petikan dari {time}.",
+  "set.privacy": "Lawatan dan ketikan butang dikira dengan {link}, yang tidak menggunakan kuki. Lokasi, kawasan dan tetapan anda kekal pada peranti ini.",
+  "set.guide": "Panduan aktiviti NEA (PDF)", "set.reset": "Tetapkan semula tetapan", "set.resetDone": "Tetapan telah ditetapkan semula.",
+  "region.aria": "{region}: {areas}. PM2.5 1 jam {v}, {band}", "region.note": "{region} merangkumi {areas}. Bacaan ialah PM2.5 1 jam dalam µg/m³.",
+  "region.sheet": "Kawasan anda", "region.saved": "Disimpan pada peranti ini.",
+  "geo.unsupported": "Pelayar ini tidak dapat berkongsi lokasi. Pilih kawasan anda di bawah.",
+  "geo.insecure": "Pelayar hanya berkongsi lokasi dengan halaman selamat (https). Buka https://haze.geewax.org, atau pilih kawasan anda di bawah.",
+  "geo.blocked": "Lokasi disekat untuk laman ini. Benarkannya dalam tetapan laman pelayar anda, atau pilih kawasan anda di bawah.",
+  "geo.finding": "Mencari lokasi anda…", "geo.outside": "Anda nampaknya berada di luar Singapura. Pilih kawasan di bawah.",
+  "geo.denied": "Kebenaran lokasi tidak diberikan. Benarkan lokasi untuk laman ini dalam tetapan pelayar anda, dan hidupkan Perkhidmatan Lokasi untuk pelayar pada telefon. Atau pilih kawasan anda di bawah.",
+  "geo.timeout": "Mencari lokasi anda mengambil masa terlalu lama. Cuba lagi, atau pilih kawasan anda di bawah.",
+  "geo.unavailable": "Peranti anda tidak dapat menentukan lokasi anda. Cuba lagi dengan Wi-Fi dihidupkan, atau pilih kawasan anda di bawah.",
+  "geo.found": "Anda berada berhampiran {place}, di kawasan {region}. Disimpan pada peranti ini.",
+  "inst.title": "Tambah Haze Status pada skrin utama anda", "inst.body": "Dibuka seperti aplikasi, terus ke kawasan anda.", "inst.add": "Tambah", "inst.notnow": "Bukan sekarang",
+  "inst.ios1": "Ketik butang <b>Kongsi</b> {icon} pada bar alat Safari.", "inst.ios2": "Tatal ke bawah dan ketik <b>Tambah ke Skrin Utama</b>.", "inst.ios3": "Ketik <b>Tambah</b>.",
+  "inst.after": "Haze Status kemudian dibuka dari skrin utama anda seperti aplikasi.", "inst.sheet": "Tambah ke skrin utama", "inst.section": "Pasang sebagai aplikasi",
+  "inst.installed": "Anda sedang menggunakan aplikasi yang telah dipasang.", "inst.button": "Pasang Haze Status",
+  "inst.other": "Dalam menu pelayar anda, pilih <b>Pasang</b> atau <b>Tambah ke Skrin Utama</b>.",
+  "ex.title": "Memahami bacaan", "ex.pmTitle": "PM2.5 1 jam", "ex.pmBody": "Zarah asap halus di udara dalam sejam lalu, dalam µg/m³. Berubah dari jam ke jam.",
+  "ex.pmUse": "Gunakannya untuk aktiviti anda dalam beberapa jam akan datang.", "ex.fcTitle": "Ramalan PSI 24 jam",
+  "ex.fcBody": "Tinjauan NEA untuk hari berikutnya berdasarkan Indeks Piawaian Bahan Pencemar. Diterbitkan apabila kualiti udara Tidak Sihat.", "ex.fcUse": "Gunakannya untuk merancang hari berikutnya.",
+  "ex.pmBands": "Jalur PM2.5 1 jam · sejam akan datang", "ex.psiBands": "PSI 24 jam · hari berikutnya", "ex.vul": "Golongan mudah terjejas:", "ex.elderly": "Warga emas, kanak-kanak, wanita hamil:", "ex.chronic": "Penyakit jantung atau paru-paru:",
+  "ex.note": "Bertanda: jalur anda sekarang dan julat ramalan. Kurangkan: buat lebih sedikit. Kurangkan sebanyak mungkin: buat sesedikit mungkin. Elakkan: jangan buat. Sumber: {link}.",
+  "ex.guide": "NEA, Cara merancang aktiviti luar semasa jerebu (Jun 2026)",
+  "share.title": "Kongsi", "share.head": "Jerebu di {region}, {time} {day}", "share.pm": "{sq} Sejam ini: PM2.5 {v} ({band})", "share.psi": "{sq} 24 jam lalu: PSI {v} ({band})",
+  "share.fcToday": "Ramalan hari ini: {name}", "share.fcTomorrow": "Ramalan esok: {name}", "share.fcOn": "Ramalan untuk {day}: {name}",
+  "share.none": "Bacaan jerebu langsung untuk Singapura, mengikut kawasan.", "share.copyLink": "Salin pautan", "share.copyText": "Salin teks", "share.more": "Lagi",
+  "share.scan": "Imbas untuk buka", "share.scanBody": "Tunjukkan skrin ini kepada orang berdekatan. Ia dibuka pada {region}.", "share.copied": "Disalin", "share.selected": "Teks dipilih",
+  "share.sendText": "Hantar sebagai teks",
+  "pic.share": "Kongsi gambar", "pic.shareHint": "Membuka menu kongsi anda. Pilih WhatsApp.", "pic.copy": "Salin gambar", "pic.copyHint": "Kemudian tampal dalam sembang WhatsApp.",
+  "pic.save": "Simpan gambar", "pic.saveHint": "Kemudian hantar dalam WhatsApp.", "pic.preparing": "Menyediakan gambar…", "pic.copied": "Disalin. Tampal dalam sembang.",
+  "pic.alt": "Gambar jerebu untuk {region}: {band}", "pic.hold": "Pada telefon, tekan dan tahan gambar untuk menyimpan atau berkongsi.",
+  "card.now": "KINI · SEJAM AKAN DATANG", "card.pmLabel": "Sejam ini · PM2.5 µg/m³ · Jalur {n}", "card.past": "24 jam lalu · PSI",
+  "card.fcToday": "Ramalan hari ini · PSI", "card.fcTomorrow": "Ramalan esok · PSI", "card.nofc": "Tiada ramalan dikeluarkan", "card.nowPin": "{v} kini",
+  "card.fcRange": "Ramalan {range}", "card.live": "Bacaan langsung untuk kawasan anda", "card.data": "Data: Agensi Sekitaran Kebangsaan. Tidak rasmi.",
+  "card.today": "HARI INI", "card.tomorrow": "ESOK"
+},
+
+ta: {
+  "live": "நேரலை", "snapshot": "மாதிரித் தரவு", "delayed": "தாமதம்", "loading": "ஏற்றுகிறது…", "offline": "இணைப்பில்லை",
+  "aria.share": "பகிர்", "aria.explain": "அளவீடுகளைப் புரிந்துகொள்ளுதல்", "aria.close": "மூடு", "aria.region": "பகுதி",
+  "tab.now": "இப்போது", "tab.day": "என் நாள்", "tab.hist": "வரலாறு", "tab.set": "அமைப்புகள்",
+  "status.loading": "NEA-இன் சமீபத்திய அளவீடுகளை ஏற்றுகிறது…",
+  "status.error": "NEA-இன் காற்றுத் தரச் சேவையை அணுக முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.",
+  "status.retry": "மீண்டும் முயல்க",
+  "fmt.at": "{day} {time}",
+  "region.north": "வடக்கு", "region.west": "மேற்கு", "region.central": "மத்திய", "region.east": "கிழக்கு", "region.south": "தெற்கு",
+  "areas.north": "Woodlands, Yishun, Sembawang", "areas.west": "Jurong, Clementi, Choa Chu Kang",
+  "areas.central": "Bishan, Toa Payoh, Ang Mo Kio, Orchard", "areas.east": "Tampines, Bedok, Pasir Ris, Punggol",
+  "areas.south": "CBD, Bukit Merah, Queenstown, Sentosa",
+  "pm.1": "இயல்பு", "pm.2": "உயர்வு", "pm.3": "அதிகம்", "pm.4": "மிக அதிகம்",
+  "pm.1.gen": "வழக்கமான நடவடிக்கைகளைத் தொடரவும்.", "pm.1.vul": "வழக்கமான நடவடிக்கைகளைத் தொடரவும்.",
+  "pm.2.gen": "அடுத்த ஒரு மணி நேரத்திற்குக் கடுமையான வெளிப்புற நடவடிக்கைகளைக் குறைக்கவும்.", "pm.2.vul": "அடுத்த ஒரு மணி நேரத்திற்குக் கடுமையான வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.",
+  "pm.3.gen": "அடுத்த ஒரு மணி நேரத்திற்குக் கடுமையான வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.", "pm.3.vul": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் தவிர்க்கவும்.",
+  "pm.4.gen": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் முடிந்தவரை குறைக்கவும்.", "pm.4.vul": "அடுத்த ஒரு மணி நேரத்திற்கு அனைத்து வெளிப்புற நடவடிக்கைகளையும் தவிர்க்கவும்.",
+  "pm.1.sgen": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "pm.1.svul": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.",
+  "pm.2.sgen": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைக் குறைக்கவும்.", "pm.2.svul": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.",
+  "pm.3.sgen": "இந்த மணி நேரம் வெளியே கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.", "pm.3.svul": "இந்த மணி நேரம் வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "pm.4.sgen": "இந்த மணி நேரம் வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.", "pm.4.svul": "இந்த மணி நேரம் வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "psi.0": "நல்லது", "psi.1": "மிதமானது", "psi.2": "ஆரோக்கியமற்றது", "psi.3": "மிகவும் ஆரோக்கியமற்றது", "psi.4": "அபாயகரமானது",
+  "psi.0.healthy": "வழக்கமான நடவடிக்கைகள்.", "psi.0.elderly": "வழக்கமான நடவடிக்கைகள்.", "psi.0.chronic": "வழக்கமான நடவடிக்கைகள்.",
+  "psi.1.healthy": "வழக்கமான நடவடிக்கைகள்.", "psi.1.elderly": "வழக்கமான நடவடிக்கைகள்.", "psi.1.chronic": "வழக்கமான நடவடிக்கைகள்.",
+  "psi.2.healthy": "நீண்ட நேர அல்லது கடுமையான வெளிப்புற உடல் உழைப்பைக் குறைக்கவும்.", "psi.2.elderly": "நீண்ட நேர அல்லது கடுமையான வெளிப்புற உடல் உழைப்பை முடிந்தவரை குறைக்கவும்.", "psi.2.chronic": "நீண்ட நேர அல்லது கடுமையான வெளிப்புற உடல் உழைப்பைத் தவிர்க்கவும்.",
+  "psi.3.healthy": "நீண்ட நேர அல்லது கடுமையான வெளிப்புற உடல் உழைப்பைத் தவிர்க்கவும்.", "psi.3.elderly": "வெளிப்புற நடவடிக்கைகளை முடிந்தவரை குறைக்கவும்.", "psi.3.chronic": "வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.",
+  "psi.4.healthy": "வெளிப்புற நடவடிக்கைகளை முடிந்தவரை குறைக்கவும்.", "psi.4.elderly": "வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.", "psi.4.chronic": "வெளிப்புற நடவடிக்கைகளைத் தவிர்க்கவும்.",
+  "psi.0.shealthy": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "psi.0.selderly": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "psi.0.schronic": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.",
+  "psi.1.shealthy": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "psi.1.selderly": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.", "psi.1.schronic": "வழக்கமான நடவடிக்கைகள் பரவாயில்லை.",
+  "psi.2.shealthy": "வெளியே நீண்ட அல்லது கடும் உடற்பயிற்சியைக் குறைக்கவும்.", "psi.2.selderly": "வெளியே நீண்ட அல்லது கடும் உடற்பயிற்சியை முடிந்தவரை குறைக்கவும்.", "psi.2.schronic": "வெளியே நீண்ட அல்லது கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.",
+  "psi.3.shealthy": "வெளியே நீண்ட அல்லது கடும் உடற்பயிற்சியைத் தவிர்க்கவும்.", "psi.3.selderly": "வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.", "psi.3.schronic": "வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "psi.4.shealthy": "வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.", "psi.4.selderly": "வீட்டுக்குள்ளேயே இருக்கவும்.", "psi.4.schronic": "வீட்டுக்குள்ளேயே இருக்கவும்.",
+  "group.healthy.name": "ஆரோக்கியமான பெரியவர்", "group.healthy.plural": "ஆரோக்கியமான பெரியவர்கள்", "group.healthy.who": "ஆரோக்கியமான பெரியவர்கள்",
+  "group.child.name": "குழந்தை", "group.child.plural": "குழந்தைகள்", "group.child.who": "குழந்தைகள்",
+  "group.pregnant.name": "கர்ப்பிணி", "group.pregnant.plural": "கர்ப்பிணிப் பெண்கள்", "group.pregnant.who": "கர்ப்பிணிப் பெண்கள்",
+  "group.elderly.name": "முதியவர்", "group.elderly.plural": "முதியவர்கள்", "group.elderly.who": "முதியவர்கள்",
+  "group.chronic.name": "இதயம் அல்லது நுரையீரல் நோய்", "group.chronic.plural": "இதயம் அல்லது நுரையீரல் நோய் உள்ளவர்கள்", "group.chronic.who": "இதயம் அல்லது நுரையீரல் நோய் உள்ளவர்கள்",
+  "now.eb": "இப்போது", "now.thisHour": "இந்த மணி நேரம்", "now.past24": "கடந்த 24 மணி நேரம்", "now.forecast": "முன்னறிவிப்பு", "now.none": "இல்லை",
+  "today": "இன்று", "tomorrow": "நாளை",
+  "aria.pmdef": "1 மணி நேர PM2.5 {v}. இதன் பொருள் என்ன?", "aria.psidef": "24 மணி நேர PSI {v}. இதன் பொருள் என்ன?", "aria.fcdef": "PSI முன்னறிவிப்பு. இதன் பொருள் என்ன?",
+  "nea.prefix": "NEA: “{text}”", "nea.upper": " முன்னறிவிப்பின் உயர் வரம்பான {band} நிலைக்கு.", "nea.nofc": " தற்போதைய 24 மணி நேர PSI-க்கு; முன்னறிவிப்பு எதுவும் வெளியிடப்படவில்லை.",
+  "foot.source": "ஆதாரம்: NEA,",
+  "trend.clear": "↓ தெளியத் தொடங்குகிறது", "trend.steady": "→ மாற்றமில்லை", "trend.worse": "↑ மோசமாகிறது", "trend.since": "{time} முதல் {from} → {to}",
+  "def.pm.title": "1 மணி நேர PM2.5: {v} µg/m³", "def.pm.body": "காற்றில் உள்ள நுண்ணிய புகைத் துகள்கள், கடந்த ஒரு மணி நேரச் சராசரி. 4 நிலைகளில் நிலை {n}, {band} ({range} µg/m³). அடுத்த ஒரு மணி நேரத்தில் என்ன செய்வது என்பதற்கு இதைப் பயன்படுத்துங்கள்.",
+  "def.psi.title": "24 மணி நேர PSI: {v}", "def.psi.body": "NEA-இன் மாசுபடுத்தி தரநிலைக் குறியீடு, கடந்த 24 மணி நேரச் சராசரி. {band} ({range}). இது மெதுவாக மாறுவதால், நாள் முழுவதையும் விவரிக்கிறது.",
+  "def.fc.title": "PSI முன்னறிவிப்பு: {range}", "def.fc.body": "{when}க்கான NEA-இன் 24 மணி நேர PSI முன்னறிவிப்பு: {name}. ஆலோசனை உயர் வரம்பை அடிப்படையாகக் கொண்டது.",
+  "def.nofc.title": "முன்னறிவிப்பு வெளியிடப்படவில்லை", "def.nofc.body": "காற்றின் தரம் ஆரோக்கியமற்ற நிலையை அடையும்போது NEA 24 மணி நேர PSI முன்னறிவிப்பை வெளியிடுகிறது.",
+  "def.more": "அளவீடுகள் பற்றி மேலும்",
+  "fc.range": "{lo} முதல் {hi} வரை", "when.today": "இன்று ({day})", "when.tomorrow": "நாளை ({day})", "to": "–",
+  "for.line": "{who}க்கான ஆலோசனை", "for.change": "மாற்று",
+  "verdict.0": "வழக்கமான நடவடிக்கைகள்", "verdict.1": "உழைப்பைக் குறைக்கவும்", "verdict.2": "உழைப்பைக் கட்டுப்படுத்தவும்", "verdict.3": "வெளியே இருப்பதைக் குறைக்கவும்",
+  "day.head.0": "இன்று வழக்கமான நடவடிக்கைகளைத் தொடரலாம்.", "day.head.1": "இன்று கடுமையான வெளிப்புற நடவடிக்கைகளைக் குறைக்கவும்.",
+  "day.head.2": "இன்று நீண்ட அல்லது கடுமையான வெளிப்புற உழைப்பைக் கட்டுப்படுத்தவும்.", "day.head.3": "இன்று வெளியே இருப்பதை முடிந்தவரை குறைக்கவும்.",
+  "day.next": "அடுத்த ஒரு மணி நேரம்", "day.from": "· {time} முதல்", "day.rest": "இன்றைய மீதி நேரம்", "day.tomorrow": "நாளை",
+  "day.notyet": "இன்னும் வெளியிடப்படவில்லை", "day.notyetBody": "NEA வழக்கமாக மறுநாளுக்கான PSI முன்னறிவிப்பை மாலையில் வெளியிடுகிறது.",
+  "band.label": "நிலை {n} · {name}", "why.pm": "1 மணி நேர PM2.5 {v} µg/m³", "why.fc": "PSI முன்னறிவிப்பு", "why.psi": "தற்போதைய 24 மணி நேர PSI {v}",
+  "news.title": "NEA அறிவிப்பு", "news.more": "மேலும் படிக்க", "news.en": "NEA தனது அறிக்கையை ஆங்கிலத்தில் வெளியிடுகிறது.", "news.full": "முழு அறிக்கை haze.gov.sg-இல்",
+  "official": "இது NEA தரவின் அதிகாரப்பூர்வமற்ற பார்வை. அதிகாரப்பூர்வ அளவீடுகள், ஆலோசனைகள், புகைமூட்ட நிலவரத்திற்கு {link} பார்க்கவும்.",
+  "hist.title": "{region}, கடந்த 24 மணி நேரம்", "hist.lead": "{from} முதல் {to} வரை. எந்த மணி நேரத்தின் அளவீட்டையும் பார்க்க வரைபடத்தில் தட்டவும் அல்லது இழுக்கவும்.",
+  "hist.peak": "அதிகபட்ச PM2.5", "hist.low": "குறைந்தபட்சம்", "hist.above": "நிலை 1-க்கு மேல்", "hist.at": "{time}", "hist.of": "{n} மணி நேரத்தில்", "hist.h": "ம.நே.",
+  "hist.pmTitle": "1 மணி நேர PM2.5", "hist.pmSub": "· ஒவ்வொரு மணி நேரச் செறிவு", "hist.psiTitle": "24 மணி நேர PSI", "hist.psiSub": "· 24 மணி நேர நகரும் சராசரி",
+  "hist.pmAria": "கடந்த 24 மணி நேரத்தின் 1 மணி நேர PM2.5, அச்சு 0 முதல் 300 µg/m³", "hist.psiAria": "கடந்த 24 மணி நேரத்தின் 24 மணி நேர PSI, அச்சு 0 முதல் 400",
+  "hist.hint": "ஒவ்வொரு மணி நேரத்தையும் படிக்கத் தட்டவும், இழுக்கவும் அல்லது அம்புக்குறி விசைகளைப் பயன்படுத்தவும்.", "hist.axisNow": "இப்போது", "hist.nowPrefix": "இப்போது · ", "hist.noReading": "{when} அளவீடு இல்லை",
+  "hist.foot": "நாளுக்கு நாள் ஒப்பிடுவதற்காக அச்சுகள் மாறாமல் உள்ளன. அச்சின் உச்சத்தைத் தாண்டும் அளவீடுகள் மேல் விளிம்பில் வரையப்படுகின்றன. தரவு: தேசியச் சுற்றுப்புற வாரியம்{snap}; அதிகாரப்பூர்வ வரைபடங்கள் {link}-இல்.",
+  "hist.snap": " (இந்த முன்னோட்டத்தில் மாதிரித் தரவு)",
+  "set.title": "அமைப்புகள்", "set.region": "உங்கள் பகுதி", "set.geo": "என் இருப்பிடத்தைப் பயன்படுத்து",
+  "set.geomsg": "உங்கள் இருப்பிடம் இந்தச் சாதனத்திலேயே இருக்கும். NEA-இன் ஐந்து பகுதிகளில் அருகிலுள்ளதைத் தேர்ந்தெடுக்க மட்டுமே பயன்படும்.",
+  "set.advice": "ஆலோசனை யாருக்கு", "set.adviceNote": "குழந்தைகள், கர்ப்பிணிப் பெண்கள், முதியவர்கள், இதயம் அல்லது நுரையீரல் நோய் உள்ளவர்களுக்கு NEA கடுமையான ஆலோசனை வழங்குகிறது.",
+  "set.sample": "இப்போது: {advice}", "set.start": "செயலியைத் திறக்கும்போது", "set.lang": "மொழி", "set.about": "தரவு பற்றி",
+  "set.aboutBody": "அளவீடுகளும் முன்னறிவிப்புகளும் தேசியச் சுற்றுப்புற வாரியத்திடமிருந்து (haze.gov.sg) வருகின்றன; உங்கள் உலாவி அவற்றை நேரடியாக ஏற்றுகிறது. {state} இந்தத் தளத்திற்கும் NEA-க்கும் தொடர்பில்லை.",
+  "set.live": "நேரலை, கடைசி அளவீடு {time}.", "set.snap": "இந்த முன்னோட்டம் {time} மாதிரித் தரவைக் காட்டுகிறது.",
+  "set.privacy": "வருகைகளும் பொத்தான் தட்டல்களும் {link} மூலம் எண்ணப்படுகின்றன; அது குக்கீகளைப் பயன்படுத்துவதில்லை. உங்கள் இருப்பிடம், பகுதி, அமைப்புகள் இந்தச் சாதனத்திலேயே இருக்கும்.",
+  "set.guide": "NEA நடவடிக்கை வழிகாட்டி (PDF)", "set.reset": "சேமித்த அமைப்புகளை மீட்டமை", "set.resetDone": "அமைப்புகள் மீட்டமைக்கப்பட்டன.",
+  "region.aria": "{region}: {areas}. 1 மணி நேர PM2.5 {v}, {band}", "region.note": "{region} பகுதியில் {areas} அடங்கும். அளவீடுகள் µg/m³ அலகில் 1 மணி நேர PM2.5.",
+  "region.sheet": "உங்கள் பகுதி", "region.saved": "இந்தச் சாதனத்தில் சேமிக்கப்பட்டது.",
+  "geo.unsupported": "இந்த உலாவியால் இருப்பிடத்தைப் பகிர முடியாது. கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.insecure": "பாதுகாப்பான (https) பக்கங்களுடன் மட்டுமே உலாவிகள் இருப்பிடத்தைப் பகிர்கின்றன. https://haze.geewax.org-ஐத் திறக்கவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.blocked": "இந்தத் தளத்திற்கு இருப்பிடம் தடுக்கப்பட்டுள்ளது. உங்கள் உலாவியின் தள அமைப்புகளில் அனுமதிக்கவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.finding": "உங்கள் இருப்பிடத்தைத் தேடுகிறது…", "geo.outside": "நீங்கள் சிங்கப்பூருக்கு வெளியே இருப்பதாகத் தெரிகிறது. கீழே ஒரு பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.denied": "இருப்பிட அனுமதி வழங்கப்படவில்லை. உலாவி அமைப்புகளில் இந்தத் தளத்திற்கு இருப்பிடத்தை அனுமதிக்கவும்; கைபேசியில் உலாவிக்கு இருப்பிடச் சேவைகளை இயக்கவும். அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.timeout": "இருப்பிடத்தைக் கண்டறிய அதிக நேரம் ஆனது. மீண்டும் முயலவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.unavailable": "உங்கள் சாதனத்தால் உங்கள் இருப்பிடத்தைக் கண்டறிய முடியவில்லை. Wi-Fi-ஐ இயக்கி மீண்டும் முயலவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
+  "geo.found": "நீங்கள் {region} பகுதியில் {place} அருகில் இருக்கிறீர்கள். இந்தச் சாதனத்தில் சேமிக்கப்பட்டது.",
+  "inst.title": "Haze Status-ஐ உங்கள் முகப்புத் திரையில் சேர்க்கவும்", "inst.body": "செயலியைப் போலத் திறக்கும், நேரடியாக உங்கள் பகுதியைக் காட்டும்.", "inst.add": "சேர்", "inst.notnow": "இப்போது வேண்டாம்",
+  "inst.ios1": "Safari கருவிப்பட்டையில் உள்ள <b>Share</b> பொத்தானை {icon} தட்டவும்.", "inst.ios2": "கீழே உருட்டி <b>Add to Home Screen</b>-ஐத் தட்டவும்.", "inst.ios3": "<b>Add</b>-ஐத் தட்டவும்.",
+  "inst.after": "அதன் பிறகு Haze Status உங்கள் முகப்புத் திரையிலிருந்து செயலியைப் போலத் திறக்கும்.", "inst.sheet": "முகப்புத் திரையில் சேர்", "inst.section": "செயலியாக நிறுவு",
+  "inst.installed": "நீங்கள் நிறுவிய செயலியைப் பயன்படுத்துகிறீர்கள்.", "inst.button": "Haze Status-ஐ நிறுவு",
+  "inst.other": "உங்கள் உலாவியின் மெனுவில் <b>Install</b> அல்லது <b>Add to Home Screen</b>-ஐத் தேர்ந்தெடுக்கவும்.",
+  "ex.title": "அளவீடுகளைப் புரிந்துகொள்ளுதல்", "ex.pmTitle": "1 மணி நேர PM2.5", "ex.pmBody": "கடந்த ஒரு மணி நேரத்தில் காற்றில் உள்ள நுண்ணிய புகைத் துகள்கள், µg/m³ அலகில். மணிக்கு மணி மாறும்.",
+  "ex.pmUse": "அடுத்த சில மணி நேரங்களில் என்ன செய்வது என்பதற்கு இதைப் பயன்படுத்துங்கள்.", "ex.fcTitle": "24 மணி நேர PSI முன்னறிவிப்பு",
+  "ex.fcBody": "மாசுபடுத்தி தரநிலைக் குறியீட்டின் அடிப்படையில் அடுத்த நாளுக்கான NEA-இன் கணிப்பு. காற்றின் தரம் ஆரோக்கியமற்றதாக இருக்கும்போது வெளியிடப்படும்.", "ex.fcUse": "அடுத்த நாளைத் திட்டமிட இதைப் பயன்படுத்துங்கள்.",
+  "ex.pmBands": "1 மணி நேர PM2.5 நிலைகள் · அடுத்த ஒரு மணி நேரம்", "ex.psiBands": "24 மணி நேர PSI · அடுத்த நாள்", "ex.vul": "எளிதில் பாதிக்கப்படக்கூடியவர்கள்:", "ex.elderly": "முதியவர்கள், குழந்தைகள், கர்ப்பிணிகள்:", "ex.chronic": "இதயம் அல்லது நுரையீரல் நோய்:",
+  "ex.note": "கட்டமிடப்பட்டவை: உங்கள் தற்போதைய நிலையும் முன்னறிவிப்பு வரம்பும். குறைக்கவும்: குறைவாகச் செய்யுங்கள். முடிந்தவரை குறைக்கவும்: மிகக் குறைவாகச் செய்யுங்கள். தவிர்க்கவும்: செய்ய வேண்டாம். ஆதாரம்: {link}.",
+  "ex.guide": "NEA, புகைமூட்டத்தின்போது வெளிப்புற நடவடிக்கைகளைத் திட்டமிடுவது எப்படி (ஜூன் 2026)",
+  "share.title": "பகிர்", "share.head": "{region} புகைமூட்டம், {day} {time}", "share.pm": "{sq} இந்த மணி நேரம்: PM2.5 {v} ({band})", "share.psi": "{sq} கடந்த 24 மணி நேரம்: PSI {v} ({band})",
+  "share.fcToday": "இன்றைய முன்னறிவிப்பு: {name}", "share.fcTomorrow": "நாளைய முன்னறிவிப்பு: {name}", "share.fcOn": "{day}க்கான முன்னறிவிப்பு: {name}",
+  "share.none": "சிங்கப்பூரின் ஒவ்வொரு பகுதிக்குமான நேரலை புகைமூட்ட அளவீடுகள்.", "share.copyLink": "இணைப்பை நகலெடு", "share.copyText": "உரையை நகலெடு", "share.more": "மேலும்",
+  "share.scan": "திறக்க ஸ்கேன் செய்யவும்", "share.scanBody": "இந்தத் திரையை அருகில் உள்ளவருக்குக் காட்டுங்கள். அது {region} பகுதியில் திறக்கும்.", "share.copied": "நகலெடுக்கப்பட்டது", "share.selected": "உரை தேர்ந்தெடுக்கப்பட்டது",
+  "share.sendText": "உரையாக அனுப்பு",
+  "pic.share": "படத்தைப் பகிர்", "pic.shareHint": "பகிர்வு மெனுவைத் திறக்கும். WhatsApp-ஐத் தேர்ந்தெடுக்கவும்.", "pic.copy": "படத்தை நகலெடு", "pic.copyHint": "பிறகு WhatsApp உரையாடலில் ஒட்டவும்.",
+  "pic.save": "படத்தைச் சேமி", "pic.saveHint": "பிறகு WhatsApp-இல் அனுப்பவும்.", "pic.preparing": "படம் தயாராகிறது…", "pic.copied": "நகலெடுக்கப்பட்டது. உரையாடலில் ஒட்டவும்.",
+  "pic.alt": "{region} புகைமூட்டப் படம்: {band}", "pic.hold": "கைபேசியில், படத்தைச் சேமிக்க அல்லது பகிர அதை அழுத்திப் பிடிக்கவும்.",
+  "card.now": "இப்போது · அடுத்த ஒரு மணி நேரம்", "card.pmLabel": "இந்த மணி நேரம் · PM2.5 µg/m³ · நிலை {n}", "card.past": "கடந்த 24 மணி நேரம் · PSI",
+  "card.fcToday": "இன்றைய முன்னறிவிப்பு · PSI", "card.fcTomorrow": "நாளைய முன்னறிவிப்பு · PSI", "card.nofc": "முன்னறிவிப்பு வெளியிடப்படவில்லை", "card.nowPin": "இப்போது {v}",
+  "card.fcRange": "முன்னறிவிப்பு {range}", "card.live": "உங்கள் பகுதிக்கான நேரலை அளவீடுகள்", "card.data": "தரவு: தேசியச் சுற்றுப்புற வாரியம். அதிகாரப்பூர்வமற்றது.",
+  "card.today": "இன்று", "card.tomorrow": "நாளை"
+}
+};
+</script>
 <script>//---------------------------------------------------------------------
 //
 // QR Code Generator for JavaScript
@@ -2651,7 +3094,9 @@ const SNAP_ADV = /*ADV*/null;
 
 /* ---------- Reference data (NEA, "How to plan your outdoor activities during haze", June 2026) ---------- */
 const REGIONS = ['north','west','central','east','south'];
-const RNAME = {north:'North',south:'South',east:'East',west:'West',central:'Central'};
+const RKEY = {north:'North',south:'South',east:'East',west:'West',central:'Central'};   // NEA's keys, never translated
+const RNAME = {...RKEY};                                                                   // what we show; set by applyLang()
+const PSI_EN = ['Good','Moderate','Unhealthy','Very Unhealthy','Hazardous'];              // NEA's forecast wording
 const REX = {north:'Woodlands, Yishun, Sembawang', west:'Jurong, Clementi, Choa Chu Kang', central:'Bishan, Toa Payoh, Ang Mo Kio, Orchard', east:'Tampines, Bedok, Pasir Ris, Punggol', south:'CBD, Bukit Merah, Queenstown, Sentosa'};
 const SUBS = [['pm25','ChartPM25'],['pm10','ChartPM10'],['o3','ChartO3'],['co','ChartCO'],['so2','ChartSO2']];
 /* who → which column of NEA's guide applies */
@@ -2696,12 +3141,15 @@ const ICON = {
 
 /* ---------- Settings, saved in this browser ---------- */
 const KEY = 'haze-sky:v2';
-const DEFAULTS = {region:'central', group:'healthy', start:'now'};
+const LANGS = [['en','English'],['zh','中文'],['ms','Bahasa Melayu'],['ta','தமிழ்']];
+const browserLang = () => { for (const l of navigator.languages || [navigator.language || '']){ const k = String(l).slice(0, 2).toLowerCase(); if (['zh','ms','ta','en'].includes(k)) return k; } return 'en'; };
+const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang()};
 const P = {...DEFAULTS};
 try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
-  if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
+  if (['now','day'].includes(p.start)) P.start = p.start;
+  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang; } catch(e) {}
 /* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
    first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
 const ARRIVAL = (() => { const q = new URLSearchParams(location.search);
@@ -2722,6 +3170,29 @@ let keepRegion = null;
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(keepRegion ? {...P, region:keepRegion} : P)); } catch(e) {} }
 const S = {tab:P.start, d:null, live:false};
 const G = () => GROUPS.find(g => g.id === P.group);
+
+/* ---------- Language. Strings live in src/i18n.js; missing keys fall back to English. ---------- */
+const LOCALE = {en:'en-SG', zh:'zh-SG', ms:'ms-SG', ta:'ta-SG'};
+function t(key, vars){
+  let s = (I18N[P.lang] && I18N[P.lang][key] != null) ? I18N[P.lang][key] : (I18N.en[key] != null ? I18N.en[key] : key);
+  return vars ? s.replace(/\{(\w+)\}/g, (_, k) => vars[k] != null ? vars[k] : '') : s;
+}
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
+/* Put the current language's words into the data the screens read, and into the page's fixed labels */
+function applyLang(){
+  for (const r of REGIONS){ RNAME[r] = t('region.' + r); REX[r] = t('areas.' + r); }
+  for (const b of PM){ const k = 'pm.' + b.n; b.name = t(k); b.gen = t(k + '.gen'); b.vul = t(k + '.vul'); b.sGen = t(k + '.sgen'); b.sVul = t(k + '.svul'); }
+  PSI.forEach((b, i) => { const k = 'psi.' + i; b.name = t(k); for (const g of ['healthy','elderly','chronic']){ b[g] = t(`${k}.${g}`); b['s' + capFirst(g)] = t(`${k}.s${g}`); } });
+  for (const g of GROUPS){ g.name = t(`group.${g.id}.name`); g.plural = t(`group.${g.id}.plural`); g.who = t(`group.${g.id}.who`); }
+  document.documentElement.lang = {en:'en', zh:'zh-Hans-SG', ms:'ms', ta:'ta'}[P.lang];
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.querySelectorAll('[data-ia]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.ia)); });
+  const fam = {zh:'Noto+Sans+SC', ta:'Noto+Sans+Tamil'}[P.lang];   // only fetched when a language needs it
+  if (fam && !document.getElementById('font-' + P.lang)){
+    const l = Object.assign(document.createElement('link'), {id:'font-' + P.lang, rel:'stylesheet', href:`https://fonts.googleapis.com/css2?family=${fam}:wght@400;500;600;700;800&display=swap`});
+    document.head.append(l);
+  }
+}
 
 /* ---------- Data: fetched by the browser from NEA, snapshot as fallback ---------- */
 async function fetchJSON(url, ms){
@@ -2744,14 +3215,18 @@ function parseNea(s){
   return new Date(Date.UTC(+m[3], MON[m[2]], +m[1], h - 8));
 }
 const sg = d => new Date(d.getTime() + 8*3600e3);
-function sgHour(d){ const h = sg(d).getUTCHours(); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); }
-function sgDay(d, dow){ const x = sg(d); return (dow ? DOW[x.getUTCDay()] + ' ' : '') + x.getUTCDate() + ' ' + Object.keys(MON)[x.getUTCMonth()]; }
+function sgHourEN(d){ const h = sg(d).getUTCHours(); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); }
+function sgDayEN(d, dow){ const x = sg(d); return (dow ? DOW[x.getUTCDay()] + ' ' : '') + x.getUTCDate() + ' ' + Object.keys(MON)[x.getUTCMonth()]; }
+/* times and dates in Singapore time, in the visitor's language */
+function sgHour(d){ return P.lang === 'en' ? sgHourEN(d) : new Intl.DateTimeFormat(LOCALE[P.lang], {hour:'numeric', timeZone:'Asia/Singapore'}).format(d); }
+function sgDay(d, dow){ return P.lang === 'en' ? sgDayEN(d, dow) : new Intl.DateTimeFormat(LOCALE[P.lang], {...(dow ? {weekday:'short'} : {}), day:'numeric', month:'short', timeZone:'Asia/Singapore'}).format(d); }
+const sgAt = (d, dow) => t('fmt.at', {time:sgHour(d), day:sgDay(d, dow)});
 const dayNum = d => Math.floor(sg(d).getTime() / 86400e3);
 function normalise(aq, adv){
   const times = aq.Chart1HRPM25.North.Data.map(p => parseNea(p.dateTime));
   const regions = {};
   for (const r of REGIONS){
-    const K = RNAME[r];
+    const K = RKEY[r];
     const pm = aq.Chart1HRPM25[K].Data.map(p => p.value > 0 ? p.value : null);
     const sub = {};
     for (const [k, c] of SUBS) sub[k] = ((aq[c] || {})[K] || {Data:[]}).Data.map(p => p.value > 0 ? p.value : null);
@@ -2762,7 +3237,7 @@ function normalise(aq, adv){
   let li = times.length - 1;
   while (li > 0 && REGIONS.some(r => regions[r].pm[li] == null || regions[r].psi[li] == null)) li--;
   const text = ((adv && adv.AirQualityBlurb) || '').replace(/^[^:]*:\s*/, '').trim();
-  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI.findIndex(b => b.name.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
+  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI_EN.findIndex(b => b.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
   const issued = adv && adv.DateOfArticle ? new Date(adv.DateOfArticle) : null;
   // NEA's evening forecast covers the next day; a morning one covers the same day
   const fcDate = issued ? new Date(issued.getTime() + (sg(issued).getUTCHours() >= 12 ? 86400e3 : 0)) : null;
@@ -2787,17 +3262,16 @@ const pmAdvice = b => b[G().pm], psiAdvice = b => b[G().psi];
 const plain = (b, key) => b['s' + key[0].toUpperCase() + key.slice(1)];
 const pmShort = b => plain(b, G().pm), psiShort = b => plain(b, G().psi);
 function fcRel(){ const f = S.d.fc; return f ? dayNum(f.date) - dayNum(S.d.asOf) : null; }
-function fcWhen(){ const f = S.d.fc, r = fcRel(); return sgDay(f.date, true) + (r === 0 ? ' · today' : r === 1 ? ' · tomorrow' : r < 0 ? ' · out of date' : ''); }
-function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} to ${PSI[f.hi].name}`; }
-function fcBadges(){ const f = S.d.fc; return f.lo === f.hi ? badge(PSI[f.lo].c, PSI[f.lo].name) : badge(PSI[f.lo].c, PSI[f.lo].name) + ' to ' + badge(PSI[f.hi].c, PSI[f.hi].name); }
-const forLine = () => `<div class="for">Advice for ${esc(G().plural)} · <button data-tab="set">Change</button></div>`;
+function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : t('fc.range', {lo:PSI[f.lo].name, hi:PSI[f.hi].name}); }
+function fcBadges(){ const f = S.d.fc; return f.lo === f.hi ? badge(PSI[f.lo].c, PSI[f.lo].name) : badge(PSI[f.lo].c, PSI[f.lo].name) + ' ' + t('to') + ' ' + badge(PSI[f.hi].c, PSI[f.hi].name); }
+const forLine = () => `<div class="for">${esc(t('for.line', {who:G().plural}))} · <button data-tab="set">${t('for.change')}</button></div>`;
 function isDark(){ const t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
-function verdict(t){
-  if (/^(Continue|Normal)/.test(t)) return {w:'Normal activities', i:'go', k:0};
-  if (/^Reduce/.test(t)) return {w:'Reduce exertion', i:'ease', k:1};
-  if (/^(Avoid|Minimise) (prolonged|strenuous)/.test(t)) return {w:'Limit exertion', i:'light', k:2};
-  return {w:'Limit time outdoors', i:'home', k:3};
-}
+/* How strong NEA's advice is, by band and group: 0 normal, 1 reduce, 2 avoid or minimise exertion, 3 limit time outdoors */
+const VLEV = {gen:[0,1,2,3], vul:[0,2,3,3], healthy:[0,0,1,2,3], elderly:[0,0,2,3,3], chronic:[0,0,2,3,3]};
+const VICON = ['go','ease','light','home'];
+function verdictOf(k){ return {k, i:VICON[k], w:t('verdict.' + k)}; }
+const pmVerdict = b => verdictOf(VLEV[G().pm][PM.indexOf(b)]);
+const psiVerdict = b => verdictOf(VLEV[G().psi][PSI.indexOf(b)]);
 
 /* ---------- Sky ---------- */
 function mix(a, b, t){ const p = x => [1,3,5].map(i => parseInt(x.slice(i, i+2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2, '0')).join(''); }
@@ -2836,7 +3310,7 @@ function grain(el, pm){
 /* ---------- Links to the official source ---------- */
 const OFFICIAL = 'https://www.haze.gov.sg/', NEA_GUIDE = 'https://www.haze.gov.sg/docs/default-source/posters/haze-pm-psi-guide-a4-english.pdf';
 const ext = (href, text) => `<a class="ext" href="${href}" target="_blank" rel="noopener" data-track="out/${new URL(href).hostname}">${text}${ICON.out}</a>`;
-const officialLine = () => `<p class="official">Unofficial view of NEA data. For official readings, advisories and the haze situation, see ${ext(OFFICIAL, 'haze.gov.sg')}.</p>`;
+const officialLine = () => `<p class="official">${t('official', {link:ext(OFFICIAL, 'haze.gov.sg')})}</p>`;
 
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
@@ -2854,30 +3328,31 @@ function lbar({B, v, fc, tick}){
 }
 function renderNow(){
   const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel(), plan = f ? PSI[f.hi] : n.p;
-  const who = G().plural.charAt(0).toUpperCase() + G().plural.slice(1);
+  const who = G().who;
   el.innerHTML = `
     <div class="sky">
-      <div class="eb">Now</div>
+      <div class="eb">${t('now.eb')}</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <button class="lnum" data-act="def" data-k="pm" aria-label="1-hr PM2.5 ${n.pm}. What does this mean?"><span class="v num">${n.pm}</span><span class="k"><b>This hour</b><small>PM2.5 · µg/m³</small></span></button>
+      <button class="lnum" data-act="def" data-k="pm" aria-label="${esc(t('aria.pmdef', {v:n.pm}))}"><span class="v num">${n.pm}</span><span class="k"><b>${t('now.thisHour')}</b><small>PM2.5 · µg/m³</small></span></button>
       <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
       ${trendLine(P.region)}
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
-        <div class="nea" id="nea-pm" hidden>NEA: “${esc(pmAdvice(n.b))}”</div></div>
+        <div class="nea" id="nea-pm" hidden>${esc(t('nea.prefix', {text:pmAdvice(n.b)}))}</div></div>
       ${installBanner()}
     </div>
     <div class="ahead">
-      <div class="eb" style="color:var(--muted)">${r === 1 ? 'Tomorrow' : 'Today'}</div>
+      <div class="eb" style="color:var(--muted)">${t(r === 1 ? 'tomorrow' : 'today')}</div>
       <div class="head2" style="color:var(--fg${plan.c})">${f ? (f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} → ${PSI[f.hi].name}`) : n.p.name}</div>
       <div class="lpair">
-        <button data-act="def" data-k="psi" aria-label="24-hr PSI ${n.psi}. What does this mean?"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k"><b>Past 24 hours</b><small>PSI</small></span></button>
-        <button data-act="def" data-k="fc" aria-label="PSI forecast. What does this mean?"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="k"><b>Forecast</b><small>PSI</small></span></button>
+        <button data-act="def" data-k="psi" aria-label="${esc(t('aria.psidef', {v:n.psi}))}"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k"><b>${t('now.past24')}</b><small>PSI</small></span></button>
+        <button data-act="def" data-k="fc" aria-label="${esc(t('aria.fcdef'))}"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : t('now.none')}</span><span class="k"><b>${t('now.forecast')}</b><small>PSI</small></span></button>
       </div>
       ${lbar({B:PSI, v:n.psi, fc:f, tick:'var(--ink)'})}
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
-        <div class="nea" id="nea-psi" hidden>NEA: “${esc(psiAdvice(plan))}”${f && f.lo !== f.hi ? ` For the upper end of the forecast, ${PSI[f.hi].name}.` : f ? '' : ' For the current 24-hr PSI; no forecast has been issued.'}</div></div>
+        <div class="nea" id="nea-psi" hidden>${esc(t('nea.prefix', {text:psiAdvice(plan)}))}${f && f.lo !== f.hi ? esc(t('nea.upper', {band:PSI[f.hi].name})) : f ? '' : esc(t('nea.nofc'))}</div></div>
       ${shareBlock()}
-      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · Source: NEA, ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · ${t('foot.source')} ${ext(OFFICIAL, 'haze.gov.sg')}</div>
+      <div class="langs" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${k === 'ms' ? 'Melayu' : nm}</button>`).join('')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
@@ -2892,27 +3367,26 @@ function pmTrend(r){
 }
 function trendLine(r){
   const tr = pmTrend(r); if (!tr) return '';
-  const word = ['↓ Starting to clear', '→ Holding steady', '↑ Getting worse'][tr.dir + 1];
-  return `<div class="trend num"><b>${word}</b> · ${tr.from} → ${tr.to} since ${sgHour(tr.since)}</div>`;
+  const word = t(['trend.clear', 'trend.steady', 'trend.worse'][tr.dir + 1]);
+  return `<div class="trend num"><b>${word}</b> · ${esc(t('trend.since', {from:tr.from, to:tr.to, time:sgHour(tr.since)}))}</div>`;
 }
 /* what each number means, shown when it is tapped */
 function defText(k){
   const n = now(P.region), f = S.d.fc;
-  if (k === 'pm') return `<b>1-hr PM2.5: ${n.pm} µg/m³</b>Fine smoke particles in the air, averaged over the past hour. Band ${n.b.n} of 4, ${n.b.name} (${n.b.range} µg/m³). Use it for what you do in the next hour.`;
-  if (k === 'psi') return `<b>24-hr PSI: ${n.psi}</b>NEA’s Pollutant Standards Index, averaged over the past 24 hours. ${n.p.name} (${n.p.range}). It moves slowly, so it describes the day.`;
-  return f ? `<b>PSI forecast: ${psiRange(f.lo, f.hi)}</b>NEA’s 24-hr PSI forecast for ${fcFor()}: ${fcName()}. The advice is for the upper end.`
-           : `<b>No forecast issued</b>NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.`;
+  if (k === 'pm') return `<b>${esc(t('def.pm.title', {v:n.pm}))}</b>${esc(t('def.pm.body', {n:n.b.n, band:n.b.name, range:n.b.range}))}`;
+  if (k === 'psi') return `<b>${esc(t('def.psi.title', {v:n.psi}))}</b>${esc(t('def.psi.body', {band:n.p.name, range:n.p.range}))}`;
+  return f ? `<b>${esc(t('def.fc.title', {range:psiRange(f.lo, f.hi)}))}</b>${esc(t('def.fc.body', {when:fcFor(), name:fcName()}))}`
+           : `<b>${esc(t('def.nofc.title'))}</b>${esc(t('def.nofc.body'))}`;
 }
 const pop = () => document.getElementById('pop');
 function showDef(k){
   const el = pop(), same = !el.hidden && el.dataset.k === k;
   el.dataset.k = k; el.hidden = same;
-  el.innerHTML = `${defText(k)}<button class="link" data-act="explain" style="display:flex;margin-top:8px;font-size:13px">More about the readings ${ICON.right}</button>`;
+  el.innerHTML = `${defText(k)}<button class="link" data-act="explain" style="display:flex;margin-top:8px;font-size:13px">${t('def.more')} ${ICON.right}</button>`;
 }
 
 /* ---------- My day ---------- */
-function step(when, sub, advice, c, why){
-  const V = verdict(advice);
+function step(when, sub, advice, c, why, V){
   return `<div class="step"><span class="mk" style="background:var(--c${c});color:var(--on${c})">${ICON[V.i]}</span>
     <div><div class="when">${when} <span>${sub}</span></div><div class="v">${V.w}</div><div class="a">${esc(advice)}</div><div class="why num">${why}</div></div></div>`;
 }
@@ -2920,18 +3394,18 @@ function renderDay(){
   const el = document.getElementById('v-day'), n = now(P.region), f = S.d.fc, rel = fcRel();
   const todayB = f && rel === 0 ? PSI[f.hi] : n.p;   // forecast if it covers today, else the current reading
   const steps = [
-    step('Next hour', `· from ${sgHour(S.d.asOf)}`, pmAdvice(n.b), n.b.c, `${badge(n.b.c, 'Band ' + n.b.n + ' · ' + n.b.name)} 1-hr PM2.5 ${n.pm} µg/m³`),
-    step('Rest of today', `· ${sgDay(S.d.asOf, true)}`, psiAdvice(todayB), todayB.c, f && rel === 0 ? `${fcBadges()} PSI forecast` : `${badge(n.p.c, n.p.name)} 24-hr PSI now ${n.psi}`)];
-  if (f && rel === 1) steps.push(step('Tomorrow', `· ${sgDay(f.date, true)}`, psiAdvice(PSI[f.hi]), PSI[f.hi].c, `${fcBadges()} PSI forecast`));
+    step(t('day.next'), t('day.from', {time:sgHour(S.d.asOf)}), pmAdvice(n.b), n.b.c, `${badge(n.b.c, t('band.label', {n:n.b.n, name:n.b.name}))} ${esc(t('why.pm', {v:n.pm}))}`, pmVerdict(n.b)),
+    step(t('day.rest'), `· ${sgDay(S.d.asOf, true)}`, psiAdvice(todayB), todayB.c, f && rel === 0 ? `${fcBadges()} ${t('why.fc')}` : `${badge(n.p.c, n.p.name)} ${esc(t('why.psi', {v:n.psi}))}`, psiVerdict(todayB))];
+  if (f && rel === 1) steps.push(step(t('day.tomorrow'), `· ${sgDay(f.date, true)}`, psiAdvice(PSI[f.hi]), PSI[f.hi].c, `${fcBadges()} ${t('why.fc')}`, psiVerdict(PSI[f.hi])));
   else steps.push(`<div class="step"><span class="mk" style="background:var(--surface-2);color:var(--muted);border:1px dashed var(--line)">${ICON.light}</span>
-      <div><div class="when">Tomorrow <span>· ${sgDay(new Date(S.d.asOf.getTime() + 86400e3), true)}</span></div><div class="v" style="color:var(--muted)">Not yet issued</div>
-      <div class="a" style="color:var(--muted)">NEA usually issues the next day’s PSI forecast in the evening.</div></div></div>`);
-  const worst = Math.max(verdict(pmAdvice(n.b)).k, verdict(psiAdvice(todayB)).k);
-  const head = ['Normal activities can continue today.', 'Reduce strenuous outdoor activity today.', 'Limit prolonged or strenuous outdoor exertion today.', 'Minimise time outdoors today.'][worst];
+      <div><div class="when">${t('day.tomorrow')} <span>· ${sgDay(new Date(S.d.asOf.getTime() + 86400e3), true)}</span></div><div class="v" style="color:var(--muted)">${t('day.notyet')}</div>
+      <div class="a" style="color:var(--muted)">${t('day.notyetBody')}</div></div></div>`);
+  const worst = Math.max(pmVerdict(n.b).k, psiVerdict(todayB).k);
+  const head = t('day.head.' + worst);
   el.innerHTML = `<div class="day">
     <div><h2>${head}</h2><div style="margin-top:6px;color:var(--muted)">${forLine()}</div></div>
     <div class="tl">${steps.join('')}</div>
-    ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
+    ${S.d.statement[0] ? `<button class="news" data-act="news" lang="en"><b lang="${P.lang}">${t('news.title')}${S.d.issued ? ' · ' + sgAt(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px" lang="${P.lang}">${t('news.more')}</span></button>` : ''}
     ${shareBlock()}
     ${officialLine()}
   </div>`;
@@ -2942,7 +3416,7 @@ const HG = {W:340, H:200, pl:28, pr:8, pt:6, pb:22};
 const hx = (i, n) => HG.pl + (HG.W - HG.pl - HG.pr) * i / (n - 1);
 const hy = (v, top) => HG.pt + (HG.H - HG.pt - HG.pb) * (1 - Math.min(v, top) / top);
 const SERIES = () => { const R = S.d.regions[P.region], n = S.d.li + 1;
-  return [{key:'pm', vals:R.pm.slice(0, n), bands:PM, top:300, unit:'µg/m³', band:v => PM[pmIdx(v)], lab:b => `Band ${b.n} · ${b.name}`},
+  return [{key:'pm', vals:R.pm.slice(0, n), bands:PM, top:300, unit:'µg/m³', band:v => PM[pmIdx(v)], lab:b => t('band.label', {n:b.n, name:b.name})},
           {key:'psi', vals:R.psi.slice(0, n), bands:PSI, top:400, unit:'PSI', band:v => PSI[psiIdx(v)], lab:b => b.name}]; };
 function chart(s, title){
   const {W, H, pl, pr, pb} = HG, n = s.vals.length;
@@ -2956,19 +3430,19 @@ function chart(s, title){
   }
   const pts = s.vals.map((v, i) => v == null ? null : [hx(i, n), hy(v, s.top), v]).filter(Boolean);
   const dots = pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6" fill="var(--c${s.band(p[2]).c})" stroke="var(--ink)" stroke-width=".8"/>`).join('');
-  const xl = [0, 6, 12, 18, n-1].map(i => `<text x="${hx(i, n)}" y="${H-6}" text-anchor="${i === 0 ? 'start' : i === n-1 ? 'end' : 'middle'}">${i === n-1 ? 'Now' : sgHour(S.d.times[i])}</text>`).join('');
-  return `<svg class="chart" data-chart="${s.key}" viewBox="0 0 ${W} ${H}" tabindex="0" role="img" aria-label="${esc(title)}. Tap, drag or use the arrow keys to read each hour.">${g}<text x="${pl-5}" y="${hy(0, s.top)+3.5}" text-anchor="end">0</text>
+  const xl = [0, 6, 12, 18, n-1].map(i => `<text x="${hx(i, n)}" y="${H-6}" text-anchor="${i === 0 ? 'start' : i === n-1 ? 'end' : 'middle'}">${i === n-1 ? t('hist.axisNow') : sgHour(S.d.times[i])}</text>`).join('');
+  return `<svg class="chart" data-chart="${s.key}" viewBox="0 0 ${W} ${H}" tabindex="0" role="img" aria-label="${esc(title + '. ' + t('hist.hint'))}">${g}<text x="${pl-5}" y="${hy(0, s.top)+3.5}" text-anchor="end">0</text>
     <path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>${dots}${xl}<g class="cross"></g></svg>`;
 }
 function drawSel(){
-  const i = S.hi, t = S.d.times[i], when = `${i === S.d.li ? 'Now · ' : ''}${sgHour(t)}, ${sgDay(t, true)}`;
+  const i = S.hi, at = S.d.times[i], when = `${i === S.d.li ? t('hist.nowPrefix') : ''}${sgAt(at, true)}`;
   for (const s of SERIES()){
     const svg = document.querySelector(`[data-chart="${s.key}"]`), ro = document.getElementById('ro-' + s.key);
     if (!svg || !ro) continue;
     const v = s.vals[i], X = hx(i, s.vals.length);
     svg.querySelector('.cross').innerHTML = `<line x1="${X}" x2="${X}" y1="${HG.pt}" y2="${HG.H-HG.pb}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3"/>`
       + (v == null ? '' : `<circle cx="${X}" cy="${hy(v, s.top)}" r="6.5" fill="var(--c${s.band(v).c})" stroke="var(--ink)" stroke-width="2.5"/>`);
-    ro.innerHTML = v == null ? `<span class="rn">–</span><span class="rt">No reading at ${when}</span>`
+    ro.innerHTML = v == null ? `<span class="rn">–</span><span class="rt">${esc(t('hist.noReading', {when}))}</span>`
       : `<span class="rn" style="color:var(--fg${s.band(v).c})">${v}</span><span class="rd"><span>${s.unit} ${badge(s.band(v).c, s.lab(s.band(v)))}</span><span class="rt">${when}</span></span>`;
   }
 }
@@ -2985,15 +3459,15 @@ function renderHist(){
   const peak = ok.reduce((a, b) => b[0] > a[0] ? b : a), low = ok.reduce((a, b) => b[0] < a[0] ? b : a);
   const hrs = ok.filter(a => a[0] > 55).length;
   el.innerHTML = `<div class="hist">
-    <div><h2>${RNAME[P.region]}, last 24 hours</h2><p class="lead">${sgHour(S.d.times[0])} ${sgDay(S.d.times[0], true)} to ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}. Tap or drag across a chart to read any hour.</p></div>
+    <div><h2>${esc(t('hist.title', {region:RNAME[P.region]}))}</h2><p class="lead">${esc(t('hist.lead', {from:sgAt(S.d.times[0], true), to:sgAt(S.d.asOf, true)}))}</p></div>
     <div class="stats num">
-      <button data-hour="${peak[1]}"><div class="k">Peak PM2.5</div><div class="n" style="color:var(--fg${PM[pmIdx(peak[0])].c})">${peak[0]}</div><div class="t">at ${sgHour(S.d.times[peak[1]])}</div></button>
-      <button data-hour="${low[1]}"><div class="k">Lowest</div><div class="n" style="color:var(--fg${PM[pmIdx(low[0])].c})">${low[0]}</div><div class="t">at ${sgHour(S.d.times[low[1]])}</div></button>
-      <div><div class="k">Above Band 1</div><div class="n">${hrs}<span style="font-size:15px"> h</span></div><div class="t">of ${ok.length} hours</div></div>
+      <button data-hour="${peak[1]}"><div class="k">${t('hist.peak')}</div><div class="n" style="color:var(--fg${PM[pmIdx(peak[0])].c})">${peak[0]}</div><div class="t">${esc(t('hist.at', {time:sgHour(S.d.times[peak[1]])}))}</div></button>
+      <button data-hour="${low[1]}"><div class="k">${t('hist.low')}</div><div class="n" style="color:var(--fg${PM[pmIdx(low[0])].c})">${low[0]}</div><div class="t">${esc(t('hist.at', {time:sgHour(S.d.times[low[1]])}))}</div></button>
+      <div><div class="k">${t('hist.above')}</div><div class="n">${hrs}<span style="font-size:15px"> ${t('hist.h')}</span></div><div class="t">${esc(t('hist.of', {n:ok.length}))}</div></div>
     </div>
-    <div class="sec"><h3>1-hr PM2.5 <span>· concentration in each hour</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, '1-hr PM2.5 for the last 24 hours, axis 0 to 300 µg/m³')}</div>
-    <div class="sec"><h3>24-hr PSI <span>· rolling 24-hour average</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, '24-hr PSI for the last 24 hours, axis 0 to 400')}</div>
-    <p class="foot" style="margin:0">Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency${S.live ? '' : ' (snapshot in this preview)'}; official charts at ${ext(OFFICIAL, 'haze.gov.sg')}.</p></div>`;
+    <div class="sec"><h3>${t('hist.pmTitle')} <span>${t('hist.pmSub')}</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, t('hist.pmAria'))}</div>
+    <div class="sec"><h3>${t('hist.psiTitle')} <span>${t('hist.psiSub')}</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, t('hist.psiAria'))}</div>
+    <p class="foot" style="margin:0">${t('hist.foot', {snap:S.live ? '' : t('hist.snap'), link:ext(OFFICIAL, 'haze.gov.sg')})}</p></div>`;
   drawSel();
 }
 const histView = document.getElementById('v-hist');
@@ -3009,31 +3483,33 @@ histView.addEventListener('keydown', e => {
 function renderSet(){
   const el = document.getElementById('v-set');
   el.innerHTML = `<div class="set">
-    <h2>Settings</h2>
-    <div class="sec"><h3>Your region</h3>
-      <button class="locbtn" id="geo">${ICON.locate} Use my location</button>
-      <p class="msg" id="geomsg">Your location stays on this device. It only picks the nearest of NEA’s five regions.</p>
+    <h2>${t('set.title')}</h2>
+    <div class="sec"><h3>${t('set.lang')}</h3>
+      <div class="seg langseg" role="group" aria-label="${t('set.lang')}">${LANGS.map(([k, nm]) => `<button data-lang="${k}" aria-pressed="${k === P.lang}" lang="${k}">${nm}</button>`).join('')}</div></div>
+    <div class="sec"><h3>${t('set.region')}</h3>
+      <button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button>
+      <p class="msg" id="geomsg">${t('set.geomsg')}</p>
       ${regionOpts()}</div>
-    <div class="sec"><h3>Advice for</h3>
+    <div class="sec"><h3>${t('set.advice')}</h3>
       <div class="group">${GROUPS.map(g => `<button class="opt" data-group="${g.id}" aria-pressed="${g.id === P.group}"><span class="nm">${g.name}</span><span class="ex">${esc(sampleFor(g))}</span><span class="side"><span class="radio"></span></span></button>`).join('')}</div>
-      <p class="msg">NEA gives stricter advice for children, pregnant women, the elderly and people with heart or lung conditions.</p></div>
-    <div class="sec"><h3>Open the app on</h3>
-      <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
+      <p class="msg">${t('set.adviceNote')}</p></div>
+    <div class="sec"><h3>${t('set.start')}</h3>
+      <div class="seg" role="group" aria-label="${t('set.start')}">${[['now','tab.now'],['day','tab.day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${t(v)}</button>`).join('')}</div></div>
     ${installSection()}
-    <div class="sec"><h3>About the data</h3>
-      <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} This site is not affiliated with NEA.</p>
-      <p style="font-size:14px;margin:0 0 10px">Visits and button taps are counted with ${ext('https://www.goatcounter.com/', 'GoatCounter')}, which uses no cookies. Your location, region and settings stay on this device.</p>
-      <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, 'NEA’s activity guide (PDF)')}</p>
-      <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">Reset saved settings</button><span class="foot" id="resetmsg"></span></div></div>
+    <div class="sec"><h3>${t('set.about')}</h3>
+      <p style="font-size:14px;margin:0 0 10px">${esc(t('set.aboutBody', {state:t(S.live ? 'set.live' : 'set.snap', {time:sgAt(S.d.asOf, true)})}))}</p>
+      <p style="font-size:14px;margin:0 0 10px">${t('set.privacy', {link:ext('https://www.goatcounter.com/', 'GoatCounter')})}</p>
+      <p style="font-size:14px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 16px">${ext(OFFICIAL, 'haze.gov.sg')}${ext('https://www.nea.gov.sg/', 'nea.gov.sg')}${ext(NEA_GUIDE, t('set.guide'))}</p>
+      <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">${t('set.reset')}</button><span class="foot" id="resetmsg"></span></div></div>
   </div>`;
 }
 /* the five regions laid out as a +, as on NEA's map */
 function regionOpts(){
-  return `<div class="xgrid" role="group" aria-label="Region">${REGIONS.map(r => { const q = now(r);
-    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${RNAME[r]}: ${REX[r]}. 1-hr PM2.5 ${q.pm}, ${q.b.name}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
-    <p class="msg" style="text-align:center;margin:10px 0 0">${RNAME[P.region]} includes ${REX[P.region]}. Readings are 1-hr PM2.5 in µg/m³.</p>`;
+  return `<div class="xgrid" role="group" aria-label="${t('aria.region')}">${REGIONS.map(r => { const q = now(r);
+    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
+    <p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[P.region], areas:REX[P.region]}))}</p>`;
 }
-function sampleFor(g){ const n = now(P.region); return 'Now: ' + n.b[g.pm]; }
+function sampleFor(g){ const n = now(P.region); return t('set.sample', {advice:n.b[g.pm]}); }
 
 /* ---------- Sheet ---------- */
 const sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
@@ -3045,38 +3521,38 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeSheet(
 function explainHTML(){
   const n = now(P.region), f = S.d.fc;
   return `<div><div class="two">
-      <div><b>1-hr PM2.5</b>Fine smoke particles in the air over the last hour, in µg/m³. Changes hour to hour.<br><br><b style="font-size:13px">Use it for what you do in the next few hours.</b></div>
-      <div><b>24-hr PSI forecast</b>NEA’s outlook for the day ahead on the Pollutant Standards Index. Published when air quality is Unhealthy.<br><br><b style="font-size:13px">Use it to plan the next day.</b></div>
+      <div><b>${t('ex.pmTitle')}</b>${t('ex.pmBody')}<br><br><b style="font-size:13px">${t('ex.pmUse')}</b></div>
+      <div><b>${t('ex.fcTitle')}</b>${t('ex.fcBody')}<br><br><b style="font-size:13px">${t('ex.fcUse')}</b></div>
     </div></div>
-    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">1-hr PM2.5 bands · next hour</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">Band ${b.n} · ${b.name}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>Vulnerable:</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
-    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">24-hr PSI · next day</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>Elderly, children, pregnant:</b> ${esc(b.elderly)}<br><b>Heart or lung:</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
-    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: ${ext(NEA_GUIDE, 'NEA, How to plan your outdoor activities during haze (June 2026)')}.</p></div>`;
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">${t('ex.pmBands')}</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${esc(t('band.label', {n:b.n, name:b.name}))}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>${t('ex.vul')}</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">${t('ex.psiBands')}</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>${t('ex.elderly')}</b> ${esc(b.elderly)}<br><b>${t('ex.chronic')}</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">${t('ex.note', {link:ext(NEA_GUIDE, t('ex.guide'))})}</p></div>`;
 }
 function newsHTML(){
-  return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="${OFFICIAL}" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.out}</a>`;
+  return `${t('news.en') ? `<p class="msg" style="margin:0">${t('news.en')}</p>` : ''}<div lang="en">${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}</div><a class="link" href="${OFFICIAL}" target="_blank" rel="noopener">${t('news.full')} ${ICON.out}</a>`;
 }
 /* Use my location: GPS position → nearest named area → that area's NEA region */
 async function geolocate(){
   const btn = document.getElementById('geo'), say = t => { const m = document.getElementById('geomsg'); if (m) m.textContent = t; };
-  if (!('geolocation' in navigator)){ track('location/unsupported'); return say('This browser can’t share its location. Pick your region below.'); }
-  if (!window.isSecureContext){ track('location/insecure'); return say('Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.'); }
+  if (!('geolocation' in navigator)){ track('location/unsupported'); return say(t('geo.unsupported')); }
+  if (!window.isSecureContext){ track('location/insecure'); return say(t('geo.insecure')); }
   let state = null;
   try { state = (await navigator.permissions.query({name:'geolocation'})).state; } catch(e) {}
-  if (state === 'denied'){ track('location/blocked'); return say('Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.'); }
-  say('Finding your location…'); if (btn) btn.disabled = true;
+  if (state === 'denied'){ track('location/blocked'); return say(t('geo.blocked')); }
+  say(t('geo.finding')); if (btn) btn.disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
     if (btn) btn.disabled = false;
     const {latitude:la, longitude:lo} = pos.coords;
-    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ track('location/outside-singapore'); return say('You seem to be outside Singapore. Pick a region below.'); }
+    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ track('location/outside-singapore'); return say(t('geo.outside')); }
     const a = nearestArea(la, lo);
     track('location/found/' + a[1]);
     placeFound(a[0], a[1]);
   }, err => {
     if (btn) btn.disabled = false;
     track('location/' + (err.code === 1 ? 'denied' : err.code === 3 ? 'timeout' : 'unavailable'));
-    say(err.code === 1 ? 'Location permission wasn’t given. Allow location for this site in your browser settings, and turn on Location Services for your browser on a phone. Or pick your region below.'
-      : err.code === 3 ? 'Finding your location took too long. Try again, or pick your region below.'
-      : 'Your device couldn’t work out where you are. Try again with Wi-Fi on, or pick your region below.');
+    say(err.code === 1 ? t('geo.denied')
+      : err.code === 3 ? t('geo.timeout')
+      : t('geo.unavailable'));
   }, {enableHighAccuracy:false, timeout:15000, maximumAge:10 * 60e3});
 }
 /* Neighbourhood centres, each assigned to the NEA region that reports for it */
@@ -3102,13 +3578,13 @@ function nearestArea(la, lo){
 }
 function placeFound(name, r){
   P.region = r; keepRegion = null; S.hi = null; save();
-  const note = `Found you near ${name}, in the ${RNAME[r]} region. Saved on this device.`;
+  const note = t('geo.found', {place:name, region:RNAME[r]});
   render();
   if (sheet.classList.contains('on')){ document.getElementById('sheetBody').innerHTML = regionSheetHTML(note); setTimeout(closeSheet, 1600); }
   else { const m = document.getElementById('geomsg'); if (m) m.textContent = note; }
 }
-const regionSheetHTML = (note = 'Saved on this device.') =>
-  `<button class="locbtn" id="geo">${ICON.locate} Use my location</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
+const regionSheetHTML = (note = t('region.saved')) =>
+  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
 function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); render(); }
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
@@ -3119,15 +3595,15 @@ const SITE = 'https://haze.geewax.org/';
 const atStamp = d => { const x = sg(d), p2 = v => String(v).padStart(2, '0'); return `${x.getUTCFullYear()}${p2(x.getUTCMonth() + 1)}${p2(x.getUTCDate())}${p2(x.getUTCHours())}`; };
 const plainURL = () => SITE + P.region + '/';
 const shareURL = (via = 'link') => plainURL() + (via === 'link' ? (S.d ? '?at=' + atStamp(S.d.asOf) : '') : '?' + via);
-function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
+function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? t('when.today', {day}) : r === 1 ? t('when.tomorrow', {day}) : day; }
 /* Short plain text for any chat app: the two numbers, the forecast, the link. Coloured squares match NEA's band colours. */
 function shareText(withURL = true){
-  let lines = ['Live haze readings for Singapore, by region.'];
+  let lines = [t('share.none')];
   if (S.d){
     const n = now(P.region), f = S.d.fc, sq = ['🟩','🟦','🟨','🟧','🟥'], r = fcRel();
-    lines = [`Haze in ${RNAME[P.region]}, ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}`,
-      `${sq[n.b.c]} This hour: PM2.5 ${n.pm} (${n.b.name})`, `${sq[n.p.c]} Past 24 hours: PSI ${n.psi} (${n.p.name})`];
-    if (f) lines.push(`Forecast ${r === 0 ? 'today' : r === 1 ? 'tomorrow' : 'for ' + sgDay(f.date, true)}: ${fcName()}`);
+    lines = [t('share.head', {region:RNAME[P.region], time:sgHour(S.d.asOf), day:sgDay(S.d.asOf, true)}),
+      t('share.pm', {sq:sq[n.b.c], v:n.pm, band:n.b.name}), t('share.psi', {sq:sq[n.p.c], v:n.psi, band:n.p.name})];
+    if (f) lines.push(r === 0 ? t('share.fcToday', {name:fcName()}) : r === 1 ? t('share.fcTomorrow', {name:fcName()}) : t('share.fcOn', {day:sgDay(f.date, true), name:fcName()}));
   }
   return withURL ? `${lines.join('\n')}\n${shareURL()}` : lines.join('\n');
 }
@@ -3151,15 +3627,15 @@ function shareHTML(){
     <div class="shbtns">
       <a class="shb" href="${wa}" target="_blank" rel="noopener" data-track="share/whatsapp"><span class="si" style="background:#25D366">${ICON.chat}</span>WhatsApp</a>
       <a class="shb" href="${tg}" target="_blank" rel="noopener" data-track="share/telegram"><span class="si" style="background:#2AABEE">${ICON.plane}</span>Telegram</a>
-      <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">Copy link</span></button>
-      <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">Copy text</span></button>
-      ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
+      <button class="shb" id="copyLink"><span class="si" style="background:var(--ink);color:var(--surface)">${ICON.link}</span><span class="lbl">${t('share.copyLink')}</span></button>
+      <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">${t('share.copyText')}</span></button>
+      ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>${t('share.more')}</button>` : ''}
     </div>
-    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${PIC.label}</span></button><div id="imgOut" hidden></div>` : ''}
-    <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
+    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${pic().label}</span></button><div id="imgOut" hidden></div>` : ''}
+    <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>${t('share.scan')}</b><span>${esc(t('share.scanBody', {region:RNAME[P.region]}))}</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
-  openSheet('Share', shareHTML());
+  openSheet(t('share.title'), shareHTML());
   if (S.d) ensureCard().then(paintThumbs).catch(() => {});   // ready before the tap, so the share keeps the tap's permission
 }
 async function copy(text, btn){
@@ -3173,7 +3649,7 @@ async function copy(text, btn){
     ta.remove();
   }
   if (!ok){ const r = document.createRange(), el = document.getElementById('shareMsg'); r.selectNodeContents(el); getSelection().removeAllRanges(); getSelection().addRange(r); }
-  lbl.textContent = ok ? 'Copied' : 'Text selected';
+  lbl.textContent = t(ok ? 'share.copied' : 'share.selected');
   setTimeout(() => { lbl.textContent = was; }, 2200);
 }
 
@@ -3182,13 +3658,17 @@ const CARD = {c:['#479B02','#006FA1','#FFCE03','#FFA800','#D60000'], on:['#FFFFF
   fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6'};
 function rr(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X+r, Y); x.arcTo(X+w, Y, X+w, Y+h, r); x.arcTo(X+w, Y+h, X, Y+h, r); x.arcTo(X, Y+h, X, Y, r); x.arcTo(X, Y, X+w, Y, r); x.closePath(); }
 function wrap(x, text, maxW){
+  // languages written without spaces (Chinese) wrap between characters
+  const spaced = text.includes(' '), parts = spaced ? text.split(' ') : Array.from(text), sep = spaced ? ' ' : '';
   const out = []; let line = '';
-  for (const w of text.split(' ')){ const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line){ out.push(line); line = w; } else line = t; }
+  for (const w of parts){ const s = line ? line + sep + w : w; if (x.measureText(s).width > maxW && line){ out.push(line); line = w; } else line = s; }
   return line ? [...out, line] : out;
 }
 async function cardBlob(){
-  const D = "'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Helvetica Neue', system-ui, sans-serif";
-  try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"'].map(f => document.fonts.load(f))); } catch(e) {}
+  const D = "'Bricolage Grotesque', 'Noto Sans SC', 'Noto Sans Tamil', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Noto Sans SC', 'Noto Sans Tamil', 'Helvetica Neue', system-ui, sans-serif";
+  const sample = {zh:'环境现在', ta:'இப்போது'}[P.lang], extra = {zh:'Noto Sans SC', ta:'Noto Sans Tamil'}[P.lang];
+  try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"',
+    ...(extra ? [`700 60px "${extra}"`, `600 30px "${extra}"`].map(f => [f, sample]) : [])].map(f => Array.isArray(f) ? document.fonts.load(f[0], f[1]) : document.fonts.load(f))); } catch(e) {}
   const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, r = fcRel(), sky = skyOf(n.pm, false), SKY = 830;
   const cv = Object.assign(document.createElement('canvas'), {width:W, height:H}), x = cv.getContext('2d');
   const font = (w, px, fam) => { x.font = `${w} ${px}px ${fam}`; };
@@ -3206,37 +3686,37 @@ async function cardBlob(){
   { const sg = x.createLinearGradient(0, 84, 0, 148); sg.addColorStop(.15, 'rgba(255,138,61,1)'); sg.addColorStop(1, 'rgba(255,138,61,.12)');
     x.fillStyle = sg; x.beginPath(); x.arc(pad + 26, 116, 30, 0, 7); x.fill(); x.fillStyle = sky.ink; }
   font(800, 56, D); x.fillText('Haze Status', pad + 76, 118);
-  font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
+  font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgAt(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
   x.textBaseline = 'alphabetic';
   // NOW: band word, the PM2.5 number, its bar, the advice
-  font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText('NOW · THE NEXT HOUR', pad, 236); x.globalAlpha = 1; space(0);
-  font(750, 132, D); const bw = x.measureText(n.b.name).width;
+  font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText(t('card.now'), pad, 236); x.globalAlpha = 1; space(0);
+  fit(n.b.name, 750, 132, D, cw - 40); const bw = x.measureText(n.b.name).width;
   x.fillStyle = CARD.c[n.b.c]; rr(x, pad - 12, 262, bw + 44, 164, 24); x.fill();
   x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
   x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
   font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
-  font(600, 26, B); x.globalAlpha = .88; x.fillText(`This hour · PM2.5 µg/m³ · Band ${n.b.n}`, pad, 562); x.globalAlpha = 1;
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(t('card.pmLabel', {n:n.b.n}), pad, 562); x.globalAlpha = 1;
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
   x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, m1 - 9, 588, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, m1 - 5, 592, 10, 50, 5); x.fill();
-  font(600, 24, B); PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
+  PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; fit(`${q.n} · ${q.name}`, 600, 24, B, seg - 4); x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
   font(600, 46, D); wrap(x, n.b.gen, cw).slice(0, 2).forEach((l, i) => x.fillText(l, pad, 746 + i*56));
   // TODAY: the PSI pair, the PSI bar with the reading pinned and the forecast bracketed
   const PT = SKY, plan = f ? PSI[f.hi] : n.p, col2 = pad + cw/2 + 24;
   x.fillStyle = '#FFFFFF'; rr(x, 0, PT, W, H, 44); x.fill();
   x.fillStyle = CARD.muted; font(800, 26, B); space(3);
-  x.fillText((f ? `${r === 1 ? 'TOMORROW' : 'TODAY'} · ${sgDay(f.date, true)}` : `TODAY · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
+  x.fillText((f ? `${t(r === 1 ? 'card.tomorrow' : 'card.today')} · ${sgDay(f.date, true)}` : `${t('card.today')} · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
   const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = CARD.fg[plan.c]; x.fillText(head, pad, PT + 126);
   x.fillStyle = CARD.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
-  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : 'None', 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : 'None', col2, PT + 206);
-  x.fillStyle = CARD.muted; font(600, 24, B); x.fillText('Past 24 hours · PSI', pad, PT + 242);
-  x.fillText(f ? `Forecast ${r === 1 ? 'tomorrow' : 'today'} · PSI` : 'No forecast issued', col2, PT + 242);
+  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : t('now.none'), 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : t('now.none'), col2, PT + 206);
+  x.fillStyle = CARD.muted; fit(t('card.past'), 600, 24, B, cw/2 - 34); x.fillText(t('card.past'), pad, PT + 242);
+  { const s = f ? t(r === 1 ? 'card.fcTomorrow' : 'card.fcToday') : t('card.nofc'); fit(s, 600, 24, B, cw/2 - 30); x.fillText(s, col2, PT + 242); }
   x.fillStyle = CARD.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
   const s5 = (cw - 4*8) / 5, by = PT + 306, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
   PSI.forEach((q, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
   x.globalAlpha = 1;
-  { const m = pad + along(PSI, n.psi) * cw, lab = `${n.psi} now`; font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
+  { const m = pad + along(PSI, n.psi) * cw, lab = t('card.nowPin', {v:n.psi}); font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
     x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
     x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
   const q = qrModules(shareURL('card')), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
@@ -3244,15 +3724,15 @@ async function cardBlob(){
     const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
     x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';
     x.beginPath(); x.moveTo(x0, by + 30); x.lineTo(x0, by + 42); x.lineTo(x1, by + 42); x.lineTo(x1, by + 30); x.stroke();
-    const lab = `Forecast ${psiRange(f.lo, f.hi)}`; font(800, 24, B); const lw = x.measureText(lab).width;
+    const lab = t('card.fcRange', {range:psiRange(f.lo, f.hi)}); font(800, 24, B); const lw = x.measureText(lab).width;
     const cx = Math.min((x0 + x1) / 2, (q ? qx - 20 : W - pad) - lw/2 - 10);
     x.fillStyle = '#FFFFFF'; x.fillRect(cx - lw/2 - 10, by + 32, lw + 20, 30); x.fillStyle = CARD.ink; x.fillText(lab, cx - lw/2, by + 56);
   }
   // footer: where to find it, plus a QR code so a screenshot of this card still leads back
   x.fillStyle = CARD.line; x.fillRect(pad, 1222, (q ? qx - 32 : W - pad) - pad, 2);
-  x.fillStyle = CARD.muted; font(600, 26, B); x.fillText('Live readings for your area', pad, 1262);
+  x.fillStyle = CARD.muted; fit(t('card.live'), 600, 26, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.live'), pad, 1262);
   x.fillStyle = CARD.accent; font(800, 44, B); x.fillText('haze.geewax.org', pad, 1306);
-  x.fillStyle = CARD.muted; font(500, 20, B); x.fillText('Data: National Environment Agency. Unofficial.', pad, 1334);
+  x.fillStyle = CARD.muted; fit(t('card.data'), 500, 20, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.data'), pad, 1334);
   if (q){ x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
 }
@@ -3262,7 +3742,7 @@ async function cardBlob(){
 const CAN_SHARE_FILES = (() => { try { return !!(navigator.canShare && navigator.canShare({files:[new File([new Blob(['x'])], 'h.png', {type:'image/png'})]})); } catch(e) { return false; } })();
 const CAN_COPY_IMG = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
 let cardCache = {key:null, blob:null, url:null}, cardPending = null, cardPendingKey = null;
-const cardKey = () => S.d ? P.region + '|' + atStamp(S.d.asOf) : null;
+const cardKey = () => S.d ? P.region + '|' + P.lang + '|' + atStamp(S.d.asOf) : null;
 function ensureCard(){
   const k = cardKey();
   if (!k) return Promise.reject(new Error('no data'));
@@ -3281,41 +3761,42 @@ function paintThumbs(){
   if (cardCache.key !== cardKey()) return;
   document.querySelectorAll('.thumb').forEach(el => { el.style.backgroundImage = `url(${cardCache.url})`; el.classList.add('ready'); });
 }
-const pictureName = () => `haze-${P.region}-${sgDay(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
+const pictureName = () => `haze-${P.region}-${sgDayEN(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
 function showPicture(blob){
   if (!sheet.classList.contains('on')) openShare();
   const out = document.getElementById('imgOut'); if (!out) return;
   const u = URL.createObjectURL(blob);
   out.hidden = false;
-  out.innerHTML = `<img src="${u}" alt="Haze picture for ${RNAME[P.region]}: ${esc(now(P.region).b.name)}"><a class="plain" href="${u}" download="${pictureName()}">Save picture</a><p class="msg" style="margin:0">On a phone, press and hold the picture to save or share it.</p>`;
+  out.innerHTML = `<img src="${u}" alt="${esc(t('pic.alt', {region:RNAME[P.region], band:now(P.region).b.name}))}"><a class="plain" href="${u}" download="${pictureName()}">${t('pic.save')}</a><p class="msg" style="margin:0">${t('pic.hold')}</p>`;
   out.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 async function sharePicture(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl ? lbl.textContent : '', say = (m, ms) => { if (!lbl) return; lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
   let blob = cardCache.key === cardKey() ? cardCache.blob : null;
-  if (!blob){ say('Preparing picture…'); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
+  if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
   if (CAN_SHARE_FILES){
     try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})], text:shareText()}); track('share/picture/shared'); return; }
     catch(e){ if (e.name === 'AbortError') return; }
   }
   if (CAN_COPY_IMG){
-    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); track('share/picture/copied'); return say('Copied. Paste it into a chat.', 2800); }
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); track('share/picture/copied'); return say(t('pic.copied'), 2800); }
     catch(e) {}
   }
   track('share/picture/shown');
   showPicture(blob);
 }
-const PIC = CAN_SHARE_FILES ? {label:'Share picture', hint:'Opens your share menu. Pick WhatsApp.'}
-          : CAN_COPY_IMG ? {label:'Copy picture', hint:'Then paste it into a WhatsApp chat.'}
-          : {label:'Save picture', hint:'Then send it in WhatsApp.'};
+const pic = () => CAN_SHARE_FILES ? {label:t('pic.share'), hint:t('pic.shareHint')}
+                 : CAN_COPY_IMG ? {label:t('pic.copy'), hint:t('pic.copyHint')}
+                 : {label:t('pic.save'), hint:t('pic.saveHint')};
 /* the share panel on Now and My day: the picture first, the other ways underneath */
 function shareBlock(){
+  const P2 = pic();
   return `<div class="share2">
-    <button class="thumb" data-act="pic" aria-label="${PIC.label}"></button>
+    <button class="thumb" data-act="pic" aria-label="${P2.label}"></button>
     <div class="s2b">
-      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${PIC.label}</span></button>
-      <div class="s2hint">${PIC.hint}</div>
-      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">Send as text</a><button data-act="copylink"><span class="lbl">Copy link</span></button><button data-act="share">More</button></div>
+      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${P2.label}</span></button>
+      <div class="s2hint">${P2.hint}</div>
+      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">${t('share.sendText')}</a><button data-act="copylink"><span class="lbl">${t('share.copyLink')}</span></button><button data-act="share">${t('share.more')}</button></div>
     </div></div>`;
 }
 
@@ -3336,19 +3817,40 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.dataset.act === 'copylink') return copy(shareURL(), b);
   if (b.dataset.act === 'install') return doInstall();
   if (b.dataset.act === 'install-dismiss'){ try { localStorage.setItem('haze-sky:install-dismissed', '1'); } catch(e) {} return render(); }
-  if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
-  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
+  if (b.id === 'retry'){ showStatus(t('status.loading')); return refresh(); }
+  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; applyLang(); render(); document.getElementById('resetmsg').textContent = t('set.resetDone'); return; }
+  if (b.dataset.lang){ P.lang = b.dataset.lang; save(); applyLang(); return render(); }
   if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
   if (b.dataset.region){ S.hi = null; return setRegion(b.dataset.region); }
   if (b.dataset.group){ P.group = b.dataset.group; save(); return render(); }
   if (b.dataset.start){ P.start = b.dataset.start; save(); return render(); }
   if (b.dataset.tab){ closeSheet(); S.tab = b.dataset.tab; render(); document.getElementById('v-' + S.tab).scrollTop = 0; return; }
   const a = b.dataset.act;
-  if (a === 'region') openSheet('Your region', regionSheetHTML());
-  if (a === 'explain') openSheet('Understanding the readings', explainHTML());
-  if (a === 'news') openSheet('NEA update', newsHTML());
+  if (a === 'region') openSheet(t('region.sheet'), regionSheetHTML());
+  if (a === 'explain') openSheet(t('ex.title'), explainHTML());
+  if (a === 'news') openSheet(t('news.title'), newsHTML());
   if (a === 'share') openShare();
 });
+
+/* Longer languages (Tamil, Malay) can outgrow the big type: shrink a number or band word until it fits its box,
+   and keep the forecast headline to two lines */
+function fitAll(){
+  const v = document.getElementById('v-' + S.tab); if (!v) return;
+  v.querySelectorAll('.big, .lnum .v, .lpair .v').forEach(el => {
+    el.style.fontSize = '';
+    const box = el.closest('.lpair > button') || el.parentElement;
+    let s = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > box.clientWidth + 1 && s > 22){ s -= 2; el.style.fontSize = s + 'px'; }
+  });
+  for (const [sel, lines] of [['.head2', 2], ['.day h2', 3]]) v.querySelectorAll(sel).forEach(el => {
+    el.style.fontSize = '';
+    let s = parseFloat(getComputedStyle(el).fontSize);
+    const lh = () => parseFloat(getComputedStyle(el).lineHeight) || s * 1.1;
+    while (el.offsetHeight > lh() * lines + 2 && s > 16){ s -= 1; el.style.fontSize = s + 'px'; }
+  });
+}
+// Chinese and Tamil fonts arrive after the first draw and are wider than the stand-in, so fit again once they load
+if (document.fonts) document.fonts.addEventListener('loadingdone', () => { if (S.d) fitAll(); });
 
 /* ---------- Render ---------- */
 function render(){
@@ -3358,25 +3860,26 @@ function render(){
   document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   const late = S.live && Date.now() - S.d.asOf.getTime() > 3 * 3600e3;   // NEA normally publishes within the hour
-  document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${!S.live ? 'Snapshot' : late ? 'Delayed' : 'Live'} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf)}`;
+  document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${t(!S.live ? 'snapshot' : late ? 'delayed' : 'live')} · ${sgAt(S.d.asOf)}`;
   document.querySelectorAll('#tabbar button, .topnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
   if (S.tab !== 'now') cancelAnimationFrame(raf);
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
+  fitAll();
   if (cardCache.key === cardKey()) paintThumbs(); else setTimeout(() => ensureCard().catch(() => {}), 80);
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-addEventListener('resize', () => { if (S.tab === 'now' && S.d){ renderNow(); paintThumbs(); } });
+addEventListener('resize', () => { if (S.tab === 'now' && S.d){ renderNow(); fitAll(); paintThumbs(); } });
 
 /* ---------- Boot: live data from NEA, refreshed while the page is open ---------- */
 function showStatus(text, retry){
-  document.getElementById('upd').textContent = retry ? 'Offline' : 'Loading…';
+  document.getElementById('upd').textContent = t(retry ? 'offline' : 'loading');
   document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== 'now';
   document.getElementById('v-now').innerHTML = `<div class="day" style="justify-content:center;align-items:center;text-align:center">
-    <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? '<button class="plain" id="retry">Try again</button>' : ''}</div>`;
+    <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? `<button class="plain" id="retry">${t('status.retry')}</button>` : ''}</div>`;
 }
 /* ---------- Analytics: GoatCounter (no cookies). Counts visits and taps, and how a visit arrived (shared link, QR
    code, picture card). Nothing about the visitor's location or settings is sent. Runs only on haze.geewax.org, so local
@@ -3402,6 +3905,7 @@ function trackButton(b){
   if (b.dataset.tab && b.dataset.tab !== S.tab) return track('tab/' + b.dataset.tab);
   if (b.dataset.region) return track('region/' + b.dataset.region);
   if (b.dataset.group) return track('group/' + b.dataset.group);
+  if (b.dataset.lang) return track('lang/' + b.dataset.lang);
 }
 if (location.hostname === 'haze.geewax.org'){
   const s = document.createElement('script');
@@ -3428,30 +3932,31 @@ const canInstall = () => !STANDALONE && (installPrompt || IOS);
 /* a quiet prompt on Now, on phones, from the second visit, until it is used or dismissed */
 function installBanner(){
   if (!canInstall() || visits < 2 || installDismissed() || matchMedia('(min-width:960px)').matches) return '';
-  return `<div class="inst">${ICON.tile}<span><b>Add Haze Status to your home screen</b>Opens like an app, straight to your region.</span>
-    <button class="instgo" data-act="install">Add</button><button class="iconbtn instx" data-act="install-dismiss" aria-label="Not now">${ICON.close}</button></div>`;
+  return `<div class="inst">${ICON.tile}<span><b>${t('inst.title')}</b>${t('inst.body')}</span>
+    <button class="instgo" data-act="install">${t('inst.add')}</button><button class="iconbtn instx" data-act="install-dismiss" aria-label="${t('inst.notnow')}">${ICON.close}</button></div>`;
 }
-const iosSteps = () => `<ol class="steps"><li>Tap the <b>Share</b> button ${ICON.iosShare} in Safari’s toolbar.</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>
-  <p class="msg">Haze Status then opens from your home screen like an app.</p>`;
+const iosSteps = () => `<ol class="steps"><li>${t('inst.ios1', {icon:ICON.iosShare})}</li><li>${t('inst.ios2')}</li><li>${t('inst.ios3')}</li></ol>
+  <p class="msg">${t('inst.after')}</p>`;
 async function doInstall(){
   if (installPrompt){ installPrompt.prompt(); const r = await installPrompt.userChoice; track('install/' + r.outcome); installPrompt = null; return render(); }
-  openSheet('Add to home screen', iosSteps());
+  openSheet(t('inst.sheet'), iosSteps());
 }
 function installSection(){
-  const body = STANDALONE ? '<p style="font-size:14px;margin:0">You’re using the installed app.</p>'
-    : installPrompt ? `<button class="locbtn" data-act="install">${ICON.tile} Install Haze Status</button>`
+  const body = STANDALONE ? `<p style="font-size:14px;margin:0">${t('inst.installed')}</p>`
+    : installPrompt ? `<button class="locbtn" data-act="install">${ICON.tile} ${t('inst.button')}</button>`
     : IOS ? iosSteps()
-    : '<p style="font-size:14px;margin:0">In your browser’s menu, choose <b>Install</b> or <b>Add to Home Screen</b>.</p>';
-  return `<div class="sec"><h3>Install as an app</h3>${body}</div>`;
+    : `<p style="font-size:14px;margin:0">${t('inst.other')}</p>`;
+  return `<div class="sec"><h3>${t('inst.section')}</h3>${body}</div>`;
 }
 
 let loadedAt = 0;
 async function refresh(){
   try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
-  catch(e){ if (!S.d) showStatus('Couldn’t reach NEA’s air quality service. Check your connection and try again.', true); }
+  catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }
 S.d = SNAP_AQ ? normalise(SNAP_AQ, SNAP_ADV) : null;
-if (S.d) render(); else showStatus('Loading the latest readings from NEA…');
+applyLang();
+if (S.d) render(); else showStatus(t('status.loading'));
 refresh();
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });
