@@ -104,7 +104,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .pair > div{display:flex;flex-direction:column;gap:3px;min-width:0}
 .pair > div + div{padding-left:14px;border-left:1px solid var(--line)}
-.pn{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;letter-spacing:-.03em}
+.pn{font-family:var(--display);font-weight:700;font-size:clamp(32px,10.5vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
 .pl{font-size:12px;color:var(--muted)}
 /* bars: track by band, pin above, forecast bracket below */
 .hb{position:relative;padding-top:32px}
@@ -236,6 +236,41 @@ button{font:inherit;color:inherit;cursor:pointer}
 .day,.hist,.set{padding-left:max(20px,calc(50% - 300px));padding-right:max(20px,calc(50% - 300px))}
 .tabbar{padding-left:max(6px,calc(50% - 300px));padding-right:max(6px,calc(50% - 300px))}
 .sheet{margin:0 auto;max-width:640px}
+.topnav{display:none}
+/* Wide screens: top navigation instead of the tab bar; Now and Today side by side on the sky */
+@media (min-width:960px){
+  .tabbar{display:none}
+  .hdr{padding:14px max(28px,calc(50% - 580px));gap:10px}
+  .logo{flex:0 0 auto}
+  .topnav{display:flex;gap:4px;margin-right:auto;margin-left:28px}
+  .topnav button{border:0;background:transparent;color:var(--sky-ink);font-weight:700;font-size:15px;padding:8px 14px;border-radius:999px;opacity:.75}
+  .topnav button[aria-selected="true"]{opacity:1;background:var(--sky-chip)}
+  #v-now{flex-direction:row;align-items:center;gap:48px;background:linear-gradient(var(--sky-top),var(--sky-bot));padding:24px max(28px,calc(50% - 580px)) 40px;overflow-y:auto}
+  #v-now .sky{flex:1 1 0;background:none;padding:0;align-self:center;min-width:0}
+  #v-now .sky > canvas{display:none}
+  #v-now .ahead{flex:0 1 500px;min-width:0;border-radius:28px;padding:28px 30px 24px;box-shadow:0 30px 70px -35px rgba(10,20,30,.55);align-self:center}
+  .big{font-size:84px}
+  .bign{font-size:92px}
+  .bign small{font-size:22px}
+  .nlab{font-size:15px;margin-top:8px}
+  .act{font-size:28px;max-width:20ch;margin-top:20px}
+  .for{font-size:14px}
+  .hb .labs{font-size:12px}
+  .head2{font-size:30px}
+  .pn{font-size:52px}
+  .pl{font-size:13.5px}
+  .plan{font-size:22px}
+  .day,.hist,.set{padding-left:max(28px,calc(50% - 560px));padding-right:max(28px,calc(50% - 560px));padding-top:32px}
+  .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .tl::before{display:none}
+  .tl .step{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;padding:18px}
+  .day h2{font-size:38px}
+  .day .news{max-width:760px}
+  .hist{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;align-content:start}
+  .hist > :not(.sec){grid-column:1 / -1}
+  .set{max-width:none}
+  .set > .sec{max-width:640px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -247,6 +282,7 @@ button{font:inherit;color:inherit;cursor:pointer}
       <svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="11" r="6" fill="currentColor" opacity=".9"/><path d="M3 17h22M6 21h16M9 25h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/></svg>
       <div><b>Haze</b><small id="upd"></small></div>
     </div>
+    <nav class="topnav" aria-label="Sections"><button data-tab="now">Now</button><button data-tab="day">My day</button><button data-tab="hist">History</button><button data-tab="set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
     <button class="iconbtn" data-act="share" aria-label="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></svg></button>
     <button class="iconbtn" data-act="explain" aria-label="Understanding the readings"></button>
@@ -3178,7 +3214,7 @@ function render(){
   document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
   const late = S.live && Date.now() - S.d.asOf.getTime() > 3 * 3600e3;   // NEA normally publishes within the hour
   document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${!S.live ? 'Snapshot' : late ? 'Delayed' : 'Live'} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf)}`;
-  document.querySelectorAll('#tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
+  document.querySelectorAll('#tabbar button, .topnav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
   if (S.tab !== 'now') cancelAnimationFrame(raf);
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();

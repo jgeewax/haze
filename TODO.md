@@ -1,7 +1,7 @@
 # TODO
 
 - [x] Make a share button show QR code, copy the URL, share to whatsapp buttons
-- [ ] Make the page desktop friendly (now it looks like mobile on desktop)
+- [x] Make the page desktop friendly (now it looks like mobile on desktop)
 - [x] The white boundary on the "now" screen or Plan ahead looks odd. lets find another way to show the band
 - [x] Make sure the 24-hour PSI number is on the main page
 - [x] make the sharing button more prominent, thats how we get traction
