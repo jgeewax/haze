@@ -39,11 +39,11 @@ PSI_BANDS = [(50, "Good", 0), (100, "Moderate", 1), (200, "Unhealthy", 2), (300,
 PSI_START = [0, 51, 101, 201, 301]
 
 DEFAULT_META = {
-    "title": "Haze: Singapore air quality, by region",
+    "title": "Haze Status: Singapore air quality, by region",
     "description": "The 1-hr PM2.5 for what to do in the next hour, and NEA's 24-hr PSI forecast to plan ahead. Live, for your region.",
     "url": SITE_URL,
     "image": SITE_URL + "og.png",
-    "alt": "Haze: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.",
+    "alt": "Haze Status: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.",
 }
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' "
            "fill='%23AFA796'/%3E%3Ccircle cx='14' cy='11' r='6' fill='%2317222B'/%3E%3Cpath d='M5 18h18M8 22h12' stroke='%2317222B' "
@@ -61,7 +61,7 @@ def head(meta):
 <meta name="theme-color" content="#AFA796">
 <link rel="canonical" href="{a['url']}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Haze">
+<meta property="og:site_name" content="Haze Status">
 <meta property="og:title" content="{a['title']}">
 <meta property="og:description" content="{a['description']}">
 <meta property="og:url" content="{a['url']}">

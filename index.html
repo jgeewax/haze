@@ -7,17 +7,17 @@
 <meta name="theme-color" content="#AFA796">
 <link rel="canonical" href="https://haze.geewax.org/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Haze">
-<meta property="og:title" content="Haze: Singapore air quality, by region">
+<meta property="og:site_name" content="Haze Status">
+<meta property="og:title" content="Haze Status: Singapore air quality, by region">
 <meta property="og:description" content="The 1-hr PM2.5 for what to do in the next hour, and NEA&#x27;s 24-hr PSI forecast to plan ahead. Live, for your region.">
 <meta property="og:url" content="https://haze.geewax.org/">
 <meta property="og:image" content="https://haze.geewax.org/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Haze: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.">
+<meta property="og:image:alt" content="Haze Status: the 1-hr PM2.5 band scale for right now and the 24-hr PSI scale for planning ahead.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%23AFA796'/%3E%3Ccircle cx='14' cy='11' r='6' fill='%2317222B'/%3E%3Cpath d='M5 18h18M8 22h12' stroke='%2317222B' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
-<title>Haze Sky</title>
+<title>Haze Status</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Public+Sans:wght@400;500;600;700;800&display=swap">
@@ -284,7 +284,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <header class="hdr">
     <div class="logo">
       <svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="11" r="6" fill="currentColor" opacity=".9"/><path d="M3 17h22M6 21h16M9 25h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/></svg>
-      <div><b>Haze</b><small id="upd"></small></div>
+      <div><b>Haze Status</b><small id="upd"></small></div>
     </div>
     <nav class="topnav" aria-label="Sections"><button data-tab="now">Now</button><button data-tab="day">My day</button><button data-tab="hist">History</button><button data-tab="set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
@@ -3129,7 +3129,7 @@ async function cardBlob(){
   x.beginPath(); x.arc(pad + 26, 104, 18, 0, 7); x.fill();
   x.globalAlpha = .55; x.lineCap = 'round'; x.lineWidth = 6; x.strokeStyle = sky.ink;
   for (const [y, a0, b0] of [[134, 4, 48], [148, 14, 38]]){ x.beginPath(); x.moveTo(pad + a0, y); x.lineTo(pad + b0, y); x.stroke(); }
-  x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze', pad + 70, 118);
+  x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze Status', pad + 70, 118);
   font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
   x.textBaseline = 'alphabetic';
   // NOW: band word, the PM2.5 number, its bar, the advice
@@ -3203,7 +3203,7 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.id === 'geo') return geolocate();
   if (b.id === 'copyLink') return copy(shareURL(), b);
   if (b.id === 'copyMsg') return copy(shareText(), b);
-  if (b.id === 'shareMore'){ navigator.share({title:'Haze', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
+  if (b.id === 'shareMore'){ navigator.share({title:'Haze Status', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
   if (b.id === 'shareImg') return shareImage(b);
   if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
   if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }

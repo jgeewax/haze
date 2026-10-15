@@ -1,4 +1,4 @@
-# Haze Sky
+# Haze Status
 
 A calmer view of Singapore's haze readings, at [haze.geewax.org](https://haze.geewax.org).
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Haze live link preview</title>
+<title>Haze Status live link preview</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Public+Sans:wght@500;600;700;800&display=block">
 <style>
 /* 1200×630 link preview with live readings, rendered by `python3 build.py --site` for each region and for the island.
@@ -57,7 +57,7 @@ const fcLine = d.fc ? `${d.fc.when === 'tomorrow' ? 'Tomorrow' : 'Today'} · ${d
 if (d.target === 'all'){
   const r = d.regions;
   root.innerHTML = `<div>
-      <div class="top">${LOGO}<b>Haze</b><span>Singapore · ${d.asOf}</span></div>
+      <div class="top">${LOGO}<b>Haze Status</b><span>Singapore · ${d.asOf}</span></div>
       <div class="isle">${['north','west','central','east','south'].map(k => `<div class="t t-${k}"><b>${r[k].name}</b><span class="v" style="color:var(--fg${r[k].pmBand.c})">${r[k].pm}</span><span class="s">PM2.5 · PSI ${r[k].psi}</span></div>`).join('')}</div>
     </div>
     <div class="card">
@@ -70,7 +70,7 @@ if (d.target === 'all'){
 } else {
   const r = d.regions[d.target];
   root.innerHTML = `<div style="color:${d.sky.ink}">
-      <div class="top">${LOGO}<b>Haze</b><span>${r.name} · ${d.asOf}</span></div>
+      <div class="top">${LOGO}<b>Haze Status</b><span>${r.name} · ${d.asOf}</span></div>
       <div class="eb" style="margin-top:30px">Now · the next hour</div>
       <div class="word" style="background:var(--c${r.pmBand.c});color:var(--on${r.pmBand.c})">${r.pmBand.name}</div>
       <div class="big">${r.pm}<small>µg/m³</small></div>

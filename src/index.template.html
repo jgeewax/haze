@@ -1,4 +1,4 @@
-<title>Haze Sky</title>
+<title>Haze Status</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Public+Sans:wght@400;500;600;700;800&display=swap">
@@ -263,7 +263,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <header class="hdr">
     <div class="logo">
       <svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="11" r="6" fill="currentColor" opacity=".9"/><path d="M3 17h22M6 21h16M9 25h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/></svg>
-      <div><b>Haze</b><small id="upd"></small></div>
+      <div><b>Haze Status</b><small id="upd"></small></div>
     </div>
     <nav class="topnav" aria-label="Sections"><button data-tab="now">Now</button><button data-tab="day">My day</button><button data-tab="hist">History</button><button data-tab="set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
@@ -811,7 +811,7 @@ async function cardBlob(){
   x.beginPath(); x.arc(pad + 26, 104, 18, 0, 7); x.fill();
   x.globalAlpha = .55; x.lineCap = 'round'; x.lineWidth = 6; x.strokeStyle = sky.ink;
   for (const [y, a0, b0] of [[134, 4, 48], [148, 14, 38]]){ x.beginPath(); x.moveTo(pad + a0, y); x.lineTo(pad + b0, y); x.stroke(); }
-  x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze', pad + 70, 118);
+  x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze Status', pad + 70, 118);
   font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
   x.textBaseline = 'alphabetic';
   // NOW: band word, the PM2.5 number, its bar, the advice
@@ -885,7 +885,7 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.id === 'geo') return geolocate();
   if (b.id === 'copyLink') return copy(shareURL(), b);
   if (b.id === 'copyMsg') return copy(shareText(), b);
-  if (b.id === 'shareMore'){ navigator.share({title:'Haze', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
+  if (b.id === 'shareMore'){ navigator.share({title:'Haze Status', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
   if (b.id === 'shareImg') return shareImage(b);
   if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
   if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
