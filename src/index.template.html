@@ -1031,6 +1031,7 @@ const picLabel = () => t(CAN_SHARE_FILES ? 'pic.share' : CAN_COPY_IMG ? 'pic.cop
    with text, and the card already carries the address and a QR code. */
 async function shareWhatsApp(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl.textContent, say = (m, ms) => { lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
+  const phone = matchMedia('(pointer:coarse)').matches;
   let blob = cardCache.key === cardKey() ? cardCache.blob : null;
   if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
   if (phone && CAN_SHARE_FILES){
@@ -1044,7 +1045,6 @@ async function shareWhatsApp(btn){
       window.open('https://web.whatsapp.com/', '_blank', 'noopener');
       return;
     } catch(e) {}
-  const phone = matchMedia('(pointer:coarse)').matches;
   }
   track('share/whatsapp/shown');
   showPicture(blob);
