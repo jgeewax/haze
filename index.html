@@ -131,12 +131,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
 .pop b{display:block;font-size:14.5px;margin-bottom:3px}
-/* the share call to action on the Now screen */
-.sharebar{display:flex;gap:8px;margin-top:6px}
-.wa{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#062B14;border-radius:14px;padding:13px 14px;font-weight:800;font-size:15.5px;text-decoration:none}
-.wa svg{width:20px;height:20px}
-.more{width:52px;flex:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:14px;display:grid;place-items:center}
-.more svg{width:20px;height:20px}
+/* the share panel: the picture card's thumbnail beside a big Share picture button */
+.share2{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;margin-top:4px;padding:14px 14px 12px 16px;border-radius:18px;background:var(--surface-2);border:1px solid var(--line)}
+.thumb{width:66px;aspect-ratio:4/5;border:3px solid #FFFFFF;border-radius:9px;padding:0;background:linear-gradient(#C9BFA9,#EDE5D3) center/cover no-repeat;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);transform:rotate(-5deg);transition:transform .2s}
+.thumb:hover{transform:rotate(-2deg) scale(1.04)}
+.thumb.mini{width:30px;border-width:2px;border-radius:5px;transform:rotate(-5deg);display:inline-block;flex:none}
+.s2b{display:flex;flex-direction:column;gap:5px;min-width:0}
+.s2main{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;background:#25D366;color:#062B14;border-radius:13px;padding:12px 14px;font-weight:800;font-size:15.5px}
+.s2main svg{width:20px;height:20px}
+.s2hint{font-size:12px;color:var(--muted);text-align:center}
+.s2links{display:flex;justify-content:center;gap:4px 16px;flex-wrap:wrap;font-size:13px;font-weight:600}
+.s2links a,.s2links button{color:var(--accent);text-decoration:none;border:0;background:none;padding:0;font:inherit}
+.s2links a:hover,.s2links button:hover{text-decoration:underline}
 
 /* My day */
 .day{padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px;flex:1 0 auto}
@@ -2851,10 +2857,7 @@ function renderNow(){
       ${lbar({B:PSI, v:n.psi, fc:f, tick:'var(--ink)'})}
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
         <div class="nea" id="nea-psi" hidden>NEA: “${esc(psiAdvice(plan))}”${f && f.lo !== f.hi ? ` For the upper end of the forecast, ${PSI[f.hi].name}.` : f ? '' : ' For the current 24-hr PSI; no forecast has been issued.'}</div></div>
-      <div class="sharebar">
-        <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-button">${ICON.chat}Share on WhatsApp</a>
-        <button class="more" data-act="share" aria-label="More ways to share">${ICON.share}</button>
-      </div>
+      ${shareBlock()}
       <div class="lfoot"><button data-tab="set">${esc(who)}</button> · Source: NEA, ${ext(OFFICIAL, 'haze.gov.sg')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
@@ -2910,7 +2913,7 @@ function renderDay(){
     <div><h2>${head}</h2><div style="margin-top:6px;color:var(--muted)">${forLine()}</div></div>
     <div class="tl">${steps.join('')}</div>
     ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
-    <button class="imgbtn" data-act="share">${ICON.share}Share today’s readings with family</button>
+    ${shareBlock()}
     ${officialLine()}
   </div>`;
 }
@@ -3132,12 +3135,12 @@ function shareHTML(){
       <button class="shb" id="copyMsg"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.chat}</span><span class="lbl">Copy text</span></button>
       ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
     </div>
-    ${S.d ? `<button class="imgbtn" id="shareImg">${ICON.image}<span class="lbl">Share as image</span></button><div id="imgOut" hidden></div>` : ''}
+    ${S.d ? `<button class="imgbtn" id="shareImg"><span class="thumb mini"></span><span class="lbl">${PIC.label}</span></button><div id="imgOut" hidden></div>` : ''}
     <div class="qrbox">${qrSVG(shareURL('qr'))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(plainURL().replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
   openSheet('Share', shareHTML());
-  card = null; if (S.d) cardBlob().then(b => { card = b; }).catch(() => {});   // ready before the tap, so the share keeps the tap's permission
+  if (S.d) ensureCard().then(paintThumbs).catch(() => {});   // ready before the tap, so the share keeps the tap's permission
 }
 async function copy(text, btn){
   const lbl = btn.querySelector('.lbl') || btn, was = lbl.textContent;
@@ -3157,7 +3160,6 @@ async function copy(text, btn){
 /* The picture card: 1080×1350, always in the light palette so it looks the same for everyone it reaches */
 const CARD = {c:['#479B02','#006FA1','#FFCE03','#FFA800','#D60000'], on:['#FFFFFF','#FFFFFF','#1F1A00','#1F1400','#FFFFFF'],
   fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6'};
-let card = null;
 function rr(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X+r, Y); x.arcTo(X+w, Y, X+w, Y+h, r); x.arcTo(X+w, Y+h, X, Y+h, r); x.arcTo(X, Y+h, X, Y, r); x.arcTo(X, Y, X+w, Y, r); x.closePath(); }
 function wrap(x, text, maxW){
   const out = []; let line = '';
@@ -3234,21 +3236,67 @@ async function cardBlob(){
   if (q){ x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
 }
-async function shareImage(btn){
-  const lbl = btn.querySelector('.lbl'), was = lbl.textContent;
-  const name = `haze-${P.region}-${sgDay(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
-  let blob = card;
-  if (!blob){ lbl.textContent = 'Preparing image…'; try { blob = card = await cardBlob(); } finally { lbl.textContent = was; } }
-  const file = new File([blob], name, {type:'image/png'});
-  if (navigator.canShare && navigator.canShare({files:[file]})){
-    try { await navigator.share({files:[file], text:shareText()}); return; }
+/* The picture card is made as soon as a screen shows, so a tap can share it at once: phones only allow sharing
+   straight after a tap. Phones share it through their share menu (pick WhatsApp there); computers copy it, ready to
+   paste into WhatsApp Web; anything else shows it to save. */
+const CAN_SHARE_FILES = (() => { try { return !!(navigator.canShare && navigator.canShare({files:[new File([new Blob(['x'])], 'h.png', {type:'image/png'})]})); } catch(e) { return false; } })();
+const CAN_COPY_IMG = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
+let cardCache = {key:null, blob:null, url:null}, cardPending = null, cardPendingKey = null;
+const cardKey = () => S.d ? P.region + '|' + atStamp(S.d.asOf) : null;
+function ensureCard(){
+  const k = cardKey();
+  if (!k) return Promise.reject(new Error('no data'));
+  if (cardCache.key === k) return Promise.resolve(cardCache.blob);
+  if (cardPendingKey === k) return cardPending;
+  cardPendingKey = k;
+  cardPending = cardBlob().then(blob => {
+    if (cardCache.url) URL.revokeObjectURL(cardCache.url);
+    cardCache = {key:k, blob, url:URL.createObjectURL(blob)};
+    paintThumbs();
+    return blob;
+  }).finally(() => { if (cardPendingKey === k){ cardPendingKey = null; cardPending = null; } });
+  return cardPending;
+}
+function paintThumbs(){
+  if (cardCache.key !== cardKey()) return;
+  document.querySelectorAll('.thumb').forEach(el => { el.style.backgroundImage = `url(${cardCache.url})`; el.classList.add('ready'); });
+}
+const pictureName = () => `haze-${P.region}-${sgDay(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
+function showPicture(blob){
+  if (!sheet.classList.contains('on')) openShare();
+  const out = document.getElementById('imgOut'); if (!out) return;
+  const u = URL.createObjectURL(blob);
+  out.hidden = false;
+  out.innerHTML = `<img src="${u}" alt="Haze picture for ${RNAME[P.region]}: ${esc(now(P.region).b.name)}"><a class="plain" href="${u}" download="${pictureName()}">Save picture</a><p class="msg" style="margin:0">On a phone, press and hold the picture to save or share it.</p>`;
+  out.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+async function sharePicture(btn){
+  const lbl = btn.querySelector('.lbl'), was = lbl ? lbl.textContent : '', say = (m, ms) => { if (!lbl) return; lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
+  let blob = cardCache.key === cardKey() ? cardCache.blob : null;
+  if (!blob){ say('Preparing picture…'); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
+  if (CAN_SHARE_FILES){
+    try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})], text:shareText()}); track('share/picture/shared'); return; }
     catch(e){ if (e.name === 'AbortError') return; }
   }
-  // No file sharing here (most desktops): show the card to save or drag into a chat
-  const u = URL.createObjectURL(blob), out = document.getElementById('imgOut');
-  out.hidden = false;
-  out.innerHTML = `<img src="${u}" alt="Haze card for ${RNAME[P.region]}: ${esc(now(P.region).b.name)}"><a class="plain" href="${u}" download="${name}">Download image</a><p class="msg" style="margin:0">On a phone, press and hold the image to save or share it.</p>`;
-  out.scrollIntoView({behavior:'smooth', block:'nearest'});
+  if (CAN_COPY_IMG){
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); track('share/picture/copied'); return say('Copied. Paste it into a chat.', 2800); }
+    catch(e) {}
+  }
+  track('share/picture/shown');
+  showPicture(blob);
+}
+const PIC = CAN_SHARE_FILES ? {label:'Share picture', hint:'Opens your share menu. Pick WhatsApp.'}
+          : CAN_COPY_IMG ? {label:'Copy picture', hint:'Then paste it into a WhatsApp chat.'}
+          : {label:'Save picture', hint:'Then send it in WhatsApp.'};
+/* the share panel on Now and My day: the picture first, the other ways underneath */
+function shareBlock(){
+  return `<div class="share2">
+    <button class="thumb" data-act="pic" aria-label="${PIC.label}"></button>
+    <div class="s2b">
+      <button class="s2main" data-act="pic">${ICON.image}<span class="lbl">${PIC.label}</span></button>
+      <div class="s2hint">${PIC.hint}</div>
+      <div class="s2links"><a href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener" data-track="share/whatsapp-text">Send as text</a><button data-act="copylink"><span class="lbl">Copy link</span></button><button data-act="share">More</button></div>
+    </div></div>`;
 }
 
 /* ---------- Events ---------- */
@@ -3264,7 +3312,8 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.id === 'copyLink') return copy(shareURL(), b);
   if (b.id === 'copyMsg') return copy(shareText(), b);
   if (b.id === 'shareMore'){ navigator.share({title:'Haze Status', text:shareText(false), url:shareURL()}).catch(() => {}); return; }
-  if (b.id === 'shareImg') return shareImage(b);
+  if (b.id === 'shareImg' || b.dataset.act === 'pic') return sharePicture(b);
+  if (b.dataset.act === 'copylink') return copy(shareURL(), b);
   if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
   if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); keepRegion = null; render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
   if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
@@ -3292,10 +3341,11 @@ function render(){
   for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
   if (S.tab !== 'now') cancelAnimationFrame(raf);
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
+  if (cardCache.key === cardKey()) paintThumbs(); else setTimeout(() => ensureCard().catch(() => {}), 80);
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-addEventListener('resize', () => { if (S.tab === 'now') renderNow(); });
+addEventListener('resize', () => { if (S.tab === 'now' && S.d){ renderNow(); paintThumbs(); } });
 
 /* ---------- Boot: live data from NEA, refreshed while the page is open ---------- */
 function showStatus(text, retry){
@@ -3320,6 +3370,8 @@ function trackButton(b){
   const ids = {copyLink:'share/copy-link', copyMsg:'share/copy-text', shareMore:'share/system-sheet', shareImg:'share/image', geo:'location/asked', reset:'settings/reset'};
   if (ids[b.id]) return track(ids[b.id]);
   if (a === 'share') return track('share/open/' + where);
+  if (a === 'pic') return track('share/picture/' + where);
+  if (a === 'copylink') return track('share/copy-link/' + where);
   if (a === 'def') return track('define/' + b.dataset.k);
   if (a === 'nea') return track('nea-wording/' + b.dataset.k);
   if (a === 'explain' || a === 'news' || a === 'region') return track('open/' + a);
