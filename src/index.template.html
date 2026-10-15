@@ -74,23 +74,36 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sky{position:relative;color:var(--sky-ink);background:linear-gradient(var(--sky-top),var(--sky-bot));padding:10px 22px 22px;flex:1.15 0 auto;display:flex;flex-direction:column}
 .sky canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .sky > *:not(canvas){position:relative}
-.big{font-family:var(--display);font-weight:750;font-size:clamp(50px,15vw,62px);line-height:1;letter-spacing:-.035em;margin:10px 0 8px;align-self:flex-start;padding:.02em .16em .06em;border-radius:.16em;margin-left:-.1em}
-.reading{font-size:14px;margin-bottom:12px}
-.act{font-family:var(--display);font-size:21px;line-height:1.2;font-weight:600;margin:14px 0 6px;text-wrap:balance}
-.scale{display:grid;gap:3px;position:relative}
-.scale div{height:9px;border-radius:2px}
-.slab{display:grid;gap:3px;font-size:10.5px;font-weight:700;margin-top:5px;line-height:1.15}
-.mark{position:absolute;top:-5px;width:4px;height:19px;border-radius:2px;background:var(--sky-ink);box-shadow:0 0 0 2px var(--sky-halo)}
-.bracket{position:absolute;top:-7px;height:23px;border:2.5px solid var(--ink);border-radius:6px}
+.big{font-family:var(--display);font-weight:750;font-size:clamp(44px,13vw,54px);line-height:1;letter-spacing:-.035em;margin:8px 0 8px;align-self:flex-start;padding:.02em .16em .06em;border-radius:.16em;margin-left:-.1em}
+.act{font-family:var(--display);font-size:20px;line-height:1.2;font-weight:600;margin:12px 0 4px;text-wrap:balance}
 .ahead{flex:1 0 auto;padding:18px 22px 14px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
-.fc{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.02em}
-/* the two numbers people know from haze.gov.sg, side by side */
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:2px 0 14px}
-.duo > div{display:flex;flex-direction:column;gap:4px;min-width:0}
-.duo > div + div{padding-left:16px;border-left:1px solid color-mix(in srgb, var(--sky-ink) 22%, transparent)}
-.dn{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;letter-spacing:-.02em}
-.dn small{font-family:var(--body);font-size:14px;font-weight:600;letter-spacing:0;margin-left:4px}
-.dl{font-size:12.5px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+/* big numbers: people come for them */
+.bign{font-family:var(--display);font-weight:700;font-size:54px;line-height:1;letter-spacing:-.03em}
+.bign small{font-family:var(--body);font-size:16px;font-weight:600;letter-spacing:0;margin-left:5px}
+.nlab{font-size:12.5px;margin:4px 0 2px;opacity:.88}
+.head2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:-.02em}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pair > div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pair > div + div{padding-left:14px;border-left:1px solid var(--line)}
+.pn{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;letter-spacing:-.03em}
+.pl{font-size:12px;color:var(--muted)}
+/* bars: track by band, pin above, forecast bracket below */
+.hb{position:relative;padding-top:32px}
+.hb .track{display:grid;gap:3px}
+.hb .track i{height:10px;border-radius:2px;display:block}
+.hb .pin{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.hb .pin b{font-size:13px;font-weight:800;padding:2px 8px;border-radius:7px;background:var(--pin-bg);color:var(--pin-fg);white-space:nowrap}
+.hb .pin::after{content:"";width:3px;height:22px;background:var(--pin-bg);border-radius:2px;margin-top:-1px;box-shadow:0 0 0 2px var(--pin-halo)}
+.hb .rng{position:relative;height:24px;margin-top:4px}
+.hb .rng span{position:absolute;top:0;height:8px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 6px 6px}
+.hb .rng em{position:absolute;top:7px;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;background:var(--surface);padding:0 5px;white-space:nowrap}
+.hb .labs{display:grid;gap:3px;font-size:10.5px;font-weight:700;margin-top:4px;line-height:1.15}
+/* the share call to action on the Now screen */
+.sharebar{display:flex;gap:8px;margin-top:8px}
+.wa{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#062B14;border-radius:14px;padding:13px 14px;font-weight:800;font-size:15.5px;text-decoration:none}
+.wa svg{width:20px;height:20px}
+.more{width:52px;flex:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:14px;display:grid;place-items:center}
+.more svg{width:20px;height:20px}
 .plan{font-family:var(--display);font-size:19px;line-height:1.25;font-weight:600;margin-top:6px;text-wrap:balance}
 
 /* My day */
@@ -181,7 +194,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hdr .chip{margin-right:2px}
 .logo > div{min-width:0}
 .logo small{overflow:hidden;text-overflow:ellipsis}
-.sharerow{margin-top:auto;padding-top:18px}
 .bubble{background:var(--surface-2);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .shbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:6px}
 .shb{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:4px 0;font-size:12px;font-weight:600;color:var(--ink);text-decoration:none;text-align:center;line-height:1.2}
@@ -415,52 +427,50 @@ function grain(el, pm){
 }
 
 /* ---------- Now ---------- */
-function pmScale(v){
-  const i = pmIdx(v), b = PM[i], f = Math.max(0, Math.min(1, (v - b.lo) / (b.hi - b.lo)));
-  return `<div class="scale" style="grid-template-columns:repeat(4,1fr)">${PM.map((x, k) => `<div style="background:var(--c${x.c});opacity:${k === i ? 1 : .45}"></div>`).join('')}
-    <span class="mark" style="left:calc(${((i + f) / 4 * 100).toFixed(1)}% - 2px)"></span></div>
-    <div class="slab" style="grid-template-columns:repeat(4,1fr)">${PM.map((x, k) => `<span style="opacity:${k === i ? 1 : .7}">${x.n} · ${x.name}</span>`).join('')}</div>`;
-}
-/* PSI bar: bracket over the forecast bands, plus a marker for the current 24-hr PSI reading */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
 function psiRange(lo, hi){ const a = psiStart(lo), b = PSI[hi].max; return b === Infinity ? `${a}+` : `${a}–${b}`; }
-function psiBar(lo, hi, v){
-  let mark = '';
-  if (v != null){ const k = psiIdx(v), a = psiStart(k), b = PSI[k].max === Infinity ? 400 : PSI[k].max, f = Math.max(0, Math.min(1, (v - a) / (b - a)));
-    mark = `<span class="mark" style="left:calc(${((k + f) / 5 * 100).toFixed(1)}% - 2px);background:var(--ink);box-shadow:0 0 0 2px var(--surface)"></span>`; }
-  const on = k => lo != null ? k >= lo && k <= hi : v != null && k === psiIdx(v);   // forecast bands, or the current band if none
-  return `<div class="scale" style="grid-template-columns:repeat(5,1fr)">${PSI.map((x, k) => `<div style="background:var(--c${x.c});opacity:${on(k) ? 1 : .3}"></div>`).join('')}
-    ${lo != null ? `<span class="bracket" style="left:calc(${lo*20}% - 3px);width:calc(${(hi-lo+1)*20}% + 3px)"></span>` : ''}${mark}</div>
-    <div class="slab" style="grid-template-columns:repeat(5,1fr);color:var(--muted)">${PSI.map((x, k) => `<span style="${on(k) ? 'color:var(--ink)' : ''}">${x.name}</span>`).join('')}</div>`;
+/* A bar drawn by band: a pin with the reading above it, and a bracket under the forecast bands */
+const bandLo = (B, k) => k === 0 ? 0 : B[k-1].max + 1;
+const bandHi = (B, k) => B[k].max === Infinity ? (B === PM ? 350 : 400) : B[k].max;
+function hbar({B, v, label, fc, onSky}){
+  const N = B.length, k = B.findIndex(x => v <= x.max), lo = bandLo(B, k), hi = bandHi(B, k);
+  const t = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, cl = (x, a, b) => Math.max(a, Math.min(b, x));
+  const on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
+  const vars = onSky ? '--pin-bg:var(--sky-ink);--pin-fg:var(--sky-top);--pin-halo:var(--sky-halo)' : '--pin-bg:var(--ink);--pin-fg:var(--surface);--pin-halo:var(--surface)';
+  return `<div class="hb" style="${vars}">
+    <div class="pin" style="left:${(cl(t, .05, .95) * 100).toFixed(1)}%"><b class="num">${esc(label)}</b></div>
+    <div class="track" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<i style="background:var(--c${x.c});opacity:${on(i) ? 1 : .35}"></i>`).join('')}</div>
+    ${fc ? `<div class="rng"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span><em class="num" style="left:${(cl((fc.lo + fc.hi + 1) / 2 / N, .15, .85) * 100).toFixed(1)}%">Forecast ${psiRange(fc.lo, fc.hi)}</em></div>` : ''}
+    <div class="labs" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<span style="opacity:${on(i) ? 1 : .6}">${B === PM ? x.n + ' · ' : ''}${x.name === 'Very Unhealthy' ? 'V. Unhealthy' : x.name}</span>`).join('')}</div></div>`;
 }
 function renderNow(){
-  const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc;
+  const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel();
+  const plan = f ? PSI[f.hi] : n.p;
+  const day = f ? `${r === 1 ? 'Tomorrow' : 'Today'} · ${sgDay(f.date, true)}` : `Today · ${sgDay(S.d.asOf, true)}`;
   el.innerHTML = `
     <div class="sky">
-      <div class="eb">Right now <span class="sub">· at ${sgHour(S.d.asOf)}</span></div>
+      <div class="eb">Now <span class="sub">· the next hour</span></div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <div class="duo num">
-        <div><span class="dn">${n.pm}<small>µg/m³</small></span><span class="dl"><button class="term" data-act="explain">1-hr PM2.5</button> · Band ${n.b.n}</span></div>
-        <div><span class="dn">${n.psi}</span><span class="dl"><button class="term" data-act="explain">24-hr PSI</button> ${badge(n.p.c, n.p.name)}</span></div>
-      </div>
-      ${pmScale(n.pm)}
+      <div class="bign num">${n.pm}<small>µg/m³</small></div>
+      <div class="nlab"><button class="term" data-act="explain">1-hr PM2.5</button> · average over the past hour · Band ${n.b.n}</div>
+      ${hbar({B:PM, v:n.pm, label:n.pm, onSky:true})}
       <div class="act">${esc(pmAdvice(n.b))}</div>
       ${forLine()}
-      <div class="sharerow"><button class="chip" data-act="share">${ICON.share}Share this reading</button></div>
     </div>
     <div class="ahead">
-      <div class="eb" style="color:var(--muted)">Plan ahead <span class="sub">· <button class="term" data-act="explain">24-hr PSI forecast</button>${f ? ' for ' + esc(fcFor()) : ''}</span></div>
-      ${f ? `<div class="fc" style="color:var(--fg${PSI[f.hi].c})">${esc(fcName())}</div>
-        <div class="reading num" style="margin:-4px 0 4px"><b>PSI ${psiRange(f.lo, f.hi)}</b> forecast · <b>${n.psi}</b> now</div>
-        <div style="margin:4px 0 2px">${psiBar(f.lo, f.hi, n.psi)}</div>
-        <div class="plan">${esc(psiAdvice(PSI[f.hi]))}</div>
-        ${f.lo !== f.hi ? `<div class="foot" style="margin-top:-4px">Advice for the upper end of the forecast, ${PSI[f.hi].name}.</div>` : ''}`
-      : `<div class="fc" style="color:var(--muted)">No forecast issued</div>
-        <div class="reading" style="margin:-4px 0 4px;color:var(--muted)">NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.</div>
-        <div style="margin:4px 0 2px">${psiBar(null, null, n.psi)}</div>
-        <div class="plan">${esc(psiAdvice(n.p))}</div>
-        <div class="foot" style="margin-top:-4px">Advice for the current 24-hr PSI, ${n.p.name}.</div>`}
-      <div class="row" style="margin-top:auto;padding-top:6px;justify-content:flex-end"><button class="link" data-tab="hist">History ${ICON.right}</button></div>
+      <div class="row"><span class="eb" style="color:var(--muted)">${day}</span><button class="link" data-tab="hist" style="font-size:13px">History ${ICON.right}</button></div>
+      <div class="head2" style="color:var(--fg${plan.c})">${f ? esc(fcName()) : n.p.name}</div>
+      <div class="pair">
+        <div><span class="pn num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="pl"><button class="term" data-act="explain">24-hr PSI</button> · past 24 hours</span></div>
+        <div><span class="pn num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'};${f ? '' : 'font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="pl">${f ? `PSI forecast · ${r === 1 ? 'tomorrow' : 'today'}` : 'No forecast issued'}</span></div>
+      </div>
+      ${hbar({B:PSI, v:n.psi, label:`${n.psi} now`, fc:f})}
+      <div class="plan">${esc(psiAdvice(plan))}</div>
+      <div class="foot">${f ? (f.lo !== f.hi ? `Advice for the upper end of the forecast, ${PSI[f.hi].name}.` : `Advice for the forecast, ${PSI[f.hi].name}.`) : 'NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.'}</div>
+      <div class="sharebar">
+        <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener">${ICON.chat}Share on WhatsApp</a>
+        <button class="more" data-act="share" aria-label="More ways to share">${ICON.share}</button>
+      </div>
     </div>`;
   grain(el.querySelector('.sky'), n.pm);
 }
@@ -733,65 +743,73 @@ function wrap(x, text, maxW){
 }
 async function cardBlob(){
   const D = "'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif", B = "'Public Sans', 'Helvetica Neue', system-ui, sans-serif";
-  try { await Promise.all(['750 150px "Bricolage Grotesque"', '600 50px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"'].map(f => document.fonts.load(f))); } catch(e) {}
-  const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, sky = skyOf(n.pm, false);
+  try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"'].map(f => document.fonts.load(f))); } catch(e) {}
+  const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, r = fcRel(), sky = skyOf(n.pm, false), SKY = 830;
   const cv = Object.assign(document.createElement('canvas'), {width:W, height:H}), x = cv.getContext('2d');
   const font = (w, px, fam) => { x.font = `${w} ${px}px ${fam}`; };
   const space = px => { if ('letterSpacing' in x) x.letterSpacing = px + 'px'; };
+  const fit = (text, w, px, fam, max) => { let s = px; font(w, s, fam); while (x.measureText(text).width > max && s > 24){ s -= 2; font(w, s, fam); } };
+  // where a value sits along a band bar, 0..1
+  const along = (Bs, v) => { const k = Bs.findIndex(q => v <= q.max), lo = bandLo(Bs, k), hi = bandHi(Bs, k); return (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / Bs.length; };
   // sky, with the same haze grain as the app
-  const g = x.createLinearGradient(0, 0, 0, 878); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
+  const g = x.createLinearGradient(0, 0, 0, SKY); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
   x.fillStyle = g; x.fillRect(0, 0, W, H);
   const gc = sky.t > .3 ? '100,80,55' : '255,255,255';
-  for (let i = 0, N = 60 + n.pm * 3; i < N; i++){ x.beginPath(); x.arc(Math.random()*W, Math.random()*870, 1.2 + Math.random()*3.4, 0, 7); x.fillStyle = `rgba(${gc},${.1 + Math.random()*.28})`; x.fill(); }
+  for (let i = 0, N = 60 + n.pm * 3; i < N; i++){ x.beginPath(); x.arc(Math.random()*W, Math.random()*(SKY - 20), 1.2 + Math.random()*3.4, 0, 7); x.fillStyle = `rgba(${gc},${.1 + Math.random()*.28})`; x.fill(); }
   // header
   x.fillStyle = sky.ink; x.textBaseline = 'middle';
   x.beginPath(); x.arc(pad + 26, 104, 18, 0, 7); x.fill();
   x.globalAlpha = .55; x.lineCap = 'round'; x.lineWidth = 6; x.strokeStyle = sky.ink;
-  for (const [y, a, b] of [[134, 4, 48], [148, 14, 38]]){ x.beginPath(); x.moveTo(pad + a, y); x.lineTo(pad + b, y); x.stroke(); }
+  for (const [y, a0, b0] of [[134, 4, 48], [148, 14, 38]]){ x.beginPath(); x.moveTo(pad + a0, y); x.lineTo(pad + b0, y); x.stroke(); }
   x.globalAlpha = 1; font(800, 56, D); x.fillText('Haze', pad + 70, 118);
   font(600, 32, B); x.textAlign = 'right'; x.fillText(`${RNAME[P.region]} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf, true)}`, W - pad, 118); x.textAlign = 'left';
-  // right now
-  x.textBaseline = 'alphabetic'; font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText('RIGHT NOW', pad, 262); x.globalAlpha = 1; space(0);
-  font(750, 150, D); const bw = x.measureText(n.b.name).width;
-  x.fillStyle = CARD.c[n.b.c]; rr(x, pad - 12, 290, bw + 48, 186, 26); x.fill();
-  x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 12, 432);
-  const col2 = pad + cw/2 + 20;
-  x.fillStyle = sky.ink; font(700, 66, D); x.fillText(String(n.pm), pad, 552); let w1 = x.measureText(String(n.pm)).width;
-  font(600, 28, B); x.fillText('µg/m³', pad + w1 + 10, 552); x.fillText(`1-hr PM2.5 · Band ${n.b.n}`, pad, 590);
-  font(700, 66, D); x.fillText(String(n.psi), col2, 552); font(600, 28, B); x.fillText('24-hr PSI ·', col2, 590);
-  { const tw = x.measureText('24-hr PSI · ').width; font(800, 24, B); const bw2 = x.measureText(n.p.name).width + 22;
-    x.fillStyle = CARD.c[n.p.c]; rr(x, col2 + tw, 566, bw2, 34, 7); x.fill(); x.fillStyle = CARD.on[n.p.c]; x.fillText(n.p.name, col2 + tw + 11, 591); }
-  x.globalAlpha = .25; x.fillStyle = sky.ink; x.fillRect(col2 - 22, 498, 2, 100); x.globalAlpha = 1;
-  const seg = (cw - 3*10) / 4, idx = pmIdx(n.pm), bb = PM[idx], fr = Math.max(0, Math.min(1, (n.pm - bb.lo) / (bb.hi - bb.lo)));
-  PM.forEach((b, k) => { x.globalAlpha = k === idx ? 1 : .45; x.fillStyle = CARD.c[b.c]; rr(x, pad + k*(seg + 10), 626, seg, 22, 6); x.fill(); });
-  x.globalAlpha = 1; const mx = pad + idx*(seg + 10) + fr*seg;
-  x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, mx - 9, 608, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, mx - 5, 612, 10, 50, 5); x.fill();
-  font(600, 24, B); PM.forEach((b, k) => { x.globalAlpha = k === idx ? 1 : .7; x.fillText(`${b.n} · ${b.name}`, pad + k*(seg + 10), 690); }); x.globalAlpha = 1;
-  font(600, 50, D); wrap(x, n.b.gen, cw).slice(0, 2).forEach((l, i) => x.fillText(l, pad, 774 + i*60));
-  // plan ahead panel: same shape as the page — band range, PSI numbers, bar with bracket and a marker for now
-  const PT = 878, s5 = (cw - 4*8) / 5, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
+  x.textBaseline = 'alphabetic';
+  // NOW: band word, the PM2.5 number, its bar, the advice
+  font(800, 28, B); space(3); x.globalAlpha = .8; x.fillText('NOW · THE NEXT HOUR', pad, 236); x.globalAlpha = 1; space(0);
+  font(750, 132, D); const bw = x.measureText(n.b.name).width;
+  x.fillStyle = CARD.c[n.b.c]; rr(x, pad - 12, 262, bw + 44, 164, 24); x.fill();
+  x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
+  x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
+  font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(`1-hr PM2.5 · average over the past hour · Band ${n.b.n}`, pad, 562); x.globalAlpha = 1;
+  const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
+  PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
+  x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
+  x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, m1 - 9, 588, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, m1 - 5, 592, 10, 50, 5); x.fill();
+  font(600, 24, B); PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
+  font(600, 46, D); wrap(x, n.b.gen, cw).slice(0, 2).forEach((l, i) => x.fillText(l, pad, 746 + i*56));
+  // TODAY: the PSI pair, the PSI bar with the reading pinned and the forecast bracketed
+  const PT = SKY, plan = f ? PSI[f.hi] : n.p, col2 = pad + cw/2 + 24;
   x.fillStyle = '#FFFFFF'; rr(x, 0, PT, W, H, 44); x.fill();
   x.fillStyle = CARD.muted; font(800, 26, B); space(3);
-  x.fillText(f ? `PLAN AHEAD · 24-HR PSI FORECAST · ${fcFor().toUpperCase()}` : 'PLAN AHEAD · 24-HR PSI FORECAST', pad, PT + 70); space(0);
-  const title = f ? fcName() : 'No forecast issued'; let fs = 64; font(700, fs, D);
-  while (x.measureText(title).width > cw && fs > 40){ fs -= 2; font(700, fs, D); }
-  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; x.fillText(title, pad, PT + 140);
-  x.fillStyle = CARD.ink; font(600, 30, B);
-  x.fillText(f ? `PSI ${psiRange(f.lo, f.hi)} forecast · ${n.psi} now` : `${n.psi} now · NEA forecasts when air is Unhealthy`, pad, PT + 190);
-  const by = PT + 222;
-  PSI.forEach((b, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[b.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
+  x.fillText((f ? `${r === 1 ? 'TOMORROW' : 'TODAY'} · ${sgDay(f.date, true)}` : `TODAY · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
+  const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = CARD.fg[plan.c]; x.fillText(head, pad, PT + 126);
+  x.fillStyle = CARD.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
+  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : 'None', 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : 'None', col2, PT + 206);
+  x.fillStyle = CARD.muted; font(600, 24, B); x.fillText('24-hr PSI · past 24 hours', pad, PT + 242);
+  x.fillText(f ? `PSI forecast · ${r === 1 ? 'tomorrow' : 'today'}` : 'No forecast issued', col2, PT + 242);
+  x.fillStyle = CARD.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
+  const s5 = (cw - 4*8) / 5, by = PT + 306, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
+  PSI.forEach((q, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
   x.globalAlpha = 1;
-  if (f){ x.strokeStyle = CARD.ink; x.lineWidth = 5; rr(x, pad + f.lo*(s5 + 8) - 8, by - 12, (f.hi - f.lo + 1)*(s5 + 8) + 8, 46, 12); x.stroke(); }
-  { const k = psiIdx(n.psi), lo = psiStart(k), hi = PSI[k].max === Infinity ? 400 : PSI[k].max, m = pad + k*(s5 + 8) + Math.max(0, Math.min(1, (n.psi - lo) / (hi - lo)))*s5;
-    x.fillStyle = '#FFFFFF'; rr(x, m - 9, by - 18, 18, 58, 7); x.fill(); x.fillStyle = CARD.ink; rr(x, m - 5, by - 14, 10, 50, 5); x.fill(); }
-  font(600, 22, B); PSI.forEach((b, k) => { x.fillStyle = inR(k) ? CARD.ink : CARD.muted; x.fillText(b.name, pad + k*(s5 + 8), by + 60); });
+  { const m = pad + along(PSI, n.psi) * cw, lab = `${n.psi} now`; font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
+    x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
+    x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
+  const q = qrModules(shareURL()), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
+  if (f){
+    const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
+    x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(x0, by + 30); x.lineTo(x0, by + 42); x.lineTo(x1, by + 42); x.lineTo(x1, by + 30); x.stroke();
+    const lab = `Forecast ${psiRange(f.lo, f.hi)}`; font(800, 24, B); const lw = x.measureText(lab).width;
+    const cx = Math.min((x0 + x1) / 2, (q ? qx - 20 : W - pad) - lw/2 - 10);
+    x.fillStyle = '#FFFFFF'; x.fillRect(cx - lw/2 - 10, by + 32, lw + 20, 30); x.fillStyle = CARD.ink; x.fillText(lab, cx - lw/2, by + 56);
+  }
   // footer: where to find it, plus a QR code so a screenshot of this card still leads back
-  const q = qrModules(shareURL()), cell = q ? Math.max(4, Math.floor(145 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 26 - size;
-  x.fillStyle = CARD.line; x.fillRect(pad, by + 92, (q ? qx - 32 : W - pad) - pad, 2);
-  x.fillStyle = CARD.muted; font(600, 28, B); x.fillText('Live readings for your area', pad, by + 142);
-  x.fillStyle = CARD.accent; font(800, 46, B); x.fillText('haze.geewax.org', pad, by + 194);
-  x.fillStyle = CARD.muted; font(500, 21, B); x.fillText('Data: National Environment Agency. Unofficial.', pad, by + 228);
-  if (q){ x.fillStyle = CARD.ink; for (let r = 0; r < q.n; r++) for (let c = 0; c < q.n; c++) if (q.dark(r, c)) x.fillRect(qx + c*cell, qy + r*cell, cell, cell); }
+  x.fillStyle = CARD.line; x.fillRect(pad, 1222, (q ? qx - 32 : W - pad) - pad, 2);
+  x.fillStyle = CARD.muted; font(600, 26, B); x.fillText('Live readings for your area', pad, 1262);
+  x.fillStyle = CARD.accent; font(800, 44, B); x.fillText('haze.geewax.org', pad, 1306);
+  x.fillStyle = CARD.muted; font(500, 20, B); x.fillText('Data: National Environment Agency. Unofficial.', pad, 1334);
+  if (q){ x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
 }
 async function shareImage(btn){
