@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Singapore haze, clearly: the 1-hr PM2.5 for what to do now and the 24-hr PSI forecast for planning ahead, from NEA data.">
+<meta name="theme-color" content="#AFA796">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%23AFA796'/%3E%3Ccircle cx='14' cy='11' r='6' fill='%2317222B'/%3E%3Cpath d='M5 18h18M8 22h12' stroke='%2317222B' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Haze Sky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Public+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one-column app. A sky-coloured header bar (tinted by today's air) over four tabbed views and a bottom tab bar.
+   Phone: full screen. Desktop: the sky fills the window and the app floats as a card. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --surface-2:#F4F7F9; --ink:#12202B; --muted:#5A6A77; --line:#D9E0E6;
+  --accent:#1D5C88; --accent-ink:#FFFFFF;
+  --c0:#479B02; --c1:#006FA1; --c2:#FFCE03; --c3:#FFA800; --c4:#D60000;           /* NEA official */
+  --on0:#FFFFFF; --on1:#FFFFFF; --on2:#1F1A00; --on3:#1F1400; --on4:#FFFFFF;
+  --fg0:#3A7F02; --fg1:#006FA1; --fg2:#8A6D00; --fg3:#A86200; --fg4:#C00000;      /* as text on surface */
+  --tn0:#DDEFD3; --tn1:#D4E8F4; --tn2:#FFF5C9; --tn3:#FFEBC6; --tn4:#F8D3CE;
+  --display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --body:'Public Sans','Helvetica Neue','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1116; --surface:#141D25; --surface-2:#1A242D; --ink:#E5ECF1; --muted:#93A3B0; --line:#26333E;
+  --accent:#73B6E3; --accent-ink:#0B1116;
+  --fg0:#7BC64A; --fg1:#55A9DA; --fg2:#FFCE03; --fg3:#FFA800; --fg4:#FF6152;
+  --tn0:#1C2D12; --tn1:#0F2738; --tn2:#363010; --tn3:#3A2A0F; --tn4:#3A1512; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1116; --surface:#141D25; --surface-2:#1A242D; --ink:#E5ECF1; --muted:#93A3B0; --line:#26333E;
+  --accent:#73B6E3; --accent-ink:#0B1116;
+  --fg0:#7BC64A; --fg1:#55A9DA; --fg2:#FFCE03; --fg3:#FFA800; --fg4:#FF6152;
+  --tn0:#1C2D12; --tn1:#0F2738; --tn2:#363010; --tn3:#3A2A0F; --tn4:#3A1512; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--sky-bot,var(--bg));background-image:linear-gradient(var(--sky-top,var(--bg)),var(--sky-bot,var(--bg)));color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+.app{position:relative;height:100%;max-width:460px;margin:0 auto;background:var(--surface);display:flex;flex-direction:column;overflow:hidden;isolation:isolate}
+@media (min-width:720px) and (min-height:700px){
+  body{display:grid;place-items:center;padding:24px 16px}
+  .app{width:100%;height:min(860px,100%);border-radius:34px;box-shadow:0 40px 80px -40px rgba(10,20,30,.55)}
+}
+
+/* header bar */
+.hdr{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px 18px;background:var(--sky-top);color:var(--sky-ink);position:relative;z-index:2}
+.logo{display:flex;align-items:center;gap:9px;margin-right:auto;min-width:0}
+.logo svg{width:28px;height:28px;flex:none}
+.logo b{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.02em;line-height:1;display:block}
+.logo small{display:block;font-size:11.5px;opacity:.75;margin-top:2px;white-space:nowrap}
+.logo small i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:7px 10px 7px 9px;font-weight:700;font-size:14px;color:var(--sky-ink);background:var(--sky-chip)}
+.chip svg{width:16px;height:16px;flex:none}
+.iconbtn{border:0;background:transparent;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:inherit}
+.iconbtn svg{width:20px;height:20px}
+
+.view{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain}
+.view[hidden]{display:none}
+
+/* tab bar */
+.tabbar{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11.5px;font-weight:600;color:var(--muted);border-radius:10px}
+.tabbar button svg{width:22px;height:22px}
+.tabbar button[aria-selected="true"]{color:var(--ink)}
+.tabbar button[aria-selected="true"] svg{stroke-width:2.4}
+
+/* atoms */
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.eb{font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.eb .sub{font-weight:600;letter-spacing:.02em;text-transform:none;opacity:.75;margin-left:2px}
+.link{border:0;background:none;padding:0;color:var(--accent);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:4px}
+.link svg{width:16px;height:16px}
+.foot{font-size:12px;color:var(--muted)}
+.term{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+.for{font-size:12.5px;opacity:.8}
+.for button{border:0;background:none;padding:0;font:inherit;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.badge{display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap;min-width:34px}
+
+/* Now */
+.sky{position:relative;color:var(--sky-ink);background:linear-gradient(var(--sky-top),var(--sky-bot));padding:10px 22px 22px;flex:1.15 0 auto;display:flex;flex-direction:column}
+.sky canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sky > *:not(canvas){position:relative}
+.big{font-family:var(--display);font-weight:750;font-size:clamp(50px,15vw,62px);line-height:1;letter-spacing:-.035em;margin:10px 0 8px;align-self:flex-start;padding:.02em .16em .06em;border-radius:.16em;margin-left:-.1em}
+.reading{font-size:14px;margin-bottom:12px}
+.act{font-family:var(--display);font-size:21px;line-height:1.2;font-weight:600;margin:14px 0 6px;text-wrap:balance}
+.scale{display:grid;gap:3px;position:relative}
+.scale div{height:9px;border-radius:2px}
+.slab{display:grid;gap:3px;font-size:10.5px;font-weight:700;margin-top:5px;line-height:1.15}
+.mark{position:absolute;top:-5px;width:4px;height:19px;border-radius:2px;background:var(--sky-ink);box-shadow:0 0 0 2px var(--sky-halo)}
+.bracket{position:absolute;top:-7px;height:23px;border:2.5px solid var(--ink);border-radius:6px}
+.ahead{flex:1 0 auto;padding:18px 22px 14px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+.fc{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.02em}
+
+/* My day */
+.day{padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px;flex:1 0 auto}
+.day h2{font-family:var(--display);font-size:30px;line-height:1.08;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.tl{display:flex;flex-direction:column;position:relative}
+.tl::before{content:"";position:absolute;left:17px;top:24px;bottom:34px;width:2px;background:var(--line)}
+.step{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:10px 0;position:relative}
+.mk{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 4px var(--surface)}
+.mk svg{width:19px;height:19px}
+.when{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.when span{text-transform:none;letter-spacing:0;font-weight:600}
+.v{font-family:var(--display);font-size:22px;font-weight:650;line-height:1.15;margin:2px 0 3px}
+.a{font-size:14.5px;line-height:1.4}
+.why{font-size:12.5px;color:var(--muted);margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.news{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:13px 15px;font-size:13.5px;line-height:1.45;text-align:left;color:inherit;width:100%}
+.news b{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+
+/* History */
+.hist{padding:18px 20px 28px;display:flex;flex-direction:column;gap:22px}
+.hist h2,.set h2{font-family:var(--display);font-size:28px;margin:0;letter-spacing:-.02em;line-height:1.1}
+.hist .lead{font-size:13.5px;color:var(--muted);margin:4px 0 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats > div,.stats > button{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stats .k{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.stats .n{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.1}
+.stats .t{font-size:11.5px;color:var(--muted)}
+.sec h3{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:800}
+.sec h3 span{text-transform:none;letter-spacing:0;font-weight:600}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:10px;font-family:var(--body)}
+.chart .bl{font-weight:700;font-size:10px}
+.chart .end{fill:var(--ink);font-weight:800;font-size:11.5px}
+.chart[data-chart]{touch-action:pan-y;cursor:crosshair;-webkit-tap-highlight-color:transparent}
+.ro{display:flex;align-items:center;gap:12px;min-height:46px;margin-bottom:6px}
+.ro .rn{font-family:var(--display);font-size:36px;font-weight:700;line-height:1;min-width:2.2ch}
+.ro .rd{display:flex;flex-direction:column;gap:3px;font-size:13px}
+.ro .rt{font-size:12.5px;color:var(--muted)}
+.stats button{font:inherit;color:inherit;text-align:left;cursor:pointer}
+
+/* Settings */
+.set{padding:18px 20px 28px;display:flex;flex-direction:column;gap:22px}
+.group{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.opt{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1px 10px;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:12px 14px;text-align:left}
+.opt:first-child{border-top:0}
+.opt .nm{font-weight:700;font-size:15px}
+.opt .ex{font-size:12.5px;color:var(--muted);grid-column:1}
+.opt .side{grid-row:1 / span 2;grid-column:2;display:flex;gap:8px;align-items:center}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.opt[aria-pressed="true"] .radio{border-color:var(--accent)}
+.opt[aria-pressed="true"] .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.xgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:340px;margin:0 auto;width:100%}
+.xt{border:1.5px solid var(--line);background:var(--surface-2);border-radius:16px;padding:12px 6px;min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.xt .nm{font-weight:700;font-size:15px}
+.xt[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent) inset;background:var(--surface)}
+.xt[aria-pressed="true"] .nm::after{content:" ✓";color:var(--accent)}
+.x-north{grid-column:2;grid-row:1}.x-west{grid-column:1;grid-row:2}.x-central{grid-column:2;grid-row:2}.x-east{grid-column:3;grid-row:2}.x-south{grid-column:2;grid-row:3}
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 4px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.locbtn{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:13px 16px;font-weight:700;font-size:15px}
+.locbtn svg{width:20px;height:20px}
+.msg{font-size:13px;color:var(--muted);margin:8px 2px 10px}
+.plain{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
+
+/* sheet (region picker, explainer, NEA statement) */
+.scrim{position:absolute;inset:0;background:rgba(5,10,15,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:5}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:90%;background:var(--surface);color:var(--ink);border-radius:24px 24px 0 0;z-index:6;transform:translateY(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.sheet.on{transform:none}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:8px auto 4px;flex:none}
+.sheet .sh{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 4px 20px}
+.sheet h4{font-family:var(--display);font-size:22px;margin:0}
+.sheet .sb{overflow-y:auto;padding:6px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px}
+.sb p{margin:0 0 8px;font-size:14px;line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two > div{border-radius:12px;padding:12px;font-size:13px;line-height:1.4;background:var(--surface-2);border:1px solid var(--line)}
+.two b{display:block;font-size:14px;margin-bottom:4px}
+.mx{display:flex;flex-direction:column;gap:4px}
+.mx .r{border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.4;display:grid;grid-template-columns:88px 1fr;gap:4px 10px}
+.mx .r .h{font-weight:800;font-size:11.5px}
+.mx .r .h small{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
+.mx .r.on{box-shadow:0 0 0 2px var(--ink) inset}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="hdr">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="11" r="6" fill="currentColor" opacity=".9"/><path d="M3 17h22M6 21h16M9 25h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".55"/></svg>
+      <div><b>Haze</b><small id="upd"></small></div>
+    </div>
+    <button class="chip" data-act="region" id="regionChip"></button>
+    <button class="iconbtn" data-act="explain" aria-label="Understanding the readings"></button>
+  </header>
+  <section class="view" id="v-now" aria-label="Now"></section>
+  <section class="view" id="v-day" aria-label="My day" hidden></section>
+  <section class="view" id="v-hist" aria-label="History" hidden></section>
+  <section class="view" id="v-set" aria-label="Settings" hidden></section>
+  <nav class="tabbar" role="tablist" id="tabbar">
+    <button role="tab" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Now</button>
+    <button role="tab" data-tab="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8M11 6h9M11 12h9M11 18h9"/></svg>My day</button>
+    <button role="tab" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>History</button>
+    <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+  </nav>
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div>
+    <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close"></button></div>
+    <div class="sb" id="sheetBody"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Snapshot of real NEA responses (used only when the live fetch is unavailable) ---------- */
+const SNAP_AQ = /*AQ*/null;
+const SNAP_ADV = /*ADV*/null;
+
+/* ---------- Reference data (NEA, "How to plan your outdoor activities during haze", June 2026) ---------- */
+const REGIONS = ['north','west','central','east','south'];
+const RNAME = {north:'North',south:'South',east:'East',west:'West',central:'Central'};
+const REX = {north:'Woodlands, Yishun, Sembawang', west:'Jurong, Clementi, Choa Chu Kang', central:'Bishan, Toa Payoh, Ang Mo Kio, Orchard', east:'Tampines, Bedok, Pasir Ris, Punggol', south:'CBD, Bukit Merah, Queenstown, Sentosa'};
+const RPOINT = {north:[1.41803,103.82], south:[1.29587,103.82], east:[1.35735,103.94], west:[1.35735,103.7], central:[1.35735,103.82]};
+const SUBS = [['pm25','ChartPM25'],['pm10','ChartPM10'],['o3','ChartO3'],['co','ChartCO'],['so2','ChartSO2']];
+/* who → which column of NEA's guide applies */
+const GROUPS = [
+  {id:'healthy', name:'Healthy adult', pm:'gen', psi:'healthy', plural:'healthy adults'},
+  {id:'child', name:'Child', pm:'vul', psi:'elderly', plural:'children'},
+  {id:'pregnant', name:'Pregnant', pm:'vul', psi:'elderly', plural:'pregnant women'},
+  {id:'elderly', name:'Elderly', pm:'vul', psi:'elderly', plural:'the elderly'},
+  {id:'chronic', name:'Heart or lung condition', pm:'vul', psi:'chronic', plural:'people with heart or lung conditions'}];
+const PM = [
+  {max:55, n:1, c:0, name:'Normal', range:'0–55', lo:0, hi:55, gen:'Continue with normal activities.', vul:'Continue with normal activities.'},
+  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.'},
+  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.'},
+  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.'}];
+const PSI = [
+  {max:50, c:0, name:'Good', range:'0–50', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.'},
+  {max:100, c:1, name:'Moderate', range:'51–100', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.'},
+  {max:200, c:2, name:'Unhealthy', range:'101–200', healthy:'Reduce prolonged or strenuous outdoor physical exertion.', elderly:'Minimise prolonged or strenuous outdoor physical exertion.', chronic:'Avoid prolonged or strenuous outdoor physical exertion.'},
+  {max:300, c:3, name:'Very Unhealthy', range:'201–300', healthy:'Avoid prolonged or strenuous outdoor physical exertion.', elderly:'Minimise outdoor activity.', chronic:'Avoid outdoor activity.'},
+  {max:Infinity, c:4, name:'Hazardous', range:'>300', healthy:'Minimise outdoor activity.', elderly:'Avoid outdoor activity.', chronic:'Avoid outdoor activity.'}];
+
+const ICON = {
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  locate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  go:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  ease:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 12h12"/></svg>',
+  light:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 8.5V12l2.5 1.5"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11 12 4.5 19.5 11M6.5 9.5V19h11V9.5"/></svg>'
+};
+
+/* ---------- Settings, saved in this browser ---------- */
+const KEY = 'haze-sky:v2';
+const DEFAULTS = {region:'central', group:'healthy', start:'now'};
+const P = {...DEFAULTS};
+try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
+  if (REGIONS.includes(p.region)) P.region = p.region;
+  if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
+  if (['now','day'].includes(p.start)) P.start = p.start; } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {} }
+const S = {tab:P.start, d:null, live:false};
+const G = () => GROUPS.find(g => g.id === P.group);
+
+/* ---------- Data: fetched by the browser from NEA, snapshot as fallback ---------- */
+async function fetchJSON(url, ms){
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, {signal:c.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+async function loadLive(){
+  const ts = Date.now();   // cache-buster, as haze.gov.sg does
+  const [aq, adv] = await Promise.all([
+    fetchJSON('https://www.haze.gov.sg/api/airquality/jsondata/' + ts, 7000),
+    fetchJSON('https://www.nea.gov.sg/api/advisory/latesthazesituationupdate/' + ts, 7000).catch(() => null)]);
+  return normalise(aq, adv);
+}
+const MON = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function parseNea(s){
+  const m = /(\d+) (\w{3}) (\d{4}) (\d{1,2})(AM|PM)/.exec(s || ''); if (!m) return null;
+  let h = (+m[4]) % 12; if (m[5] === 'PM') h += 12;
+  return new Date(Date.UTC(+m[3], MON[m[2]], +m[1], h - 8));
+}
+const sg = d => new Date(d.getTime() + 8*3600e3);
+function sgHour(d){ const h = sg(d).getUTCHours(); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); }
+function sgDay(d, dow){ const x = sg(d); return (dow ? DOW[x.getUTCDay()] + ' ' : '') + x.getUTCDate() + ' ' + Object.keys(MON)[x.getUTCMonth()]; }
+const dayNum = d => Math.floor(sg(d).getTime() / 86400e3);
+function normalise(aq, adv){
+  const times = aq.Chart1HRPM25.North.Data.map(p => parseNea(p.dateTime));
+  const regions = {};
+  for (const r of REGIONS){
+    const K = RNAME[r];
+    const pm = aq.Chart1HRPM25[K].Data.map(p => p.value > 0 ? p.value : null);
+    const sub = {};
+    for (const [k, c] of SUBS) sub[k] = ((aq[c] || {})[K] || {Data:[]}).Data.map(p => p.value > 0 ? p.value : null);
+    // 24-hr PSI = the highest pollutant sub-index for that hour
+    const psi = times.map((_, i) => { const v = SUBS.map(([k]) => sub[k][i]).filter(x => x != null); return v.length ? Math.max(...v) : null; });
+    regions[r] = {pm, psi};
+  }
+  let li = times.length - 1;
+  while (li > 0 && REGIONS.some(r => regions[r].pm[li] == null || regions[r].psi[li] == null)) li--;
+  const text = ((adv && adv.AirQualityBlurb) || '').replace(/^[^:]*:\s*/, '').trim();
+  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI.findIndex(b => b.name.toLowerCase() === p.trim().toLowerCase())).filter(i => i >= 0);
+  const issued = adv && adv.DateOfArticle ? new Date(adv.DateOfArticle) : null;
+  // NEA's evening forecast covers the next day; a morning one covers the same day
+  const fcDate = issued ? new Date(issued.getTime() + (sg(issued).getUTCHours() >= 12 ? 86400e3 : 0)) : null;
+  let statement = [];
+  if (adv && adv.BodyText){
+    const doc = new DOMParser().parseFromString(adv.BodyText, 'text/html');
+    statement = [...doc.querySelectorAll('div,p')].filter(el => !el.querySelector('div,p'))
+      .map(el => el.textContent.replace(/\s+/g, ' ').trim().replace(/^\d+\.\s*/, '')).filter(t => t.length > 60).slice(0, 4);
+  }
+  return {times, li, regions, asOf: times[li], issued, statement,
+    fc: idx.length && fcDate ? {text, lo: Math.min(...idx), hi: Math.max(...idx), date: fcDate} : null};
+}
+
+/* ---------- Derived ---------- */
+const pmIdx = v => PM.findIndex(b => v <= b.max);
+const psiIdx = v => PSI.findIndex(b => v <= b.max);
+function now(r){ const R = S.d.regions[r], i = S.d.li; return {pm:R.pm[i], psi:R.psi[i], b:PM[pmIdx(R.pm[i])], p:PSI[psiIdx(R.psi[i])]}; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const badge = (c, t) => `<span class="badge" style="background:var(--c${c});color:var(--on${c})">${esc(t)}</span>`;
+const pmAdvice = b => b[G().pm], psiAdvice = b => b[G().psi];
+function fcRel(){ const f = S.d.fc; return f ? dayNum(f.date) - dayNum(S.d.asOf) : null; }
+function fcWhen(){ const f = S.d.fc, r = fcRel(); return sgDay(f.date, true) + (r === 0 ? ' · today' : r === 1 ? ' · tomorrow' : r < 0 ? ' · out of date' : ''); }
+function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} to ${PSI[f.hi].name}`; }
+function fcBadges(){ const f = S.d.fc; return f.lo === f.hi ? badge(PSI[f.lo].c, PSI[f.lo].name) : badge(PSI[f.lo].c, PSI[f.lo].name) + ' to ' + badge(PSI[f.hi].c, PSI[f.hi].name); }
+const forLine = () => `<div class="for">Advice for ${esc(G().plural)} · <button data-tab="set">Change</button></div>`;
+function isDark(){ const t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+function verdict(t){
+  if (/^(Continue|Normal)/.test(t)) return {w:'Normal activities', i:'go', k:0};
+  if (/^Reduce/.test(t)) return {w:'Reduce exertion', i:'ease', k:1};
+  if (/^(Avoid|Minimise) (prolonged|strenuous)/.test(t)) return {w:'Limit exertion', i:'light', k:2};
+  return {w:'Limit time outdoors', i:'home', k:3};
+}
+
+/* ---------- Sky ---------- */
+function mix(a, b, t){ const p = x => [1,3,5].map(i => parseInt(x.slice(i, i+2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2, '0')).join(''); }
+function skyOf(pm){
+  const t = Math.min(1, pm / 260), dark = isDark();
+  const clear = dark ? ['#0E2A45','#2B557C'] : ['#5BA6E6','#D4EAF9'];
+  const hazy  = dark ? ['#363128','#6E6352'] : ['#AFA796','#E6DFD1'];
+  const thick = dark ? ['#3A2416','#7E5534'] : ['#8E7258','#D9BE9C'];
+  const pick = i => t < .5 ? mix(clear[i], hazy[i], t*2) : mix(hazy[i], thick[i], (t-.5)*2);
+  return {top:pick(0), bot:pick(1), t, ink: dark ? '#F3EEE6' : '#17222B', chip: dark ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.5)', halo: dark ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.75)'};
+}
+function applySky(pm){
+  const s = skyOf(pm), st = document.documentElement.style;
+  for (const [k, v] of Object.entries({'--sky-top':s.top, '--sky-bot':s.bot, '--sky-ink':s.ink, '--sky-chip':s.chip, '--sky-halo':s.halo})) st.setProperty(k, v);
+}
+let raf = 0;
+function grain(el, pm){
+  cancelAnimationFrame(raf); if (!el) return;
+  const cv = document.createElement('canvas'); el.prepend(cv);
+  const box = el.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = box.width * dpr; cv.height = box.height * dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const s = skyOf(pm), N = Math.round(20 + pm * 1.6);
+  const pts = Array.from({length:N}, () => ({x:Math.random()*box.width, y:Math.random()*box.height, r:.5+Math.random()*1.6, a:.12+Math.random()*.3, vx:.08+Math.random()*.25, vy:(Math.random()-.5)*.08}));
+  const col = isDark() ? '255,235,205' : (s.t > .3 ? '100,80,55' : '255,255,255');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const draw = () => {
+    ctx.clearRect(0, 0, box.width, box.height);
+    for (const p of pts){ if (!still){ p.x += p.vx; p.y += p.vy; if (p.x > box.width + 2) p.x = -2; }
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fillStyle = `rgba(${col},${p.a})`; ctx.fill(); }
+    if (!still && S.tab === 'now') raf = requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+/* ---------- Now ---------- */
+function pmScale(v){
+  const i = pmIdx(v), b = PM[i], f = Math.max(0, Math.min(1, (v - b.lo) / (b.hi - b.lo)));
+  return `<div class="scale" style="grid-template-columns:repeat(4,1fr)">${PM.map((x, k) => `<div style="background:var(--c${x.c});opacity:${k === i ? 1 : .45}"></div>`).join('')}
+    <span class="mark" style="left:calc(${((i + f) / 4 * 100).toFixed(1)}% - 2px)"></span></div>
+    <div class="slab" style="grid-template-columns:repeat(4,1fr)">${PM.map((x, k) => `<span style="opacity:${k === i ? 1 : .7}">${x.n} · ${x.name}</span>`).join('')}</div>`;
+}
+function psiBar(lo, hi){
+  return `<div class="scale" style="grid-template-columns:repeat(5,1fr)">${PSI.map((x, k) => `<div style="background:var(--c${x.c});opacity:${k >= lo && k <= hi ? 1 : .3}"></div>`).join('')}
+    <span class="bracket" style="left:calc(${lo*20}% - 3px);width:calc(${(hi-lo+1)*20}% + 3px)"></span></div>
+    <div class="slab" style="grid-template-columns:repeat(5,1fr);color:var(--muted)">${PSI.map((x, k) => `<span style="${k >= lo && k <= hi ? 'color:var(--ink)' : ''}">${x.name}</span>`).join('')}</div>`;
+}
+function renderNow(){
+  const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc;
+  el.innerHTML = `
+    <div class="sky">
+      <div class="eb">Right now <span class="sub">· for the next hour</span></div>
+      <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
+      <div class="reading num"><b>${n.pm} µg/m³</b> · <button class="term" data-act="explain">1-hr PM2.5</button> · Band ${n.b.n}</div>
+      ${pmScale(n.pm)}
+      <div class="act">${esc(pmAdvice(n.b))}</div>
+      ${forLine()}
+    </div>
+    <div class="ahead">
+      <div class="eb" style="color:var(--muted)">Plan ahead <span class="sub">· <button class="term" data-act="explain">24-hr PSI forecast</button></span></div>
+      ${f ? `<div class="fc" style="color:var(--fg${PSI[f.hi].c})">${esc(fcName())}</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:-6px">For ${fcWhen()}</div>
+        <div style="margin:10px 0 2px">${psiBar(f.lo, f.hi)}</div>
+        <div style="font-size:15px"><b>If ${PSI[f.hi].name}:</b> ${esc(psiAdvice(PSI[f.hi]).replace(/^./, c => c.toLowerCase()))}</div>`
+      : `<div style="font-size:14px;color:var(--muted)">No PSI forecast right now. NEA publishes one when air quality reaches the Unhealthy range.</div>`}
+      <div class="row" style="margin-top:auto;padding-top:6px"><span class="foot num">24-hr PSI reading now: ${n.psi}</span><button class="link" data-tab="hist">History ${ICON.right}</button></div>
+    </div>`;
+  grain(el.querySelector('.sky'), n.pm);
+}
+
+/* ---------- My day ---------- */
+function step(when, sub, advice, c, why){
+  const V = verdict(advice);
+  return `<div class="step"><span class="mk" style="background:var(--c${c});color:var(--on${c})">${ICON[V.i]}</span>
+    <div><div class="when">${when} <span>${sub}</span></div><div class="v">${V.w}</div><div class="a">${esc(advice)}</div><div class="why num">${why}</div></div></div>`;
+}
+function renderDay(){
+  const el = document.getElementById('v-day'), n = now(P.region), f = S.d.fc, rel = fcRel();
+  const todayB = f && rel === 0 ? PSI[f.hi] : n.p;   // forecast if it covers today, else the current reading
+  const steps = [
+    step('Next hour', `· from ${sgHour(S.d.asOf)}`, pmAdvice(n.b), n.b.c, `${badge(n.b.c, 'Band ' + n.b.n + ' · ' + n.b.name)} 1-hr PM2.5 ${n.pm} µg/m³`),
+    step('Rest of today', `· ${sgDay(S.d.asOf, true)}`, psiAdvice(todayB), todayB.c, f && rel === 0 ? `${fcBadges()} PSI forecast` : `${badge(n.p.c, n.p.name)} 24-hr PSI now ${n.psi}`)];
+  if (f && rel === 1) steps.push(step('Tomorrow', `· ${sgDay(f.date, true)}`, psiAdvice(PSI[f.hi]), PSI[f.hi].c, `${fcBadges()} PSI forecast`));
+  else steps.push(`<div class="step"><span class="mk" style="background:var(--surface-2);color:var(--muted);border:1px dashed var(--line)">${ICON.light}</span>
+      <div><div class="when">Tomorrow <span>· ${sgDay(new Date(S.d.asOf.getTime() + 86400e3), true)}</span></div><div class="v" style="color:var(--muted)">Not yet issued</div>
+      <div class="a" style="color:var(--muted)">NEA usually issues the next day’s PSI forecast in the evening.</div></div></div>`);
+  const worst = Math.max(verdict(pmAdvice(n.b)).k, verdict(psiAdvice(todayB)).k);
+  const head = ['Normal activities can continue today.', 'Reduce strenuous outdoor activity today.', 'Limit prolonged or strenuous outdoor exertion today.', 'Minimise time outdoors today.'][worst];
+  el.innerHTML = `<div class="day">
+    <div><h2>${head}</h2><div style="margin-top:6px;color:var(--muted)">${forLine()}</div></div>
+    <div class="tl">${steps.join('')}</div>
+    ${S.d.statement[0] ? `<button class="news" data-act="news"><b>NEA update${S.d.issued ? ' · ' + sgHour(S.d.issued) + ', ' + sgDay(S.d.issued) : ''}</b>${esc(S.d.statement[0].replace(/^Singapore, [^–-]+[–-]\s*/, '').slice(0, 150))}… <span class="link" style="font-size:13.5px">Read more</span></button>` : ''}
+  </div>`;
+}
+
+/* ---------- History: fixed axes, every band visible, tap or drag to read any hour ---------- */
+const HG = {W:340, H:200, pl:28, pr:8, pt:6, pb:22};
+const hx = (i, n) => HG.pl + (HG.W - HG.pl - HG.pr) * i / (n - 1);
+const hy = (v, top) => HG.pt + (HG.H - HG.pt - HG.pb) * (1 - Math.min(v, top) / top);
+const SERIES = () => { const R = S.d.regions[P.region], n = S.d.li + 1;
+  return [{key:'pm', vals:R.pm.slice(0, n), bands:PM, top:300, unit:'µg/m³', band:v => PM[pmIdx(v)], lab:b => `Band ${b.n} · ${b.name}`},
+          {key:'psi', vals:R.psi.slice(0, n), bands:PSI, top:400, unit:'PSI', band:v => PSI[psiIdx(v)], lab:b => b.name}]; };
+function chart(s, title){
+  const {W, H, pl, pr, pb} = HG, n = s.vals.length;
+  let lo = 0, g = '';
+  for (const b of s.bands){
+    const hi = Math.min(b.max, s.top), y0 = hy(lo, s.top), y1 = hy(hi, s.top);
+    g += `<rect x="${pl}" y="${y1}" width="${W-pl-pr}" height="${y0-y1}" fill="var(--tn${b.c})"/><rect x="${pl}" y="${y1}" width="3" height="${y0-y1}" fill="var(--c${b.c})"/>`;
+    g += `<text class="bl" x="${W-pr-6}" y="${(y0+y1)/2+3.5}" text-anchor="end" style="fill:var(--fg${b.c})">${esc(s.key === 'pm' ? `${b.n} · ${b.name}` : b.name)}</text>`;
+    if (b.max < s.top) g += `<text x="${pl-5}" y="${y1+3.5}" text-anchor="end">${b.max}</text>`;
+    lo = hi;
+  }
+  const pts = s.vals.map((v, i) => v == null ? null : [hx(i, n), hy(v, s.top), v]).filter(Boolean);
+  const dots = pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6" fill="var(--c${s.band(p[2]).c})" stroke="var(--ink)" stroke-width=".8"/>`).join('');
+  const xl = [0, 6, 12, 18, n-1].map(i => `<text x="${hx(i, n)}" y="${H-6}" text-anchor="${i === 0 ? 'start' : i === n-1 ? 'end' : 'middle'}">${i === n-1 ? 'Now' : sgHour(S.d.times[i])}</text>`).join('');
+  return `<svg class="chart" data-chart="${s.key}" viewBox="0 0 ${W} ${H}" tabindex="0" role="img" aria-label="${esc(title)}. Tap, drag or use the arrow keys to read each hour.">${g}<text x="${pl-5}" y="${hy(0, s.top)+3.5}" text-anchor="end">0</text>
+    <path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>${dots}${xl}<g class="cross"></g></svg>`;
+}
+function drawSel(){
+  const i = S.hi, t = S.d.times[i], when = `${i === S.d.li ? 'Now · ' : ''}${sgHour(t)}, ${sgDay(t, true)}`;
+  for (const s of SERIES()){
+    const svg = document.querySelector(`[data-chart="${s.key}"]`), ro = document.getElementById('ro-' + s.key);
+    if (!svg || !ro) continue;
+    const v = s.vals[i], X = hx(i, s.vals.length);
+    svg.querySelector('.cross').innerHTML = `<line x1="${X}" x2="${X}" y1="${HG.pt}" y2="${HG.H-HG.pb}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3"/>`
+      + (v == null ? '' : `<circle cx="${X}" cy="${hy(v, s.top)}" r="6.5" fill="var(--c${s.band(v).c})" stroke="var(--ink)" stroke-width="2.5"/>`);
+    ro.innerHTML = v == null ? `<span class="rn">–</span><span class="rt">No reading at ${when}</span>`
+      : `<span class="rn" style="color:var(--fg${s.band(v).c})">${v}</span><span class="rd"><span>${s.unit} ${badge(s.band(v).c, s.lab(s.band(v)))}</span><span class="rt">${when}</span></span>`;
+  }
+}
+function pickHour(e){
+  const svg = e.target.closest && e.target.closest('svg[data-chart]'); if (!svg) return;
+  const r = svg.getBoundingClientRect(), vx = (e.clientX - r.left) / r.width * HG.W, n = S.d.li + 1;
+  const i = Math.max(0, Math.min(n - 1, Math.round((vx - HG.pl) / (HG.W - HG.pl - HG.pr) * (n - 1))));
+  if (i !== S.hi){ S.hi = i; drawSel(); }
+}
+function renderHist(){
+  const el = document.getElementById('v-hist'), li = S.d.li, [pm, psi] = SERIES();
+  if (S.hi == null || S.hi > li) S.hi = li;
+  const ok = pm.vals.map((v, i) => [v, i]).filter(a => a[0] != null);
+  const peak = ok.reduce((a, b) => b[0] > a[0] ? b : a), low = ok.reduce((a, b) => b[0] < a[0] ? b : a);
+  const hrs = ok.filter(a => a[0] > 55).length;
+  el.innerHTML = `<div class="hist">
+    <div><h2>${RNAME[P.region]}, last 24 hours</h2><p class="lead">${sgHour(S.d.times[0])} ${sgDay(S.d.times[0], true)} to ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}. Tap or drag across a chart to read any hour.</p></div>
+    <div class="stats num">
+      <button data-hour="${peak[1]}"><div class="k">Peak PM2.5</div><div class="n" style="color:var(--fg${PM[pmIdx(peak[0])].c})">${peak[0]}</div><div class="t">at ${sgHour(S.d.times[peak[1]])}</div></button>
+      <button data-hour="${low[1]}"><div class="k">Lowest</div><div class="n" style="color:var(--fg${PM[pmIdx(low[0])].c})">${low[0]}</div><div class="t">at ${sgHour(S.d.times[low[1]])}</div></button>
+      <div><div class="k">Above Band 1</div><div class="n">${hrs}<span style="font-size:15px"> h</span></div><div class="t">of ${ok.length} hours</div></div>
+    </div>
+    <div class="sec"><h3>1-hr PM2.5 <span>· concentration in each hour</span></h3><div class="ro" id="ro-pm"></div>${chart(pm, '1-hr PM2.5 for the last 24 hours, axis 0 to 300 µg/m³')}</div>
+    <div class="sec"><h3>24-hr PSI <span>· rolling 24-hour average</span></h3><div class="ro" id="ro-psi"></div>${chart(psi, '24-hr PSI for the last 24 hours, axis 0 to 400')}</div>
+    <p class="foot" style="margin:0">Axes are fixed so charts can be compared from day to day. Readings above the top of an axis are drawn at the top edge. Data from the National Environment Agency${S.live ? '' : ' (snapshot in this preview)'}.</p></div>`;
+  drawSel();
+}
+const histView = document.getElementById('v-hist');
+histView.addEventListener('pointerdown', pickHour);
+histView.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) pickHour(e); });
+histView.addEventListener('keydown', e => {
+  if (!e.target.closest || !e.target.closest('svg[data-chart]')) return;
+  const d = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0; if (!d) return;
+  e.preventDefault(); S.hi = Math.max(0, Math.min(S.d.li, S.hi + d)); drawSel();
+});
+
+/* ---------- Settings ---------- */
+function renderSet(){
+  const el = document.getElementById('v-set');
+  el.innerHTML = `<div class="set">
+    <h2>Settings</h2>
+    <div class="sec"><h3>Your region</h3>
+      <button class="locbtn" id="geo">${ICON.locate} Use my location</button>
+      <p class="msg" id="geomsg">Your location stays on this device. It only picks the nearest of NEA’s five regions.</p>
+      ${regionOpts()}</div>
+    <div class="sec"><h3>Advice for</h3>
+      <div class="group">${GROUPS.map(g => `<button class="opt" data-group="${g.id}" aria-pressed="${g.id === P.group}"><span class="nm">${g.name}</span><span class="ex">${esc(sampleFor(g))}</span><span class="side"><span class="radio"></span></span></button>`).join('')}</div>
+      <p class="msg">NEA gives stricter advice for children, pregnant women, the elderly and people with heart or lung conditions.</p></div>
+    <div class="sec"><h3>Open the app on</h3>
+      <div class="seg" role="group" aria-label="Open the app on">${[['now','Now'],['day','My day']].map(([k, v]) => `<button data-start="${k}" aria-pressed="${k === P.start}">${v}</button>`).join('')}</div></div>
+    <div class="sec"><h3>About the data</h3>
+      <p style="font-size:14px;margin:0 0 10px">Readings and forecasts come from the National Environment Agency (haze.gov.sg), loaded directly by your browser. ${S.live ? `Live, last reading ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.` : `This preview shows a snapshot from ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}.`} Unofficial prototype.</p>
+      <div class="row" style="justify-content:flex-start"><button class="plain" id="reset">Reset saved settings</button><span class="foot" id="resetmsg"></span></div></div>
+  </div>`;
+}
+/* the five regions laid out as a +, as on NEA's map */
+function regionOpts(){
+  return `<div class="xgrid" role="group" aria-label="Region">${REGIONS.map(r => { const q = now(r);
+    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${RNAME[r]}: ${REX[r]}. 1-hr PM2.5 ${q.pm}, ${q.b.name}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
+    <p class="msg" style="text-align:center;margin:10px 0 0">${RNAME[P.region]} includes ${REX[P.region]}. Readings are 1-hr PM2.5 in µg/m³.</p>`;
+}
+function sampleFor(g){ const n = now(P.region); return 'Now: ' + n.b[g.pm]; }
+
+/* ---------- Sheet ---------- */
+const sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
+document.getElementById('sheetClose').innerHTML = ICON.close;
+function openSheet(title, html){ document.getElementById('sheetTitle').textContent = title; const b = document.getElementById('sheetBody'); b.innerHTML = html; b.scrollTop = 0; sheet.classList.add('on'); scrim.classList.add('on'); }
+function closeSheet(){ sheet.classList.remove('on'); scrim.classList.remove('on'); }
+scrim.onclick = closeSheet; document.getElementById('sheetClose').onclick = closeSheet;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+function explainHTML(){
+  const n = now(P.region), f = S.d.fc;
+  return `<div><div class="two">
+      <div><b>1-hr PM2.5</b>Fine smoke particles in the air over the last hour, in µg/m³. Changes hour to hour.<br><br><b style="font-size:13px">Use it for what you do in the next few hours.</b></div>
+      <div><b>24-hr PSI forecast</b>NEA’s outlook for the day ahead on the Pollutant Standards Index. Published when air quality is Unhealthy.<br><br><b style="font-size:13px">Use it to plan the next day.</b></div>
+    </div></div>
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">1-hr PM2.5 bands · next hour</div><div class="mx">${PM.map(b => `<div class="r ${b === n.b ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">Band ${b.n} · ${b.name}<small>${b.range} µg/m³</small></span><span>${esc(b.gen)}<br><b>Vulnerable:</b> ${esc(b.vul)}</span></div>`).join('')}</div></div>
+    <div><div class="eb" style="color:var(--muted);margin-bottom:8px">24-hr PSI · next day</div><div class="mx">${PSI.map((b, k) => `<div class="r ${f && k >= f.lo && k <= f.hi ? 'on' : ''}" style="background:var(--tn${b.c});border-left:6px solid var(--c${b.c})"><span class="h" style="color:var(--fg${b.c})">${b.name}<small>${b.range}</small></span><span>${esc(b.healthy)}<br><b>Elderly, children, pregnant:</b> ${esc(b.elderly)}<br><b>Heart or lung:</b> ${esc(b.chronic)}</span></div>`).join('')}</div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Outlined: your band now, and the forecast range. Reduce: do less. Minimise: do as little as possible. Avoid: do not do. Source: NEA, June 2026.</p></div>`;
+}
+function newsHTML(){
+  return `${S.d.statement.map(p => `<p>${esc(p)}</p>`).join('')}<a class="link" href="https://www.haze.gov.sg/" target="_blank" rel="noopener">Full statement on haze.gov.sg ${ICON.right}</a>`;
+}
+function geolocate(){
+  const msg = document.getElementById('geomsg');
+  if (!navigator.geolocation){ msg.textContent = 'Location isn’t available in this browser. Pick your region below.'; return; }
+  msg.textContent = 'Finding you…';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const {latitude:la, longitude:lo} = pos.coords;
+    if (la < 1.15 || la > 1.48 || lo < 103.6 || lo > 104.1){ msg.textContent = 'You seem to be outside Singapore. Pick a region below.'; return; }
+    let best = 'central', bd = 1e9;
+    for (const r of REGIONS){ const [a, b] = RPOINT[r], d = (a-la)**2 + (b-lo)**2; if (d < bd){ bd = d; best = r; } }
+    setRegion(best);
+  }, () => { msg.textContent = 'Location access is blocked here. Pick your region below.'; }, {timeout:8000, maximumAge:600000});
+}
+function setRegion(r){ P.region = r; save(); closeSheet(); render(); }
+
+/* ---------- Events ---------- */
+document.getElementById('app').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'geo') return geolocate();
+  if (b.id === 'retry'){ showStatus('Loading the latest readings from NEA…'); return refresh(); }
+  if (b.id === 'reset'){ try { localStorage.removeItem(KEY); } catch(e) {} Object.assign(P, DEFAULTS); render(); document.getElementById('resetmsg').textContent = 'Settings reset.'; return; }
+  if (b.dataset.hour){ S.hi = +b.dataset.hour; return drawSel(); }
+  if (b.dataset.region){ S.hi = null; return setRegion(b.dataset.region); }
+  if (b.dataset.group){ P.group = b.dataset.group; save(); return render(); }
+  if (b.dataset.start){ P.start = b.dataset.start; save(); return render(); }
+  if (b.dataset.tab){ closeSheet(); S.tab = b.dataset.tab; render(); document.getElementById('v-' + S.tab).scrollTop = 0; return; }
+  const a = b.dataset.act;
+  if (a === 'region') openSheet('Your region', `<button class="locbtn" id="geo">${ICON.locate} Use my location</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">Saved on this device.</p>${regionOpts()}`);
+  if (a === 'explain') openSheet('Understanding the readings', explainHTML());
+  if (a === 'news') openSheet('NEA update', newsHTML());
+});
+
+/* ---------- Render ---------- */
+function render(){
+  if (!S.d) return;
+  const n = now(P.region);
+  applySky(n.pm);
+  document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
+  document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
+  const late = S.live && Date.now() - S.d.asOf.getTime() > 3 * 3600e3;   // NEA normally publishes within the hour
+  document.getElementById('upd').innerHTML = `<i style="background:${S.live && !late ? 'var(--c0)' : 'var(--c3)'}"></i>${!S.live ? 'Snapshot' : late ? 'Delayed' : 'Live'} · ${sgHour(S.d.asOf)}, ${sgDay(S.d.asOf)}`;
+  document.querySelectorAll('#tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
+  for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== S.tab;
+  if (S.tab !== 'now') cancelAnimationFrame(raf);
+  ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+addEventListener('resize', () => { if (S.tab === 'now') renderNow(); });
+
+/* ---------- Boot: live data from NEA, refreshed while the page is open ---------- */
+function showStatus(text, retry){
+  document.getElementById('upd').textContent = retry ? 'Offline' : 'Loading…';
+  document.getElementById('regionChip').innerHTML = `${ICON.pin}${RNAME[P.region]}${ICON.down}`;
+  document.querySelector('.hdr [data-act="explain"]').innerHTML = ICON.info;
+  for (const t of ['now','day','hist','set']) document.getElementById('v-' + t).hidden = t !== 'now';
+  document.getElementById('v-now').innerHTML = `<div class="day" style="justify-content:center;align-items:center;text-align:center">
+    <p style="max-width:30ch;margin:0;color:var(--muted)">${esc(text)}</p>${retry ? '<button class="plain" id="retry">Try again</button>' : ''}</div>`;
+}
+let loadedAt = 0;
+async function refresh(){
+  try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
+  catch(e){ if (!S.d) showStatus('Couldn’t reach NEA’s air quality service. Check your connection and try again.', true); }
+}
+S.d = SNAP_AQ ? normalise(SNAP_AQ, SNAP_ADV) : null;
+if (S.d) render(); else showStatus('Loading the latest readings from NEA…');
+refresh();
+setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });
+</script>
+</body>
+</html>
