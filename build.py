@@ -183,7 +183,7 @@ def sky(pm):  # the page's light-theme sky
     t = min(1, pm / 260)
     clear, hazy, thick = ("#5BA6E6", "#D4EAF9"), ("#AFA796", "#E6DFD1"), ("#8E7258", "#D9BE9C")
     pick = lambda i: mix(clear[i], hazy[i], t * 2) if t < .5 else mix(hazy[i], thick[i], (t - .5) * 2)
-    return {"top": pick(0), "bot": pick(1), "ink": "#17222B"}
+    return {"top": pick(0), "bot": pick(1), "ink": "#17222B", "t": t}
 
 
 def preview_text(R, target):

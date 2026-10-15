@@ -15,6 +15,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:1200px;height:630px;overflow:hidden}
 body{font-family:var(--body);color:var(--ink);background:linear-gradient(var(--top),var(--bot))}
+canvas{position:absolute;inset:0}
 .wrap{position:relative;height:100%;padding:44px 56px 40px;display:grid;grid-template-columns:1fr 470px;gap:44px}
 .top{display:flex;align-items:center;gap:12px;font-weight:600;font-size:22px}
 .top b{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.02em;margin-right:10px}
@@ -40,12 +41,19 @@ body{font-family:var(--body);color:var(--ink);background:linear-gradient(var(--t
 </style>
 </head>
 <body>
+<canvas id="grain" width="1200" height="630"></canvas>
 <div class="wrap" id="root"></div>
 <script>
 const DATA = /*DATA*/null;
 const PM = [{c:0},{c:2},{c:3},{c:4}];
 const LOGO = '<svg viewBox="0 0 28 28" aria-hidden="true" style="width:44px;height:44px"><defs><linearGradient id="sunfade" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF8A3D" stop-opacity=".12"/></linearGradient></defs><circle cx="14" cy="14" r="10" fill="url(#sunfade)"/></svg>';
 const d = DATA, root = document.getElementById('root');
+/* the app's drifting haze, frozen: denser when PM2.5 is higher; seeded so each hour's image is the same on every build */
+{ const r = d.regions[d.target], x = document.getElementById('grain').getContext('2d');
+  let s = [...(d.target + d.stamp)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 2147483647, 7) || 7;
+  const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const col = d.sky.t > .3 ? '100,80,55' : '255,255,255';
+  for (let i = 0, n = Math.round(80 + r.pm * 3.6); i < n; i++){ x.beginPath(); x.arc(rnd() * 1200, rnd() * 630, .9 + rnd() * 2.6, 0, 7); x.fillStyle = `rgba(${col},${(.1 + rnd() * .3).toFixed(3)})`; x.fill(); } }
 document.body.style.setProperty('--top', d.sky.top); document.body.style.setProperty('--bot', d.sky.bot);
 const badge = (c, t) => `<span style="display:inline-block;background:var(--c${c});color:var(--on${c});border-radius:8px;padding:2px 10px;font-weight:800;font-size:15px">${t}</span>`;
 const fcLine = d.fc ? `${d.fc.when === 'tomorrow' ? 'Tomorrow' : 'Today'} · ${d.fc.day}` : `Today · ${d.day}`;
