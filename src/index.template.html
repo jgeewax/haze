@@ -1024,26 +1024,27 @@ async function sharePicture(btn){
   showPicture(blob);
 }
 const picLabel = () => t(CAN_SHARE_FILES ? 'pic.share' : CAN_COPY_IMG ? 'pic.copy' : 'pic.save');
-/* Share on WhatsApp sends the picture card itself, never text. No web page can drop a picture straight into WhatsApp:
-   phones (and Safari on a Mac) open the share menu with the picture attached, where WhatsApp is one tap; other
-   computers copy the picture and open WhatsApp Web to paste it; anything else shows it to save. The picture goes
-   alone, because WhatsApp on iPhones drops a picture that comes with text, and the card already carries the address
-   and a QR code. */
+/* Share on WhatsApp sends the picture card itself, never text. No web page can drop a picture straight into WhatsApp
+   (its links carry text only): phones open the share menu with the picture attached, where WhatsApp is one tap;
+   computers copy the picture and open WhatsApp Web to paste it, because the Mac share menu has no WhatsApp in it;
+   anything else shows it to save. The picture goes alone, because WhatsApp on iPhones drops a picture that comes
+   with text, and the card already carries the address and a QR code. */
 async function shareWhatsApp(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl.textContent, say = (m, ms) => { lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
   let blob = cardCache.key === cardKey() ? cardCache.blob : null;
   if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
-  if (CAN_SHARE_FILES){
+  if (phone && CAN_SHARE_FILES){
     try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})]}); track('share/whatsapp/shared'); return; }
     catch(e){ if (e.name === 'AbortError') return; }
   }
-  if (CAN_COPY_IMG && !matchMedia('(pointer:coarse)').matches){
+  if (!phone && CAN_COPY_IMG){
     try {
       await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
       track('share/whatsapp/copied'); say(t('pic.copied'), 4000);
       window.open('https://web.whatsapp.com/', '_blank', 'noopener');
       return;
     } catch(e) {}
+  const phone = matchMedia('(pointer:coarse)').matches;
   }
   track('share/whatsapp/shown');
   showPicture(blob);
