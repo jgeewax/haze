@@ -252,7 +252,9 @@ button{font:inherit;color:inherit;cursor:pointer}
   .topnav button[aria-selected="true"]{opacity:1;background:var(--sky-chip)}
   #v-now{flex-direction:row;align-items:center;gap:48px;background:linear-gradient(var(--sky-top),var(--sky-bot));padding:24px max(28px,calc(50% - 580px)) 40px;overflow-y:auto}
   #v-now .sky{flex:1 1 0;background:none;padding:0;align-self:center;min-width:0}
-  #v-now .sky > canvas{display:none}
+  #v-now{position:relative}
+  #v-now > canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  #v-now > .sky,#v-now > .ahead{position:relative;z-index:1}
   #v-now .ahead{flex:0 1 500px;min-width:0;border-radius:28px;padding:28px 30px 24px;box-shadow:0 30px 70px -35px rgba(10,20,30,.55);align-self:center}
   .big{font-size:84px}
   .bign{font-size:92px}
@@ -2839,7 +2841,8 @@ function renderNow(){
       </div>
       ${officialLine()}
     </div>`;
-  grain(el.querySelector('.sky'), n.pm);
+  // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
+  grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
 }
 
 /* ---------- My day ---------- */
