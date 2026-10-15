@@ -85,13 +85,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .head2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:-.02em}
 .lnum{display:flex;align-items:baseline;gap:8px;border:0;background:none;padding:0;color:inherit;text-align:left}
 .lnum .v{font-family:var(--display);font-weight:700;font-size:54px;line-height:1;letter-spacing:-.03em}
-.lnum .k{font-size:14px;font-weight:700;opacity:.85}
+.lnum .k{display:flex;flex-direction:column;line-height:1.15;padding-bottom:4px}
+.lnum .k b{font-size:16px;font-weight:800}
+.lnum .k small{font-size:12px;font-weight:600;opacity:.8}
+.trend{font-size:13.5px;margin-top:8px;opacity:.92}
 .lbw{margin-top:10px}
 .lpair{display:grid;grid-template-columns:auto 1fr;gap:20px}
 .lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
 .lpair > button + button{padding-left:20px;border-left:1px solid var(--line)}
 .lpair .v{font-family:var(--display);font-weight:700;font-size:clamp(36px,11vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
-.lpair .k{font-size:13px;font-weight:700;color:var(--muted)}
+.lpair .k{display:flex;flex-direction:column;line-height:1.2;color:var(--muted)}
+.lpair .k b{font-size:13.5px;font-weight:800;color:var(--ink)}
+.lpair .k small{font-size:12px;font-weight:600}
 .lb{position:relative;padding-top:14px}
 .lb .track{display:grid;gap:3px}
 .lb .track i{height:12px;border-radius:3px;display:block}
@@ -242,7 +247,9 @@ button{font:inherit;color:inherit;cursor:pointer}
   #v-now .ahead{flex:0 1 500px;min-width:0;border-radius:28px;padding:28px 30px 24px;box-shadow:0 30px 70px -35px rgba(10,20,30,.55);align-self:center}
   .big{font-size:84px}
   .lnum .v{font-size:96px}
-  .lnum .k{font-size:18px}
+  .lnum .k b{font-size:20px}
+  .lnum .k small{font-size:14px}
+  .trend{font-size:16px}
   .lb .track i{height:14px}
   .adv{font-size:30px;max-width:20ch}
   .adv.plan{font-size:22px}
@@ -510,8 +517,9 @@ function renderNow(){
     <div class="sky">
       <div class="eb">Now</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <button class="lnum" data-act="def" data-k="pm" aria-label="1-hr PM2.5 ${n.pm}. What does this mean?"><span class="v num">${n.pm}</span><span class="k">PM2.5 now</span></button>
+      <button class="lnum" data-act="def" data-k="pm" aria-label="1-hr PM2.5 ${n.pm}. What does this mean?"><span class="v num">${n.pm}</span><span class="k"><b>This hour</b><small>PM2.5 · µg/m³</small></span></button>
       <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
+      ${trendLine(P.region)}
       <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
         <div class="nea" id="nea-pm" hidden>NEA: “${esc(pmAdvice(n.b))}”</div></div>
     </div>
@@ -519,8 +527,8 @@ function renderNow(){
       <div class="eb" style="color:var(--muted)">${r === 1 ? 'Tomorrow' : 'Today'}</div>
       <div class="head2" style="color:var(--fg${plan.c})">${f ? (f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} → ${PSI[f.hi].name}`) : n.p.name}</div>
       <div class="lpair">
-        <button data-act="def" data-k="psi" aria-label="24-hr PSI ${n.psi}. What does this mean?"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k">PSI now</span></button>
-        <button data-act="def" data-k="fc" aria-label="PSI forecast. What does this mean?"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="k">forecast</span></button>
+        <button data-act="def" data-k="psi" aria-label="24-hr PSI ${n.psi}. What does this mean?"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k"><b>Past 24 hours</b><small>PSI</small></span></button>
+        <button data-act="def" data-k="fc" aria-label="PSI forecast. What does this mean?"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="k"><b>Forecast</b><small>PSI</small></span></button>
       </div>
       ${lbar({B:PSI, v:n.psi, fc:f, tick:'var(--ink)'})}
       <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
@@ -533,6 +541,19 @@ function renderNow(){
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
+}
+/* Which way the haze is heading. The 24-hr PSI lags by design, so compare this hour's PM2.5 with three hours ago;
+   small changes (under 10 µg/m³ or 15%) count as steady. */
+function pmTrend(r){
+  const R = S.d.regions[r], i = S.d.li, j = i - 3;
+  if (j < 0 || R.pm[j] == null || R.pm[i] == null) return null;
+  const a = R.pm[j], b = R.pm[i], d = b - a;
+  return {dir: Math.abs(d) < 10 || Math.abs(d) / Math.max(a, 1) < .15 ? 0 : d > 0 ? 1 : -1, from:a, to:b, since:S.d.times[j]};
+}
+function trendLine(r){
+  const tr = pmTrend(r); if (!tr) return '';
+  const word = ['↓ Starting to clear', '→ Holding steady', '↑ Getting worse'][tr.dir + 1];
+  return `<div class="trend num"><b>${word}</b> · ${tr.from} → ${tr.to} since ${sgHour(tr.since)}</div>`;
 }
 /* what each number means, shown when it is tapped */
 function defText(k){
@@ -764,7 +785,7 @@ function shareText(withURL = true){
   if (S.d){
     const n = now(P.region), f = S.d.fc, sq = ['🟩','🟦','🟨','🟧','🟥'], r = fcRel();
     lines = [`Haze in ${RNAME[P.region]}, ${sgHour(S.d.asOf)} ${sgDay(S.d.asOf, true)}`,
-      `${sq[n.b.c]} PM2.5: ${n.pm} (${n.b.name})  ${sq[n.p.c]} PSI: ${n.psi} (${n.p.name})`];
+      `${sq[n.b.c]} This hour: PM2.5 ${n.pm} (${n.b.name})`, `${sq[n.p.c]} Past 24 hours: PSI ${n.psi} (${n.p.name})`];
     if (f) lines.push(`Forecast ${r === 0 ? 'today' : r === 1 ? 'tomorrow' : 'for ' + sgDay(f.date, true)}: ${fcName()}`);
   }
   return withURL ? `${lines.join('\n')}\n${shareURL()}` : lines.join('\n');
@@ -854,7 +875,7 @@ async function cardBlob(){
   x.fillStyle = CARD.on[n.b.c]; x.fillText(n.b.name, pad + 10, 390);
   x.fillStyle = sky.ink; font(700, 96, D); x.fillText(String(n.pm), pad, 520); const nw = x.measureText(String(n.pm)).width;
   font(600, 34, B); x.fillText('µg/m³', pad + nw + 14, 520);
-  font(600, 26, B); x.globalAlpha = .88; x.fillText(`1-hr PM2.5 · average over the past hour · Band ${n.b.n}`, pad, 562); x.globalAlpha = 1;
+  font(600, 26, B); x.globalAlpha = .88; x.fillText(`This hour · PM2.5 µg/m³ · Band ${n.b.n}`, pad, 562); x.globalAlpha = 1;
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
@@ -869,8 +890,8 @@ async function cardBlob(){
   const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = CARD.fg[plan.c]; x.fillText(head, pad, PT + 126);
   x.fillStyle = CARD.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
   x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : 'None', 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : 'None', col2, PT + 206);
-  x.fillStyle = CARD.muted; font(600, 24, B); x.fillText('24-hr PSI · past 24 hours', pad, PT + 242);
-  x.fillText(f ? `PSI forecast · ${r === 1 ? 'tomorrow' : 'today'}` : 'No forecast issued', col2, PT + 242);
+  x.fillStyle = CARD.muted; font(600, 24, B); x.fillText('Past 24 hours · PSI', pad, PT + 242);
+  x.fillText(f ? `Forecast ${r === 1 ? 'tomorrow' : 'today'} · PSI` : 'No forecast issued', col2, PT + 242);
   x.fillStyle = CARD.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
   const s5 = (cw - 4*8) / 5, by = PT + 306, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
   PSI.forEach((q, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
