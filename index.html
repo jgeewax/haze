@@ -99,36 +99,39 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sky canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .sky > *:not(canvas){position:relative}
 .big{font-family:var(--display);font-weight:750;font-size:clamp(44px,13vw,54px);line-height:1;letter-spacing:-.035em;margin:8px 0 8px;align-self:flex-start;padding:.02em .16em .06em;border-radius:.16em;margin-left:-.1em}
-.act{font-family:var(--display);font-size:20px;line-height:1.2;font-weight:600;margin:12px 0 4px;text-wrap:balance}
 .ahead{flex:1 0 auto;padding:18px 22px 14px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
-/* big numbers: people come for them */
-.bign{font-family:var(--display);font-weight:700;font-size:54px;line-height:1;letter-spacing:-.03em}
-.bign small{font-family:var(--body);font-size:16px;font-weight:600;letter-spacing:0;margin-left:5px}
-.nlab{font-size:12.5px;margin:4px 0 2px;opacity:.88}
+/* the lean Now screen: each fact once; definitions and NEA's wording behind a tap */
 .head2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:-.02em}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.pair > div{display:flex;flex-direction:column;gap:3px;min-width:0}
-.pair > div + div{padding-left:14px;border-left:1px solid var(--line)}
-.pn{font-family:var(--display);font-weight:700;font-size:clamp(32px,10.5vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
-.pl{font-size:12px;color:var(--muted)}
-/* bars: track by band, pin above, forecast bracket below */
-.hb{position:relative;padding-top:32px}
-.hb .track{display:grid;gap:3px}
-.hb .track i{height:10px;border-radius:2px;display:block}
-.hb .pin{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none}
-.hb .pin b{font-size:13px;font-weight:800;padding:2px 8px;border-radius:7px;background:var(--pin-bg);color:var(--pin-fg);white-space:nowrap}
-.hb .pin::after{content:"";width:3px;height:22px;background:var(--pin-bg);border-radius:2px;margin-top:-1px;box-shadow:0 0 0 2px var(--pin-halo)}
-.hb .rng{position:relative;height:24px;margin-top:4px}
-.hb .rng span{position:absolute;top:0;height:8px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 6px 6px}
-.hb .rng em{position:absolute;top:7px;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;background:var(--surface);padding:0 5px;white-space:nowrap}
-.hb .labs{display:grid;gap:3px;font-size:10.5px;font-weight:700;margin-top:4px;line-height:1.15}
+.lnum{display:flex;align-items:baseline;gap:8px;border:0;background:none;padding:0;color:inherit;text-align:left}
+.lnum .v{font-family:var(--display);font-weight:700;font-size:54px;line-height:1;letter-spacing:-.03em}
+.lnum .k{font-size:14px;font-weight:700;opacity:.85}
+.lbw{margin-top:10px}
+.lpair{display:grid;grid-template-columns:auto 1fr;gap:20px}
+.lpair > button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:none;padding:0;color:inherit;text-align:left;min-width:0}
+.lpair > button + button{padding-left:20px;border-left:1px solid var(--line)}
+.lpair .v{font-family:var(--display);font-weight:700;font-size:clamp(36px,11vw,44px);line-height:1;letter-spacing:-.03em;white-space:nowrap}
+.lpair .k{font-size:13px;font-weight:700;color:var(--muted)}
+.lb{position:relative;padding-top:14px}
+.lb .track{display:grid;gap:3px}
+.lb .track i{height:12px;border-radius:3px;display:block}
+.lb .tick{position:absolute;top:0;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--tick)}
+.lb .br{position:relative;height:12px;margin-top:3px}
+.lb .br span{position:absolute;top:0;height:8px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 6px 6px}
+.advw{margin-top:14px}
+.adv{border:0;background:none;padding:0;color:inherit;text-align:left;font-family:var(--display);font-weight:600;font-size:21px;line-height:1.22;text-wrap:balance}
+.adv::after{content:" ⓘ";font-family:var(--body);font-size:.65em;opacity:.55;vertical-align:.15em}
+.adv.plan{font-size:19px}
+.nea{font-size:12.5px;line-height:1.4;opacity:.85;margin-top:6px}
+.lfoot{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+.lfoot button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+.pop{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);font-size:13.5px;line-height:1.45;z-index:4}
+.pop b{display:block;font-size:14.5px;margin-bottom:3px}
 /* the share call to action on the Now screen */
-.sharebar{display:flex;gap:8px;margin-top:8px}
+.sharebar{display:flex;gap:8px;margin-top:6px}
 .wa{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#062B14;border-radius:14px;padding:13px 14px;font-weight:800;font-size:15.5px;text-decoration:none}
 .wa svg{width:20px;height:20px}
 .more{width:52px;flex:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:14px;display:grid;place-items:center}
 .more svg{width:20px;height:20px}
-.plan{font-family:var(--display);font-size:19px;line-height:1.25;font-weight:600;margin-top:6px;text-wrap:balance}
 
 /* My day */
 .day{padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px;flex:1 0 auto}
@@ -257,16 +260,17 @@ button{font:inherit;color:inherit;cursor:pointer}
   #v-now > .sky,#v-now > .ahead{position:relative;z-index:1}
   #v-now .ahead{flex:0 1 500px;min-width:0;border-radius:28px;padding:28px 30px 24px;box-shadow:0 30px 70px -35px rgba(10,20,30,.55);align-self:center}
   .big{font-size:84px}
-  .bign{font-size:92px}
-  .bign small{font-size:22px}
-  .nlab{font-size:15px;margin-top:8px}
-  .act{font-size:28px;max-width:20ch;margin-top:20px}
+  .lnum .v{font-size:96px}
+  .lnum .k{font-size:18px}
+  .lb .track i{height:14px}
+  .adv{font-size:30px;max-width:20ch}
+  .adv.plan{font-size:22px}
+  .nea{font-size:14px}
   .for{font-size:14px}
-  .hb .labs{font-size:12px}
   .head2{font-size:30px}
-  .pn{font-size:52px}
-  .pl{font-size:13.5px}
-  .plan{font-size:22px}
+  .lpair .v{font-size:56px}
+  .lpair .k{font-size:14px}
+  .pop{bottom:24px}
   .day,.hist,.set{padding-left:max(28px,calc(50% - 560px));padding-right:max(28px,calc(50% - 560px));padding-top:32px}
   .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .tl::before{display:none}
@@ -305,6 +309,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button role="tab" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
   </nav>
   <div class="scrim" id="scrim"></div>
+  <div class="pop" id="pop" role="status" hidden></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="grab"></div>
     <div class="sh"><h4 id="sheetTitle"></h4><button class="iconbtn" id="sheetClose" aria-label="Close"></button></div>
@@ -2628,16 +2633,16 @@ const GROUPS = [
   {id:'elderly', name:'Elderly', pm:'vul', psi:'elderly', plural:'the elderly'},
   {id:'chronic', name:'Heart or lung condition', pm:'vul', psi:'chronic', plural:'people with heart or lung conditions'}];
 const PM = [
-  {max:55, n:1, c:0, name:'Normal', range:'0–55', lo:0, hi:55, gen:'Continue with normal activities.', vul:'Continue with normal activities.'},
-  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.'},
-  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.'},
-  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.'}];
+  {max:55, n:1, c:0, name:'Normal', range:'0–55', lo:0, hi:55, gen:'Continue with normal activities.', vul:'Continue with normal activities.', sGen:'Normal activities are fine.', sVul:'Normal activities are fine.'},
+  {max:150, n:2, c:2, name:'Elevated', range:'56–150', lo:56, hi:150, gen:'Reduce strenuous outdoor activity for the next hour.', vul:'Avoid strenuous outdoor activity for the next hour.', sGen:'Cut back on hard exercise outdoors this hour.', sVul:'Avoid hard exercise outdoors this hour.'},
+  {max:250, n:3, c:3, name:'High', range:'151–250', lo:151, hi:250, gen:'Avoid strenuous outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Avoid hard exercise outdoors this hour.', sVul:'Stay indoors this hour.'},
+  {max:Infinity, n:4, c:4, name:'Very High', range:'≥251', lo:251, hi:350, gen:'Minimise all outdoor activity for the next hour.', vul:'Avoid all outdoor activity for the next hour.', sGen:'Spend as little time outdoors as you can this hour.', sVul:'Stay indoors this hour.'}];
 const PSI = [
-  {max:50, c:0, name:'Good', range:'0–50', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.'},
-  {max:100, c:1, name:'Moderate', range:'51–100', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.'},
-  {max:200, c:2, name:'Unhealthy', range:'101–200', healthy:'Reduce prolonged or strenuous outdoor physical exertion.', elderly:'Minimise prolonged or strenuous outdoor physical exertion.', chronic:'Avoid prolonged or strenuous outdoor physical exertion.'},
-  {max:300, c:3, name:'Very Unhealthy', range:'201–300', healthy:'Avoid prolonged or strenuous outdoor physical exertion.', elderly:'Minimise outdoor activity.', chronic:'Avoid outdoor activity.'},
-  {max:Infinity, c:4, name:'Hazardous', range:'>300', healthy:'Minimise outdoor activity.', elderly:'Avoid outdoor activity.', chronic:'Avoid outdoor activity.'}];
+  {max:50, c:0, name:'Good', range:'0–50', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
+  {max:100, c:1, name:'Moderate', range:'51–100', healthy:'Normal activities.', elderly:'Normal activities.', chronic:'Normal activities.', sHealthy:'Normal activities are fine.', sElderly:'Normal activities are fine.', sChronic:'Normal activities are fine.'},
+  {max:200, c:2, name:'Unhealthy', range:'101–200', healthy:'Reduce prolonged or strenuous outdoor physical exertion.', elderly:'Minimise prolonged or strenuous outdoor physical exertion.', chronic:'Avoid prolonged or strenuous outdoor physical exertion.', sHealthy:'Cut back on long or hard exercise outdoors.', sElderly:'Keep long or hard exercise outdoors to a minimum.', sChronic:'Avoid long or hard exercise outdoors.'},
+  {max:300, c:3, name:'Very Unhealthy', range:'201–300', healthy:'Avoid prolonged or strenuous outdoor physical exertion.', elderly:'Minimise outdoor activity.', chronic:'Avoid outdoor activity.', sHealthy:'Avoid long or hard exercise outdoors.', sElderly:'Spend as little time outdoors as you can.', sChronic:'Stay indoors.'},
+  {max:Infinity, c:4, name:'Hazardous', range:'>300', healthy:'Minimise outdoor activity.', elderly:'Avoid outdoor activity.', chronic:'Avoid outdoor activity.', sHealthy:'Spend as little time outdoors as you can.', sElderly:'Stay indoors.', sChronic:'Stay indoors.'}];
 
 const ICON = {
   pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
@@ -2742,6 +2747,9 @@ function now(r){ const R = S.d.regions[r], i = S.d.li; return {pm:R.pm[i], psi:R
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const badge = (c, t) => `<span class="badge" style="background:var(--c${c});color:var(--on${c})">${esc(t)}</span>`;
 const pmAdvice = b => b[G().pm], psiAdvice = b => b[G().psi];
+/* the same advice in plain words, for the Now screen; NEA's own wording stays one tap away */
+const plain = (b, key) => b['s' + key[0].toUpperCase() + key.slice(1)];
+const pmShort = b => plain(b, G().pm), psiShort = b => plain(b, G().psi);
 function fcRel(){ const f = S.d.fc; return f ? dayNum(f.date) - dayNum(S.d.asOf) : null; }
 function fcWhen(){ const f = S.d.fc, r = fcRel(); return sgDay(f.date, true) + (r === 0 ? ' · today' : r === 1 ? ' · tomorrow' : r < 0 ? ' · out of date' : ''); }
 function fcName(){ const f = S.d.fc; return f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} to ${PSI[f.hi].name}`; }
@@ -2797,52 +2805,61 @@ const officialLine = () => `<p class="official">Unofficial view of NEA data. For
 /* ---------- Now ---------- */
 const psiStart = k => k === 0 ? 0 : PSI[k-1].max + 1;
 function psiRange(lo, hi){ const a = psiStart(lo), b = PSI[hi].max; return b === Infinity ? `${a}+` : `${a}–${b}`; }
-/* A bar drawn by band: a pin with the reading above it, and a bracket under the forecast bands */
+/* A bar drawn by band: a small marker for the reading, and a bracket under the forecast bands. No labels: the number,
+   the band word and the colours above it already say what they would. */
 const bandLo = (B, k) => k === 0 ? 0 : B[k-1].max + 1;
 const bandHi = (B, k) => B[k].max === Infinity ? (B === PM ? 350 : 400) : B[k].max;
-function hbar({B, v, label, fc, onSky}){
+function lbar({B, v, fc, tick}){
   const N = B.length, k = B.findIndex(x => v <= x.max), lo = bandLo(B, k), hi = bandHi(B, k);
-  const t = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, cl = (x, a, b) => Math.max(a, Math.min(b, x));
-  const on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
-  const vars = onSky ? '--pin-bg:var(--sky-ink);--pin-fg:var(--sky-top);--pin-halo:var(--sky-halo)' : '--pin-bg:var(--ink);--pin-fg:var(--surface);--pin-halo:var(--surface)';
-  return `<div class="hb" style="${vars}">
-    <div class="pin" style="left:${(cl(t, .05, .95) * 100).toFixed(1)}%"><b class="num">${esc(label)}</b></div>
-    <div class="track" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<i style="background:var(--c${x.c});opacity:${on(i) ? 1 : .35}"></i>`).join('')}</div>
-    ${fc ? `<div class="rng"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span><em class="num" style="left:${(cl((fc.lo + fc.hi + 1) / 2 / N, .15, .85) * 100).toFixed(1)}%">Forecast ${psiRange(fc.lo, fc.hi)}</em></div>` : ''}
-    <div class="labs" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<span style="opacity:${on(i) ? 1 : .6}">${B === PM ? x.n + ' · ' : ''}${x.name === 'Very Unhealthy' ? 'V. Unhealthy' : x.name}</span>`).join('')}</div></div>`;
+  const t = (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / N, on = i => fc ? i >= fc.lo && i <= fc.hi : i === k;
+  return `<div class="lb" style="--tick:${tick}" aria-hidden="true"><span class="tick" style="left:${(Math.max(.03, Math.min(.97, t)) * 100).toFixed(1)}%"></span>
+    <div class="track" style="grid-template-columns:repeat(${N},1fr)">${B.map((x, i) => `<i style="background:var(--c${x.c});opacity:${on(i) ? 1 : .3}"></i>`).join('')}</div>
+    ${fc ? `<div class="br"><span style="left:${fc.lo / N * 100}%;width:${(fc.hi - fc.lo + 1) / N * 100}%"></span></div>` : ''}</div>`;
 }
 function renderNow(){
-  const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel();
-  const plan = f ? PSI[f.hi] : n.p;
-  const day = f ? `${r === 1 ? 'Tomorrow' : 'Today'} · ${sgDay(f.date, true)}` : `Today · ${sgDay(S.d.asOf, true)}`;
+  const el = document.getElementById('v-now'), n = now(P.region), f = S.d.fc, r = fcRel(), plan = f ? PSI[f.hi] : n.p;
+  const who = G().plural.charAt(0).toUpperCase() + G().plural.slice(1);
   el.innerHTML = `
     <div class="sky">
-      <div class="eb">Now <span class="sub">· the next hour</span></div>
+      <div class="eb">Now</div>
       <div class="big" style="background:var(--c${n.b.c});color:var(--on${n.b.c})">${n.b.name}</div>
-      <div class="bign num">${n.pm}<small>µg/m³</small></div>
-      <div class="nlab"><button class="term" data-act="explain">1-hr PM2.5</button> · average over the past hour · Band ${n.b.n}</div>
-      ${hbar({B:PM, v:n.pm, label:n.pm, onSky:true})}
-      <div class="act">${esc(pmAdvice(n.b))}</div>
-      ${forLine()}
+      <button class="lnum" data-act="def" data-k="pm" aria-label="1-hr PM2.5 ${n.pm}. What does this mean?"><span class="v num">${n.pm}</span><span class="k">PM2.5 now</span></button>
+      <div class="lbw">${lbar({B:PM, v:n.pm, tick:'var(--sky-ink)'})}</div>
+      <div class="advw"><button class="adv" data-act="nea" data-k="pm" aria-expanded="false">${esc(pmShort(n.b))}</button>
+        <div class="nea" id="nea-pm" hidden>NEA: “${esc(pmAdvice(n.b))}”</div></div>
     </div>
     <div class="ahead">
-      <div class="row"><span class="eb" style="color:var(--muted)">${day}</span><button class="link" data-tab="hist" style="font-size:13px">History ${ICON.right}</button></div>
-      <div class="head2" style="color:var(--fg${plan.c})">${f ? esc(fcName()) : n.p.name}</div>
-      <div class="pair">
-        <div><span class="pn num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="pl"><button class="term" data-act="explain">24-hr PSI</button> · past 24 hours</span></div>
-        <div><span class="pn num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'};${f ? '' : 'font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="pl">${f ? `PSI forecast · ${r === 1 ? 'tomorrow' : 'today'}` : 'No forecast issued'}</span></div>
+      <div class="eb" style="color:var(--muted)">${r === 1 ? 'Tomorrow' : 'Today'}</div>
+      <div class="head2" style="color:var(--fg${plan.c})">${f ? (f.lo === f.hi ? PSI[f.lo].name : `${PSI[f.lo].name} → ${PSI[f.hi].name}`) : n.p.name}</div>
+      <div class="lpair">
+        <button data-act="def" data-k="psi" aria-label="24-hr PSI ${n.psi}. What does this mean?"><span class="v num" style="color:var(--fg${n.p.c})">${n.psi}</span><span class="k">PSI now</span></button>
+        <button data-act="def" data-k="fc" aria-label="PSI forecast. What does this mean?"><span class="v num" style="color:${f ? `var(--fg${PSI[f.hi].c})` : 'var(--muted)'}${f ? '' : ';font-size:30px'}">${f ? psiRange(f.lo, f.hi) : 'None'}</span><span class="k">forecast</span></button>
       </div>
-      ${hbar({B:PSI, v:n.psi, label:`${n.psi} now`, fc:f})}
-      <div class="plan">${esc(psiAdvice(plan))}</div>
-      <div class="foot">${f ? (f.lo !== f.hi ? `Advice for the upper end of the forecast, ${PSI[f.hi].name}.` : `Advice for the forecast, ${PSI[f.hi].name}.`) : 'NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.'}</div>
+      ${lbar({B:PSI, v:n.psi, fc:f, tick:'var(--ink)'})}
+      <div><button class="adv plan" data-act="nea" data-k="psi" aria-expanded="false">${esc(psiShort(plan))}</button>
+        <div class="nea" id="nea-psi" hidden>NEA: “${esc(psiAdvice(plan))}”${f && f.lo !== f.hi ? ` For the upper end of the forecast, ${PSI[f.hi].name}.` : f ? '' : ' For the current 24-hr PSI; no forecast has been issued.'}</div></div>
       <div class="sharebar">
         <a class="wa" href="https://wa.me/?text=${encodeURIComponent(shareText())}" target="_blank" rel="noopener">${ICON.chat}Share on WhatsApp</a>
         <button class="more" data-act="share" aria-label="More ways to share">${ICON.share}</button>
       </div>
-      ${officialLine()}
+      <div class="lfoot"><button data-tab="set">${esc(who)}</button> · Source: NEA, ${ext(OFFICIAL, 'haze.gov.sg')}</div>
     </div>`;
   // phones: haze drifts across the sky panel; wide screens: the sky is the whole page, so it drifts across all of it
   grain(matchMedia('(min-width:960px)').matches ? el : el.querySelector('.sky'), n.pm);
+}
+/* what each number means, shown when it is tapped */
+function defText(k){
+  const n = now(P.region), f = S.d.fc;
+  if (k === 'pm') return `<b>1-hr PM2.5: ${n.pm} µg/m³</b>Fine smoke particles in the air, averaged over the past hour. Band ${n.b.n} of 4, ${n.b.name} (${n.b.range} µg/m³). Use it for what you do in the next hour.`;
+  if (k === 'psi') return `<b>24-hr PSI: ${n.psi}</b>NEA’s Pollutant Standards Index, averaged over the past 24 hours. ${n.p.name} (${n.p.range}). It moves slowly, so it describes the day.`;
+  return f ? `<b>PSI forecast: ${psiRange(f.lo, f.hi)}</b>NEA’s 24-hr PSI forecast for ${fcFor()}: ${fcName()}. The advice is for the upper end.`
+           : `<b>No forecast issued</b>NEA publishes a 24-hr PSI forecast when air quality reaches the Unhealthy range.`;
+}
+const pop = () => document.getElementById('pop');
+function showDef(k){
+  const el = pop(), same = !el.hidden && el.dataset.k === k;
+  el.dataset.k = k; el.hidden = same;
+  el.innerHTML = `${defText(k)}<button class="link" data-act="explain" style="display:flex;margin-top:8px;font-size:13px">More about the readings ${ICON.right}</button>`;
 }
 
 /* ---------- My day ---------- */
@@ -2974,7 +2991,7 @@ document.getElementById('sheetClose').innerHTML = ICON.close;
 function openSheet(title, html){ document.getElementById('sheetTitle').textContent = title; const b = document.getElementById('sheetBody'); b.innerHTML = html; b.scrollTop = 0; sheet.classList.add('on'); scrim.classList.add('on'); }
 function closeSheet(){ sheet.classList.remove('on'); scrim.classList.remove('on'); }
 scrim.onclick = closeSheet; document.getElementById('sheetClose').onclick = closeSheet;
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeSheet(); const p = document.getElementById('pop'); if (p) p.hidden = true; } });
 function explainHTML(){
   const n = now(P.region), f = S.d.fc;
   return `<div><div class="two">
@@ -3202,7 +3219,11 @@ async function shareImage(btn){
 
 /* ---------- Events ---------- */
 document.getElementById('app').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
+  const b = e.target.closest('button');
+  if (!e.target.closest('#pop') && !(b && b.dataset.act === 'def')) pop().hidden = true;   // a tap anywhere else closes a definition
+  if (!b) return;
+  if (b.dataset.act === 'def') return showDef(b.dataset.k);
+  if (b.dataset.act === 'nea'){ const n = document.getElementById('nea-' + b.dataset.k); n.hidden = !n.hidden; b.setAttribute('aria-expanded', !n.hidden); return; }
   if (b.id === 'geo') return geolocate();
   if (b.id === 'copyLink') return copy(shareURL(), b);
   if (b.id === 'copyMsg') return copy(shareText(), b);

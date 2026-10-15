@@ -11,3 +11,4 @@
 - [x] Update the title to be Haze Status (not Haze Sky)
 - [x] Remove or update the favicon and icon in the header. it looks too much like a menu expander 3-line hamburger button.
 - [x] Make the numbers for PM2.5 and PSI for "now" more prominent. people want the numbers.
+- [ ] add a spark line or indicator for the main numbers hinting at the trend (is it going up? or coming down? or mostly the same?)
