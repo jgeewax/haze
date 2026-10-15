@@ -2680,9 +2680,12 @@ let keepRegion = null;
     let stored = null; try { stored = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
     if (stored && REGIONS.includes(stored.region) && stored.region !== linked) keepRegion = stored.region;
     P.region = linked;
-    try { history.replaceState(null, '', (fromPath ? '/' : location.pathname) + location.search); } catch(e) {}
     if (!stored) try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {}
-  } }
+  }
+  const q = new URLSearchParams(location.search); q.delete('at');
+  if (fromPath || location.search !== (q.toString() ? '?' + q : '') || REGIONS.includes((location.hash || '').slice(1)))
+    try { history.replaceState(null, '', (fromPath ? '/' : location.pathname) + (q.toString() ? '?' + q : '')); } catch(e) {}
+}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(keepRegion ? {...P, region:keepRegion} : P)); } catch(e) {} }
 const S = {tab:P.start, d:null, live:false};
 const G = () => GROUPS.find(g => g.id === P.group);
@@ -3061,7 +3064,11 @@ function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); re
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
 const SITE = 'https://haze.geewax.org/';
-const shareURL = () => SITE + P.region + '/';   // each region has its own page, so link previews show that region
+/* Each region has its own page, so link previews show that region. Chat apps remember a preview per address and
+   can't be told to refresh, so shared links carry the reading's hour (?at=YYYYMMDDHH) and get a fresh preview each
+   hour. QR codes use the plain address: nobody previews a scanned link. */
+const atStamp = d => { const x = sg(d), p2 = v => String(v).padStart(2, '0'); return `${x.getUTCFullYear()}${p2(x.getUTCMonth() + 1)}${p2(x.getUTCDate())}${p2(x.getUTCHours())}`; };
+const shareURL = (stamped = true) => SITE + P.region + '/' + (stamped && S.d ? '?at=' + atStamp(S.d.asOf) : '');
 function fcFor(){ const f = S.d.fc, r = fcRel(), day = sgDay(f.date, true); return r === 0 ? `today (${day})` : r === 1 ? `tomorrow (${day})` : day; }
 /* Short plain text for any chat app: the two numbers, the forecast, the link. Coloured squares match NEA's band colours. */
 function shareText(withURL = true){
@@ -3099,7 +3106,7 @@ function shareHTML(){
       ${navigator.share ? `<button class="shb" id="shareMore"><span class="si" style="background:var(--surface-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset">${ICON.share}</span>More</button>` : ''}
     </div>
     ${S.d ? `<button class="imgbtn" id="shareImg">${ICON.image}<span class="lbl">Share as image</span></button><div id="imgOut" hidden></div>` : ''}
-    <div class="qrbox">${qrSVG(shareURL())}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(shareURL().replace('https://', ''))}</span></div></div>`;
+    <div class="qrbox">${qrSVG(shareURL(false))}<div><b>Scan to open</b><span>Show this screen to someone nearby. It opens on ${RNAME[P.region]}.</span><span class="u">${esc(shareURL(false).replace('https://', ''))}</span></div></div>`;
 }
 function openShare(){
   openSheet('Share', shareHTML());
@@ -3183,7 +3190,7 @@ async function cardBlob(){
   { const m = pad + along(PSI, n.psi) * cw, lab = `${n.psi} now`; font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
     x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
     x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
-  const q = qrModules(shareURL()), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
+  const q = qrModules(shareURL(false)), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
   if (f){
     const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
     x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';

@@ -34,10 +34,15 @@ GitHub Actions (`.github/workflows/pages.yml`) runs `build.py --site` and deploy
 
 **Link previews.** WhatsApp, Telegram and other apps read a page's preview tags without running its scripts, so previews can't come from the live page. Each 30-minute build therefore fetches NEA's latest readings and does two things:
 
-- writes one page per region, at `/north/`, `/west/` and so on, whose preview title gives that region's numbers, e.g. "Haze in West: PM2.5 104 (Elevated), PSI 208 (Very Unhealthy)";
-- renders a matching 1200×630 image from `src/og-live.html`, plus an island overview for the bare domain.
+- writes one page per region, at `/north/`, `/west/` and so on, whose preview title gives that region's numbers and their time, e.g. "West at 11am, Thu 15 Oct: PM2.5 161 (High), PSI 211 (Very Unhealthy)";
+- renders a matching 1200×630 image from `src/og-live.html`, with the time in large type.
 
-Share links point at these region pages. If NEA can't be reached during a build, the pages fall back to the fixed `og.png`. The page itself always loads its numbers live in the browser.
+**Chat apps cache previews.** WhatsApp builds a preview on the sender's phone, sends it inside the message, and remembers previews per address; nothing on our side can make it refresh. So:
+
+- the bare domain keeps the fixed `og.png`, which shows no numbers, because people type it by hand and a saved copy must never be wrong;
+- share links add the reading's hour, e.g. `https://haze.geewax.org/west/?at=2026101511`, a new address every hour, so chat apps fetch a fresh preview. The page ignores `?at=` and tidies the address bar. QR codes use the plain address.
+
+A preview saved in a chat is a dated snapshot; tapping it opens the live numbers. If NEA can't be reached during a build, region pages fall back to the fixed `og.png`.
 
 `index.html` at the repository root is the same page without the region previews, kept for opening locally.
 

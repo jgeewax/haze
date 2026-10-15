@@ -6,7 +6,7 @@
                                  when NEA can't be reached (used for sandboxed previews such as Claude artifacts)
     python3 build.py --og        renders src/og.html to og.png (the fixed link-preview image) with headless Chrome
     python3 build.py --site      writes _site/, what GitHub Pages serves: the page at / and at /north/, /west/ ...,
-                                 each with link-preview tags and a preview image of NEA's latest readings.
+                                 region pages with link-preview tags and a dated image of NEA's latest readings.
                                  GitHub Actions runs this every 30 minutes (.github/workflows/pages.yml).
 
 The page itself always fetches its data in the visitor's browser. Only the link previews are made ahead of time,
@@ -187,18 +187,11 @@ def sky(pm):  # the page's light-theme sky
 
 
 def preview_text(R, target):
-    f = R["fc"]
+    f, r = R["fc"], R["regions"][target]
     outlook = f"Forecast {f['when']}: {f['name']} (PSI {f['range']})" if f else "No PSI forecast issued"
-    if target:
-        r = R["regions"][target]
-        title = f"Haze in {r['name']}: PM2.5 {r['pm']} ({r['pmBand']['name']}), PSI {r['psi']} ({r['psiBand']['name']})"
-        desc = f"{outlook}. NEA readings at {R['asOf']}. Live readings for every region."
-        alt = f"{r['name']} at {R['asOf']}: 1-hr PM2.5 {r['pm']} µg/m³, {r['pmBand']['name']}; 24-hr PSI {r['psi']}, {r['psiBand']['name']}. {outlook}."
-    else:
-        ps = [R["regions"][r]["psi"] for r in REGIONS]
-        title = f"Singapore haze at {R['asOf']}: PSI {min(ps)}–{max(ps)}"
-        desc = "PM2.5 by region: " + ", ".join(f"{RNAME[r]} {R['regions'][r]['pm']}" for r in REGIONS) + f". {outlook}."
-        alt = f"Singapore at {R['asOf']}. " + desc
+    title = f"{r['name']} at {R['asOf']}: PM2.5 {r['pm']} ({r['pmBand']['name']}), PSI {r['psi']} ({r['psiBand']['name']})"
+    desc = f"{outlook}. A snapshot from NEA readings; tap for the live numbers."
+    alt = f"{r['name']} at {R['asOf']}: 1-hr PM2.5 {r['pm']} µg/m³, {r['pmBand']['name']}; 24-hr PSI {r['psi']}, {r['psiBand']['name']}. {outlook}."
     return title, desc, alt
 
 
@@ -220,17 +213,18 @@ def build_site():
     except Exception as e:
         print(f"NEA readings unavailable ({e}); using the fixed preview image")
     tpl = (SRC / "og-live.html").read_text()
+    # The bare domain keeps the fixed preview (og.png, no numbers): people type it by hand, so chat apps reuse whatever
+    # preview they saved first, and a saved copy must never show stale readings. Region pages get a dated live preview;
+    # share links add ?at=<hour>, so chat apps fetch a fresh one each hour.
     for target in [None] + REGIONS:
         meta = dict(DEFAULT_META, url=SITE_URL + (f"{target}/" if target else ""))
-        if R:
-            name = target or "all"
-            pm = R["regions"][target]["pm"] if target else sorted(r["pm"] for r in R["regions"].values())[2]
+        if R and target:
             with tempfile.TemporaryDirectory() as d:
                 card = pathlib.Path(d) / "card.html"
-                card.write_text(tpl.replace("/*DATA*/null", js({**R, "target": name, "sky": sky(pm)})))
-                screenshot(card.as_uri(), out / "og" / f"{name}.png")
+                card.write_text(tpl.replace("/*DATA*/null", js({**R, "target": target, "sky": sky(R["regions"][target]["pm"])})))
+                screenshot(card.as_uri(), out / "og" / f"{target}.png")
             title, desc, alt = preview_text(R, target)
-            meta.update(title=title, description=desc, alt=alt, image=f"{SITE_URL}og/{name}.png?v={R['stamp']}")
+            meta.update(title=title, description=desc, alt=alt, image=f"{SITE_URL}og/{target}.png?v={R['stamp']}")
         dest = out / target / "index.html" if target else out / "index.html"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(full_page(meta))
