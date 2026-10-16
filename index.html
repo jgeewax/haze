@@ -437,6 +437,7 @@ en: {
   "set.guide": "NEA’s activity guide (PDF)", "set.reset": "Reset saved settings", "set.resetDone": "Settings reset.",
   "region.aria": "{region}: {areas}. 1-hr PM2.5 {v}, {band}", "region.note": "{region} includes {areas}. Readings are 1-hr PM2.5 in µg/m³.",
   "region.sheet": "Your region", "region.saved": "Saved on this device.",
+  "welcome.title": "Where are you?", "welcome.body": "Haze can differ across Singapore. Choose your region to see its readings; you can change it any time at the top of the screen.",
   "geo.unsupported": "This browser can’t share its location. Pick your region below.",
   "geo.insecure": "Browsers only share location with secure (https) pages. Open https://haze.geewax.org, or pick your region below.",
   "geo.blocked": "Location is blocked for this site. Allow it in your browser’s site settings, or pick your region below.",
@@ -546,6 +547,7 @@ zh: {
   "set.guide": "环境局活动指南（PDF）", "set.reset": "重置已保存的设置", "set.resetDone": "设置已重置。",
   "region.aria": "{region}：{areas}。1小时PM2.5 {v}，{band}", "region.note": "{region}包括{areas}。读数为1小时PM2.5，单位µg/m³。",
   "region.sheet": "你的地区", "region.saved": "已保存在这部设备上。",
+  "welcome.title": "你在哪里？", "welcome.body": "新加坡各地的烟霾情况可能不同。选择你的地区，查看那里的读数；之后随时可以在屏幕顶部更改。",
   "geo.unsupported": "这个浏览器无法提供位置。请在下方选择你的地区。",
   "geo.insecure": "浏览器只会向安全（https）网页提供位置。请打开 https://haze.geewax.org，或在下方选择你的地区。",
   "geo.blocked": "此网站的位置权限已被阻止。请在浏览器的网站设置中允许，或在下方选择你的地区。",
@@ -655,6 +657,7 @@ ms: {
   "set.guide": "Panduan aktiviti NEA (PDF)", "set.reset": "Tetapkan semula tetapan", "set.resetDone": "Tetapan telah ditetapkan semula.",
   "region.aria": "{region}: {areas}. PM2.5 1 jam {v}, {band}", "region.note": "{region} merangkumi {areas}. Bacaan ialah PM2.5 1 jam dalam µg/m³.",
   "region.sheet": "Kawasan anda", "region.saved": "Disimpan pada peranti ini.",
+  "welcome.title": "Anda di mana?", "welcome.body": "Jerebu boleh berbeza di seluruh Singapura. Pilih kawasan anda untuk melihat bacaannya; anda boleh menukarnya bila-bila masa di bahagian atas skrin.",
   "geo.unsupported": "Pelayar ini tidak dapat berkongsi lokasi. Pilih kawasan anda di bawah.",
   "geo.insecure": "Pelayar hanya berkongsi lokasi dengan halaman selamat (https). Buka https://haze.geewax.org, atau pilih kawasan anda di bawah.",
   "geo.blocked": "Lokasi disekat untuk laman ini. Benarkannya dalam tetapan laman pelayar anda, atau pilih kawasan anda di bawah.",
@@ -764,6 +767,7 @@ ta: {
   "set.guide": "NEA நடவடிக்கை வழிகாட்டி (PDF)", "set.reset": "சேமித்த அமைப்புகளை மீட்டமை", "set.resetDone": "அமைப்புகள் மீட்டமைக்கப்பட்டன.",
   "region.aria": "{region}: {areas}. 1 மணி நேர PM2.5 {v}, {band}", "region.note": "{region} பகுதியில் {areas} அடங்கும். அளவீடுகள் µg/m³ அலகில் 1 மணி நேர PM2.5.",
   "region.sheet": "உங்கள் பகுதி", "region.saved": "இந்தச் சாதனத்தில் சேமிக்கப்பட்டது.",
+  "welcome.title": "நீங்கள் எங்கே இருக்கிறீர்கள்?", "welcome.body": "சிங்கப்பூரின் பகுதிகளுக்கிடையே புகைமூட்டம் வேறுபடலாம். உங்கள் பகுதியின் அளவீடுகளைக் காண அதைத் தேர்ந்தெடுங்கள்; திரையின் மேலே எப்போது வேண்டுமானாலும் அதை மாற்றலாம்.",
   "geo.unsupported": "இந்த உலாவியால் இருப்பிடத்தைப் பகிர முடியாது. கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
   "geo.insecure": "பாதுகாப்பான (https) பக்கங்களுடன் மட்டுமே உலாவிகள் இருப்பிடத்தைப் பகிர்கின்றன. https://haze.geewax.org-ஐத் திறக்கவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
   "geo.blocked": "இந்தத் தளத்திற்கு இருப்பிடம் தடுக்கப்பட்டுள்ளது. உங்கள் உலாவியின் தள அமைப்புகளில் அனுமதிக்கவும், அல்லது கீழே உங்கள் பகுதியைத் தேர்ந்தெடுக்கவும்.",
@@ -3153,21 +3157,23 @@ const ICON = {
 const KEY = 'haze-sky:v2';
 const LANGS = [['en','English'],['zh','中文'],['ms','Bahasa Melayu'],['ta','தமிழ்']];
 const browserLang = () => { for (const l of navigator.languages || [navigator.language || '']){ const k = String(l).slice(0, 2).toLowerCase(); if (['zh','ms','ta','en'].includes(k)) return k; } return 'en'; };
-const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang()};
+const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang(), asked:false};   // asked: has the visitor been asked for their region
 const P = {...DEFAULTS};
 try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
   if (['now','day'].includes(p.start)) P.start = p.start;
-  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang; } catch(e) {}
+  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang;
+  P.asked = typeof p.asked === 'boolean' ? p.asked : REGIONS.includes(p.region) && p.region !== 'central'; } catch(e) {}   // saved before we asked: a region other than the default was picked
 /* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
    first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
 const ARRIVAL = (() => { const q = new URLSearchParams(location.search);
   return {path: location.pathname, via: q.has('at') ? 'shared-link' : q.has('qr') ? 'qr' : q.has('card') ? 'picture-card' : null}; })();
-let keepRegion = null;
+let keepRegion = null, linkedRegion = false;
 { const fromPath = (/^\/(north|south|east|west|central)\/?$/i.exec(location.pathname) || [])[1];
   const linked = (fromPath || (location.hash || '').slice(1)).toLowerCase();
   if (REGIONS.includes(linked)){
+    linkedRegion = true;
     let stored = null; try { stored = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
     if (stored && REGIONS.includes(stored.region) && stored.region !== linked) keepRegion = stored.region;
     P.region = linked;
@@ -3717,10 +3723,10 @@ function renderSet(){
   </div>`;
 }
 /* the five regions laid out as a +, as on NEA's map */
-function regionOpts(){
+function regionOpts(sel = P.region){
   return `<div class="xgrid" role="group" aria-label="${t('aria.region')}">${REGIONS.map(r => { const q = now(r);
-    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
-    <p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[P.region], areas:REX[P.region]}))}</p>`;
+    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === sel}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
+    ${sel ? `<p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[sel], areas:REX[sel]}))}</p>` : ''}`;
 }
 function sampleFor(g){ const n = now(P.region); return t('set.sample', {advice:n.b[g.pm]}); }
 
@@ -3790,15 +3796,23 @@ function nearestArea(la, lo){
   return best;
 }
 function placeFound(name, r){
-  P.region = r; keepRegion = null; S.hi = null; save();
+  P.region = r; P.asked = true; keepRegion = null; S.hi = null; save();
   const note = t('geo.found', {place:name, region:RNAME[r]});
   render();
   if (sheet.classList.contains('on')){ document.getElementById('sheetBody').innerHTML = regionSheetHTML(note); setTimeout(closeSheet, 1600); }
   else { const m = document.getElementById('geomsg'); if (m) m.textContent = note; }
 }
-const regionSheetHTML = (note = t('region.saved')) =>
-  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
-function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); render(); }
+const regionSheetHTML = (note = t('region.saved'), sel) =>
+  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts(sel)}`;
+function setRegion(r){ P.region = r; P.asked = true; keepRegion = null; save(); closeSheet(); render(); }
+/* A first visit asks where the visitor is, so nobody takes Central's readings for all of Singapore. Asked once: closing
+   the sheet keeps Central. A visit from a shared region link shows that region first and asks on a later visit. */
+let welcomed = false;
+function welcome(){
+  if (P.asked || linkedRegion || welcomed) return;
+  welcomed = true; P.asked = true; save(); track('welcome/shown');
+  openSheet(t('welcome.title'), `<p style="font-size:15px;margin:0">${esc(t('welcome.body'))}</p>${regionSheetHTML(t('set.geomsg'), null)}`);
+}
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
 const SITE = 'https://haze.geewax.org/';
@@ -4186,12 +4200,12 @@ function installSection(){
 let loadedAt = 0;
 async function refresh(){
   loadWeather().then(w => { S.wx = w; }, () => {});   // the sky picks it up on its next frame
-  try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
+  try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); welcome(); }
   catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }
 S.d = SNAP_AQ ? normalise(SNAP_AQ, SNAP_ADV) : null;
 applyLang();
-if (S.d) render(); else showStatus(t('status.loading'));
+if (S.d){ render(); welcome(); } else showStatus(t('status.loading'));
 refresh();
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });

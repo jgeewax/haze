@@ -390,21 +390,23 @@ const ICON = {
 const KEY = 'haze-sky:v2';
 const LANGS = [['en','English'],['zh','中文'],['ms','Bahasa Melayu'],['ta','தமிழ்']];
 const browserLang = () => { for (const l of navigator.languages || [navigator.language || '']){ const k = String(l).slice(0, 2).toLowerCase(); if (['zh','ms','ta','en'].includes(k)) return k; } return 'en'; };
-const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang()};
+const DEFAULTS = {region:'central', group:'healthy', start:'now', lang:browserLang(), asked:false};   // asked: has the visitor been asked for their region
 const P = {...DEFAULTS};
 try { const p = JSON.parse(localStorage.getItem(KEY) || '{}');
   if (REGIONS.includes(p.region)) P.region = p.region;
   if (GROUPS.some(g => g.id === p.group)) P.group = p.group;
   if (['now','day'].includes(p.start)) P.start = p.start;
-  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang; } catch(e) {}
+  if (LANGS.some(l => l[0] === p.lang)) P.lang = p.lang;
+  P.asked = typeof p.asked === 'boolean' ? p.asked : REGIONS.includes(p.region) && p.region !== 'central'; } catch(e) {}   // saved before we asked: a region other than the default was picked
 /* A shared link like haze.geewax.org/west/ (or the older #west) opens on that region. It becomes the default only for a
    first-time visitor; anyone who already picked a region keeps it saved and just views the linked one for this visit. */
 const ARRIVAL = (() => { const q = new URLSearchParams(location.search);
   return {path: location.pathname, via: q.has('at') ? 'shared-link' : q.has('qr') ? 'qr' : q.has('card') ? 'picture-card' : null}; })();
-let keepRegion = null;
+let keepRegion = null, linkedRegion = false;
 { const fromPath = (/^\/(north|south|east|west|central)\/?$/i.exec(location.pathname) || [])[1];
   const linked = (fromPath || (location.hash || '').slice(1)).toLowerCase();
   if (REGIONS.includes(linked)){
+    linkedRegion = true;
     let stored = null; try { stored = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
     if (stored && REGIONS.includes(stored.region) && stored.region !== linked) keepRegion = stored.region;
     P.region = linked;
@@ -954,10 +956,10 @@ function renderSet(){
   </div>`;
 }
 /* the five regions laid out as a +, as on NEA's map */
-function regionOpts(){
+function regionOpts(sel = P.region){
   return `<div class="xgrid" role="group" aria-label="${t('aria.region')}">${REGIONS.map(r => { const q = now(r);
-    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === P.region}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
-    <p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[P.region], areas:REX[P.region]}))}</p>`;
+    return `<button class="xt x-${r}" data-region="${r}" aria-pressed="${r === sel}" aria-label="${esc(t('region.aria', {region:RNAME[r], areas:REX[r], v:q.pm, band:q.b.name}))}"><span class="nm">${RNAME[r]}</span>${badge(q.b.c, q.pm)}</button>`; }).join('')}</div>
+    ${sel ? `<p class="msg" style="text-align:center;margin:10px 0 0">${esc(t('region.note', {region:RNAME[sel], areas:REX[sel]}))}</p>` : ''}`;
 }
 function sampleFor(g){ const n = now(P.region); return t('set.sample', {advice:n.b[g.pm]}); }
 
@@ -1027,15 +1029,23 @@ function nearestArea(la, lo){
   return best;
 }
 function placeFound(name, r){
-  P.region = r; keepRegion = null; S.hi = null; save();
+  P.region = r; P.asked = true; keepRegion = null; S.hi = null; save();
   const note = t('geo.found', {place:name, region:RNAME[r]});
   render();
   if (sheet.classList.contains('on')){ document.getElementById('sheetBody').innerHTML = regionSheetHTML(note); setTimeout(closeSheet, 1600); }
   else { const m = document.getElementById('geomsg'); if (m) m.textContent = note; }
 }
-const regionSheetHTML = (note = t('region.saved')) =>
-  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts()}`;
-function setRegion(r){ P.region = r; keepRegion = null; save(); closeSheet(); render(); }
+const regionSheetHTML = (note = t('region.saved'), sel) =>
+  `<button class="locbtn" id="geo">${ICON.locate} ${t('set.geo')}</button><p class="msg" id="geomsg" style="margin:-8px 2px 0">${esc(note)}</p>${regionOpts(sel)}`;
+function setRegion(r){ P.region = r; P.asked = true; keepRegion = null; save(); closeSheet(); render(); }
+/* A first visit asks where the visitor is, so nobody takes Central's readings for all of Singapore. Asked once: closing
+   the sheet keeps Central. A visit from a shared region link shows that region first and asks on a later visit. */
+let welcomed = false;
+function welcome(){
+  if (P.asked || linkedRegion || welcomed) return;
+  welcomed = true; P.asked = true; save(); track('welcome/shown');
+  openSheet(t('welcome.title'), `<p style="font-size:15px;margin:0">${esc(t('welcome.body'))}</p>${regionSheetHTML(t('set.geomsg'), null)}`);
+}
 
 /* ---------- Sharing: message, link, QR code, picture card ---------- */
 const SITE = 'https://haze.geewax.org/';
@@ -1423,12 +1433,12 @@ function installSection(){
 let loadedAt = 0;
 async function refresh(){
   loadWeather().then(w => { S.wx = w; }, () => {});   // the sky picks it up on its next frame
-  try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); }
+  try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); welcome(); }
   catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }
 S.d = SNAP_AQ ? normalise(SNAP_AQ, SNAP_ADV) : null;
 applyLang();
-if (S.d) render(); else showStatus(t('status.loading'));
+if (S.d){ render(); welcome(); } else showStatus(t('status.loading'));
 refresh();
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });
