@@ -525,17 +525,9 @@ const psiVerdict = b => verdictOf(VLEV[G().psi][PSI.indexOf(b)]);
 
 /* ---------- Sky ---------- */
 function mix(a, b, t){ const p = x => [1,3,5].map(i => parseInt(x.slice(i, i+2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2, '0')).join(''); }
-function skyOf(pm, dark = isDark()){
-  const t = Math.min(1, pm / 260);
-  const clear = dark ? ['#0E2A45','#2B557C'] : ['#5BA6E6','#D4EAF9'];
-  const hazy  = dark ? ['#363128','#6E6352'] : ['#AFA796','#E6DFD1'];
-  const thick = dark ? ['#3A2416','#7E5534'] : ['#8E7258','#D9BE9C'];
-  const pick = i => t < .5 ? mix(clear[i], hazy[i], t*2) : mix(hazy[i], thick[i], (t-.5)*2);
-  return {top:pick(0), bot:pick(1), t, ink: dark ? '#F3EEE6' : '#17222B', chip: dark ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.5)', halo: dark ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.75)'};
-}
 /* The Now screen's sky follows Singapore's sun and moon, tinted by the haze in it. Clear air gives blue days, gold
    evenings and stars; haze flattens the light to beige, turns the sun into a dull orange disc and hides the stars.
-   (The share picture above keeps skyOf's fixed daytime sky, so it looks the same whenever it is sent.) */
+   The share picture draws the same sky, as it is at that moment. */
 const RAD = Math.PI / 180, SG_LAT = 1.35 * RAD, SG_LON = 103.82;
 const wrap180 = a => ((a % 360) + 540) % 360 - 180;
 /* the sun's height over Singapore and its hour angle (about −90° at sunrise, +90° at sunset), in degrees;
@@ -634,121 +626,131 @@ function skylinePath(W, h){
 }
 let skyRaf = 0, skyWait = 0, skyBorn = 0, skyKeep = null;
 function stopSky(){ cancelAnimationFrame(skyRaf); clearTimeout(skyWait); }
+/* What a W×H sky holds: stars (always in the same places), haze banks and clouds, raindrops, sun rays, and as many
+   motes of haze as the PM2.5 calls for. Passing the last set back keeps things drifting from where they were. */
+function skyBits(W, H, pm, K){
+  const area = Math.max(.6, Math.min(3, W * H / 190000)), rand = Math.random;
+  if (!K || K.W !== W || K.H !== H){
+    let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    K = {W, H, motes:[], flash:0, bolt:3000,
+      stars: Array.from({length: Math.round(110 * area)}, () => ({x: r() * W, y: r() * H * .8, r: .35 + r() ** 3 * 1.3, ph: r() * 7, sp: .4 + r() * 1.6})),
+      banks: Array.from({length: 7}, () => ({x: rand() * W, y: H * (.4 + rand() * .55), w: W * (.45 + rand() * .55), z: .3 + rand() * .7})),
+      drops: Array.from({length: Math.round(130 * area)}, () => ({x: rand() * W, y: rand() * H, z: .4 + rand() * .6})),
+      rays: Array.from({length: 9}, (_, i) => ({a: (i - 4) * 15 + rand() * 8, w: .8 + rand() * 1.8, ph: rand() * 7}))};
+  }
+  const N = Math.round((14 + Math.min(pm, 320)) * area);
+  while (K.motes.length < N) K.motes.push({x: rand() * W, y: rand() * H, z: .2 + rand() * .8, ph: rand() * 7});
+  K.motes.length = N;
+  K.city = SKY_OPTS.skyline ? skylinePath(W, Math.min(64, H * .13)) : null;
+  return K;
+}
+/* One frame of the sky s (from skyAt) on a W×H canvas. now is the clock in ms, for twinkling and shimmer; things drift
+   by dt ms (0 for a still picture); ease runs 0 to 1 as the sky fades in. Used by Now, and by the share picture. */
+function drawSky(x, W, H, s, K, now, dt, ease){
+  const wide = W > 900, R = Math.max(16, Math.min(W, H) * .06), rand = Math.random;
+  // where the sun or moon sits: rising at the left, setting at the right, high near midday
+  const place = (ha, alt) => { const h = Math.sin(alt * RAD); return {x: W * (wide ? .5 + ha / 95 * .44 : .66 + ha / 95 * .34), y: H * (1 - .88 * Math.sign(h) * Math.abs(h) ** .6)}; };
+  const {t, sun, moon, day, cloud, wx, lightSky} = s, night = 1 - day, wet = wx === 'rain' || wx === 'storm';
+  const gold = Math.max(0, 1 - Math.abs(sun.alt - 3) / 13);                      // strongest just after sunrise and before sunset
+  const sp = place(sun.ha, sun.alt), mp = place(moon.ha, moon.alt); sp.y += (1 - ease) * 40;
+  const core = mix(mix('#FFFBF0', '#FFB060', gold), mix('#FFC48A', '#E2542A', Math.max(gold, t * .5)), Math.min(1, t * 1.4)), cc = rgb(core);
+  const veil = 1 - cloud * .8;
+  x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  // dawn and dusk: a glow along the horizon under the sun, peach in clear air, a deep red-orange in haze
+  const hg = Math.max(0, 1 - Math.abs(sun.alt + 1) / 11) * veil;
+  if (hg > .01){ const g = x.createRadialGradient(sp.x, H, 0, sp.x, H, Math.max(W, H) * .95), c = rgb(mix('#FF9F75', '#E5602E', t));
+    g.addColorStop(0, `rgba(${c},${.38 * hg})`); g.addColorStop(.5, `rgba(${c},${.12 * hg})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+  // night: the city's light on the sky, faint and blue when clear, a sodium-orange murk in haze
+  if (night > .01){ const g = x.createLinearGradient(0, H, 0, H * .3), c = rgb(mix('#6F79B8', '#E08840', Math.min(1, t * 1.6)));
+    g.addColorStop(0, `rgba(${c},${night * (.12 + .3 * t)})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+  // stars, only on a clear night
+  const sa = night ** 1.5 * (1 - t) ** 2.5 * (1 - cloud) * ease;
+  if (sa > .01){ const st = glow('255,255,255', 16);
+    for (const p of K.stars){ x.globalAlpha = sa * (.55 + .45 * Math.sin(now * .001 * p.sp + p.ph)) * (1 - p.y / H * .7); x.drawImage(st, p.x - p.r * 2, p.y - p.r * 2, p.r * 4, p.r * 4); } }
+  // the moon, in its phase, its lit side turned to the sun; orange through haze
+  if (moon.alt > -4 && night > .2){
+    const r = R * .62, k = (1 - Math.cos(2 * Math.PI * moon.p)) / 2, a = Math.min(1, night * 1.4) * (1 - cloud * .85) * ease, mc = mix('#F6F2E4', '#F2A868', Math.min(1, t * 1.3)), m = rgb(mc);
+    const g = x.createRadialGradient(mp.x, mp.y, r, mp.x, mp.y, r * (5 + 3 * t));
+    g.addColorStop(0, `rgba(${m},${a * (.08 + .22 * k)})`); g.addColorStop(1, `rgba(${m},0)`);
+    x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(mp.x, mp.y, r * (5 + 3 * t), 0, 7); x.fill();
+    x.globalAlpha = a * .16; x.fillStyle = mc; x.beginPath(); x.arc(mp.x, mp.y, r, 0, 7); x.fill();
+    const cs = Math.cos(2 * Math.PI * moon.p);
+    x.save(); x.translate(mp.x, mp.y); x.rotate(Math.atan2(sp.y - mp.y, sp.x - mp.x));
+    x.beginPath(); x.arc(0, 0, r, -Math.PI / 2, Math.PI / 2); x.ellipse(0, 0, Math.abs(cs) * r, r, 0, Math.PI / 2, -Math.PI / 2, cs > 0);
+    x.globalAlpha = a; x.fill(); x.restore();
+  }
+  // the sun: a wide white glow in clear air; in haze a tighter, warmer glow, beams through the murk, and a flat disc you could look at
+  if (sun.alt > -3){
+    // under light text (dark theme, dusk) the sun is dimmer, so a low sun behind the words never drowns them
+    const a = Math.min(1, (sun.alt + 3) / 4) * (1 - cloud * .75) * ease * (lightSky ? 1 : .6 + .4 * Math.min(1, Math.max(0, (sun.alt - 5) / 15))), rr = R * (1 + .25 * t + .2 * gold), gr = rr * (7 - 3 * t);
+    let g = x.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, gr);
+    g.addColorStop(0, `rgba(${cc},${a * (.6 - .25 * t)})`); g.addColorStop(.18, `rgba(${cc},${a * .22})`); g.addColorStop(1, `rgba(${cc},0)`);
+    x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, gr, 0, 7); x.fill();
+    const rs = SKY_OPTS.rays ? Math.max(Math.sin(Math.PI * Math.min(1, Math.max(0, (t - .05) / .9))), .35 * gold) * Math.max(0, 1 - sun.alt / 60) * Math.min(1, (sun.alt + 2) / 4) * (1 - cloud * .7) * a : 0;
+    if (rs > .02){
+      const L = Math.hypot(W, H), base = Math.atan2(H * .5 - sp.y, W * .45 - sp.x) / RAD;
+      g = x.createRadialGradient(sp.x, sp.y, rr, sp.x, sp.y, L * .85); g.addColorStop(0, `rgba(${cc},${.2 * rs})`); g.addColorStop(1, `rgba(${cc},0)`);
+      x.save(); x.globalCompositeOperation = 'screen'; x.fillStyle = g;
+      for (const ray of K.rays){ const an = (base + ray.a + Math.sin(now * .00012 + ray.ph) * 3) * RAD, w = ray.w * RAD;
+        x.globalAlpha = .55 + .45 * Math.sin(now * .0004 + ray.ph * 3);
+        x.beginPath(); x.moveTo(sp.x, sp.y); x.lineTo(sp.x + Math.cos(an - w) * L, sp.y + Math.sin(an - w) * L); x.lineTo(sp.x + Math.cos(an + w) * L, sp.y + Math.sin(an + w) * L); x.fill(); }
+      x.restore();
+    }
+    g = x.createLinearGradient(0, sp.y - rr, 0, sp.y + rr);
+    g.addColorStop(.1, `rgba(${cc},${a})`); g.addColorStop(1, `rgba(${cc},${a * (1 - .75 * t)})`);
+    x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, rr, 0, 7); x.fill();
+    if (t < .6 && lightSky){ x.globalAlpha = a * (1 - t / .6) * .9; const b = glow('255,255,250', 64); x.drawImage(b, sp.x - rr * 2.2, sp.y - rr * 2.2, rr * 4.4, rr * 4.4); }
+  }
+  // the skyline, fading as the haze thickens
+  if (K.city){ x.save(); x.translate(0, H); x.globalAlpha = (1 - .9 * t) * .55 * ease; x.fillStyle = mix(s.bot, lightSky ? '#3A4654' : '#05070A', .45); x.fill(K.city); x.restore(); }
+  // haze banks drifting low across the sky, veiling the sun
+  for (const b of K.banks){ b.x += (.003 + .008 * b.z) * dt; if (b.x - b.w > W) b.x = -b.w; }
+  const ba = Math.min(1, t * 1.5) * .5 * ease;
+  if (ba > .01){ const hz = glow(rgb(q8(mix(s.bot, day > .5 ? '#BFA27E' : '#6A4A34', .4))), 128);
+    for (const b of K.banks){ const w = b.w * 1.7, h = w * .22; x.globalAlpha = ba * (.4 + .6 * b.z); x.drawImage(hz, b.x - w / 2, b.y - h / 2, w, h); } }
+  // clouds: a few fair-weather puffs in clear air, more when partly cloudy; a lid of grey under rain
+  const ca = (cloud ? 1 : Math.max(0, 1 - t * 1.8) * .85) * ease, nc = {fair:3, partly:5, cloudy:6}[wx] || 7;
+  if (ca > .01){
+    const lit = q8(cloud > .5 ? mix(s.top, mix('#2E343C', '#9AA3AD', day), .7) : mix(s.bot, mix(mix('#B09080', s.top, .6), mix('#FFFFFF', core, gold * .5), day), lightSky ? .85 : .3));
+    const shade = q8(cloud > .5 ? mix(s.top, mix('#1E2228', '#5B636D', day), .7) : mix(s.top, mix(s.bot, '#7F8FA3', .45), lightSky ? .8 : .25));
+    const pf = puff(lit, shade);
+    K.banks.slice(0, nc).forEach((b, i) => { const w = b.w * (cloud ? 1.1 : .55 + .25 * b.z), h = w * .47, y = cloud ? H * (.05 + i * .1) : b.y;
+      x.globalAlpha = ca * (.6 + .4 * b.z); x.drawImage(pf, b.x - w / 2, y - h / 2, w, h); });
+  }
+  // motes of haze, lit up where they cross the sun
+  const md = glow(lightSky ? (t > .3 ? '108,86,60' : '255,255,255') : '255,226,190'), ld = glow(cc), ma = (lightSky && t <= .3 ? .55 : 1) * ease * (wet ? .4 : 1);
+  for (const p of K.motes){
+    p.x += (.006 + .022 * p.z) * dt; p.y += Math.sin(now * .0005 + p.ph) * .012 * p.z * dt;
+    if (p.x > W + 4) p.x = -4; if (p.y < -4) p.y = H + 4; else if (p.y > H + 4) p.y = -4;
+    const r = (.5 + 1.6 * p.z) * (1 + .3 * t), a = (.1 + .26 * p.z) * ma;
+    x.globalAlpha = a; x.drawImage(md, p.x - r * 2, p.y - r * 2, r * 4, r * 4);
+    if (sun.alt > -2){ const dx = p.x - sp.x, dy = p.y - sp.y, lit = Math.exp(-(dx * dx + dy * dy) / (R * R * 30)) * veil;
+      if (lit > .05){ x.globalAlpha = Math.min(1, a * lit * 1.8); x.drawImage(ld, p.x - r * 3, p.y - r * 3, r * 6, r * 6); } }
+  }
+  // rain, and in a storm the odd flash of lightning
+  if (wet){ x.strokeStyle = lightSky ? '#FFFFFF' : '#BECDE1'; x.lineCap = 'round';
+    for (const d of K.drops){ const v = .55 + .5 * d.z; d.y += v * dt; d.x -= .12 * v * dt;
+      if (d.y > H + 20){ d.y = -20; d.x = rand() * (W + 40); } if (d.x < -20) d.x += W + 40;
+      const len = 10 + 14 * d.z; x.globalAlpha = (.14 + .24 * d.z) * ease; x.lineWidth = .6 + .8 * d.z;
+      x.beginPath(); x.moveTo(d.x, d.y); x.lineTo(d.x + .12 * len, d.y - len); x.stroke(); } }
+  if (wx === 'storm' && dt){ K.bolt -= dt; if (K.bolt < 0){ K.flash = 1; K.bolt = 5000 + rand() * 9000; }
+    if (K.flash > 0){ x.globalAlpha = .45 * (K.flash > .75 ? 1 : K.flash > .55 ? .15 : K.flash); x.fillStyle = '#EEF2FF'; x.fillRect(0, 0, W, H); K.flash -= dt / 650; } }
+  x.globalAlpha = 1;
+}
 function paintSky(el, pm){
   stopSky(); if (!el) return;
   const cv = document.createElement('canvas'); el.prepend(cv);
   const box = el.getBoundingClientRect(), W = box.width, H = box.height, dpr = Math.min(2, devicePixelRatio || 1);
   cv.width = W * dpr; cv.height = H * dpr;
   const x = cv.getContext('2d'); x.scale(dpr, dpr);
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches, wide = W > 900, R = Math.max(16, Math.min(W, H) * .06);
-  const area = Math.max(.6, Math.min(3, W * H / 190000)), rand = Math.random;
-  // what drifts keeps drifting across re-renders (a new region, a new language); only the number of motes follows the haze
-  if (!skyKeep || skyKeep.W !== W || skyKeep.H !== H){
-    let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
-    skyKeep = {W, H, motes:[],
-      stars: Array.from({length: Math.round(110 * area)}, () => ({x: r() * W, y: r() * H * .8, r: .35 + r() ** 3 * 1.3, ph: r() * 7, sp: .4 + r() * 1.6})),
-      banks: Array.from({length: 7}, () => ({x: rand() * W, y: H * (.4 + rand() * .55), w: W * (.45 + rand() * .55), z: .3 + rand() * .7})),
-      drops: Array.from({length: Math.round(130 * area)}, () => ({x: rand() * W, y: rand() * H, z: .4 + rand() * .6})),
-      rays: Array.from({length: 9}, (_, i) => ({a: (i - 4) * 15 + rand() * 8, w: .8 + rand() * 1.8, ph: rand() * 7}))};
-  }
-  const K = skyKeep, N = Math.round((14 + Math.min(pm, 320)) * area);
-  while (K.motes.length < N) K.motes.push({x: rand() * W, y: rand() * H, z: .2 + rand() * .8, ph: rand() * 7});
-  K.motes.length = N;
-  const city = SKY_OPTS.skyline ? skylinePath(W, Math.min(64, H * .13)) : null;
-  // where the sun or moon sits: rising at the left, setting at the right, high near midday
-  const place = (ha, alt) => { const h = Math.sin(alt * RAD); return {x: W * (wide ? .5 + ha / 95 * .44 : .66 + ha / 95 * .34), y: H * (1 - .88 * Math.sign(h) * Math.abs(h) ** .6)}; };
-  let last = performance.now(), flash = 0, bolt = 3000;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches, K = skyKeep = skyBits(W, H, pm, skyKeep);
+  let last = performance.now();
   if (!skyBorn) skyBorn = last;
   const frame = now => {
     const dt = still ? 0 : Math.min(64, now - last); last = now;
     const s = skyAt(pm); applySky(s);
-    const {t, sun, moon, day, cloud, wx, lightSky} = s, night = 1 - day, wet = wx === 'rain' || wx === 'storm';
-    const ease = still ? 1 : 1 - (1 - Math.min(1, (now - skyBorn) / 1800)) ** 3;   // the first time Now opens, the sky fades in and the sun lifts into place
-    const gold = Math.max(0, 1 - Math.abs(sun.alt - 3) / 13);                      // strongest just after sunrise and before sunset
-    const sp = place(sun.ha, sun.alt), mp = place(moon.ha, moon.alt); sp.y += (1 - ease) * 40;
-    const core = mix(mix('#FFFBF0', '#FFB060', gold), mix('#FFC48A', '#E2542A', Math.max(gold, t * .5)), Math.min(1, t * 1.4)), cc = rgb(core);
-    const veil = 1 - cloud * .8;
-    x.clearRect(0, 0, W, H); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
-    // dawn and dusk: a glow along the horizon under the sun, peach in clear air, a deep red-orange in haze
-    const hg = Math.max(0, 1 - Math.abs(sun.alt + 1) / 11) * veil;
-    if (hg > .01){ const g = x.createRadialGradient(sp.x, H, 0, sp.x, H, Math.max(W, H) * .95), c = rgb(mix('#FF9F75', '#E5602E', t));
-      g.addColorStop(0, `rgba(${c},${.38 * hg})`); g.addColorStop(.5, `rgba(${c},${.12 * hg})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
-    // night: the city's light on the sky, faint and blue when clear, a sodium-orange murk in haze
-    if (night > .01){ const g = x.createLinearGradient(0, H, 0, H * .3), c = rgb(mix('#6F79B8', '#E08840', Math.min(1, t * 1.6)));
-      g.addColorStop(0, `rgba(${c},${night * (.12 + .3 * t)})`); g.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
-    // stars, only on a clear night
-    const sa = night ** 1.5 * (1 - t) ** 2.5 * (1 - cloud) * ease;
-    if (sa > .01){ const st = glow('255,255,255', 16);
-      for (const p of K.stars){ x.globalAlpha = sa * (.55 + .45 * Math.sin(now * .001 * p.sp + p.ph)) * (1 - p.y / H * .7); x.drawImage(st, p.x - p.r * 2, p.y - p.r * 2, p.r * 4, p.r * 4); } }
-    // the moon, in its phase, its lit side turned to the sun; orange through haze
-    if (moon.alt > -4 && night > .2){
-      const r = R * .62, k = (1 - Math.cos(2 * Math.PI * moon.p)) / 2, a = Math.min(1, night * 1.4) * (1 - cloud * .85) * ease, mc = mix('#F6F2E4', '#F2A868', Math.min(1, t * 1.3)), m = rgb(mc);
-      const g = x.createRadialGradient(mp.x, mp.y, r, mp.x, mp.y, r * (5 + 3 * t));
-      g.addColorStop(0, `rgba(${m},${a * (.08 + .22 * k)})`); g.addColorStop(1, `rgba(${m},0)`);
-      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(mp.x, mp.y, r * (5 + 3 * t), 0, 7); x.fill();
-      x.globalAlpha = a * .16; x.fillStyle = mc; x.beginPath(); x.arc(mp.x, mp.y, r, 0, 7); x.fill();
-      const cs = Math.cos(2 * Math.PI * moon.p);
-      x.save(); x.translate(mp.x, mp.y); x.rotate(Math.atan2(sp.y - mp.y, sp.x - mp.x));
-      x.beginPath(); x.arc(0, 0, r, -Math.PI / 2, Math.PI / 2); x.ellipse(0, 0, Math.abs(cs) * r, r, 0, Math.PI / 2, -Math.PI / 2, cs > 0);
-      x.globalAlpha = a; x.fill(); x.restore();
-    }
-    // the sun: a wide white glow in clear air; in haze a tighter, warmer glow, beams through the murk, and a flat disc you could look at
-    if (sun.alt > -3){
-      // under light text (dark theme, dusk) the sun is dimmer, so a low sun behind the words never drowns them
-      const a = Math.min(1, (sun.alt + 3) / 4) * (1 - cloud * .75) * ease * (lightSky ? 1 : .6 + .4 * Math.min(1, Math.max(0, (sun.alt - 5) / 15))), rr = R * (1 + .25 * t + .2 * gold), gr = rr * (7 - 3 * t);
-      let g = x.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, gr);
-      g.addColorStop(0, `rgba(${cc},${a * (.6 - .25 * t)})`); g.addColorStop(.18, `rgba(${cc},${a * .22})`); g.addColorStop(1, `rgba(${cc},0)`);
-      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, gr, 0, 7); x.fill();
-      const rs = SKY_OPTS.rays ? Math.max(Math.sin(Math.PI * Math.min(1, Math.max(0, (t - .05) / .9))), .35 * gold) * Math.max(0, 1 - sun.alt / 60) * Math.min(1, (sun.alt + 2) / 4) * (1 - cloud * .7) * a : 0;
-      if (rs > .02){
-        const L = Math.hypot(W, H), base = Math.atan2(H * .5 - sp.y, W * .45 - sp.x) / RAD;
-        g = x.createRadialGradient(sp.x, sp.y, rr, sp.x, sp.y, L * .85); g.addColorStop(0, `rgba(${cc},${.2 * rs})`); g.addColorStop(1, `rgba(${cc},0)`);
-        x.save(); x.globalCompositeOperation = 'screen'; x.fillStyle = g;
-        for (const ray of K.rays){ const an = (base + ray.a + Math.sin(now * .00012 + ray.ph) * 3) * RAD, w = ray.w * RAD;
-          x.globalAlpha = .55 + .45 * Math.sin(now * .0004 + ray.ph * 3);
-          x.beginPath(); x.moveTo(sp.x, sp.y); x.lineTo(sp.x + Math.cos(an - w) * L, sp.y + Math.sin(an - w) * L); x.lineTo(sp.x + Math.cos(an + w) * L, sp.y + Math.sin(an + w) * L); x.fill(); }
-        x.restore();
-      }
-      g = x.createLinearGradient(0, sp.y - rr, 0, sp.y + rr);
-      g.addColorStop(.1, `rgba(${cc},${a})`); g.addColorStop(1, `rgba(${cc},${a * (1 - .75 * t)})`);
-      x.globalAlpha = 1; x.fillStyle = g; x.beginPath(); x.arc(sp.x, sp.y, rr, 0, 7); x.fill();
-      if (t < .6 && lightSky){ x.globalAlpha = a * (1 - t / .6) * .9; const b = glow('255,255,250', 64); x.drawImage(b, sp.x - rr * 2.2, sp.y - rr * 2.2, rr * 4.4, rr * 4.4); }
-    }
-    // the skyline, fading as the haze thickens
-    if (city){ x.save(); x.translate(0, H); x.globalAlpha = (1 - .9 * t) * .55 * ease; x.fillStyle = mix(s.bot, lightSky ? '#3A4654' : '#05070A', .45); x.fill(city); x.restore(); }
-    // haze banks drifting low across the sky, veiling the sun
-    for (const b of K.banks){ b.x += (.003 + .008 * b.z) * dt; if (b.x - b.w > W) b.x = -b.w; }
-    const ba = Math.min(1, t * 1.5) * .5 * ease;
-    if (ba > .01){ const hz = glow(rgb(q8(mix(s.bot, day > .5 ? '#BFA27E' : '#6A4A34', .4))), 128);
-      for (const b of K.banks){ const w = b.w * 1.7, h = w * .22; x.globalAlpha = ba * (.4 + .6 * b.z); x.drawImage(hz, b.x - w / 2, b.y - h / 2, w, h); } }
-    // clouds: a few fair-weather puffs in clear air, more when partly cloudy; a lid of grey under rain
-    const ca = (cloud ? 1 : Math.max(0, 1 - t * 1.8) * .85) * ease, nc = {fair:3, partly:5, cloudy:6}[wx] || 7;
-    if (ca > .01){
-      const lit = q8(cloud > .5 ? mix(s.top, mix('#2E343C', '#9AA3AD', day), .7) : mix(s.bot, mix(mix('#B09080', s.top, .6), mix('#FFFFFF', core, gold * .5), day), lightSky ? .85 : .3));
-      const shade = q8(cloud > .5 ? mix(s.top, mix('#1E2228', '#5B636D', day), .7) : mix(s.top, mix(s.bot, '#7F8FA3', .45), lightSky ? .8 : .25));
-      const pf = puff(lit, shade);
-      K.banks.slice(0, nc).forEach((b, i) => { const w = b.w * (cloud ? 1.1 : .55 + .25 * b.z), h = w * .47, y = cloud ? H * (.05 + i * .1) : b.y;
-        x.globalAlpha = ca * (.6 + .4 * b.z); x.drawImage(pf, b.x - w / 2, y - h / 2, w, h); });
-    }
-    // motes of haze, lit up where they cross the sun
-    const md = glow(lightSky ? (t > .3 ? '108,86,60' : '255,255,255') : '255,226,190'), ld = glow(cc), ma = (lightSky && t <= .3 ? .55 : 1) * ease * (wet ? .4 : 1);
-    for (const p of K.motes){
-      p.x += (.006 + .022 * p.z) * dt; p.y += Math.sin(now * .0005 + p.ph) * .012 * p.z * dt;
-      if (p.x > W + 4) p.x = -4; if (p.y < -4) p.y = H + 4; else if (p.y > H + 4) p.y = -4;
-      const r = (.5 + 1.6 * p.z) * (1 + .3 * t), a = (.1 + .26 * p.z) * ma;
-      x.globalAlpha = a; x.drawImage(md, p.x - r * 2, p.y - r * 2, r * 4, r * 4);
-      if (sun.alt > -2){ const dx = p.x - sp.x, dy = p.y - sp.y, lit = Math.exp(-(dx * dx + dy * dy) / (R * R * 30)) * veil;
-        if (lit > .05){ x.globalAlpha = Math.min(1, a * lit * 1.8); x.drawImage(ld, p.x - r * 3, p.y - r * 3, r * 6, r * 6); } }
-    }
-    // rain, and in a storm the odd flash of lightning
-    if (wet){ x.strokeStyle = lightSky ? '#FFFFFF' : '#BECDE1'; x.lineCap = 'round';
-      for (const d of K.drops){ const v = .55 + .5 * d.z; d.y += v * dt; d.x -= .12 * v * dt;
-        if (d.y > H + 20){ d.y = -20; d.x = rand() * (W + 40); } if (d.x < -20) d.x += W + 40;
-        const len = 10 + 14 * d.z; x.globalAlpha = (.14 + .24 * d.z) * ease; x.lineWidth = .6 + .8 * d.z;
-        x.beginPath(); x.moveTo(d.x, d.y); x.lineTo(d.x + .12 * len, d.y - len); x.stroke(); } }
-    if (wx === 'storm' && !still){ bolt -= dt; if (bolt < 0){ flash = 1; bolt = 5000 + rand() * 9000; }
-      if (flash > 0){ x.globalAlpha = .45 * (flash > .75 ? 1 : flash > .55 ? .15 : flash); x.fillStyle = '#EEF2FF'; x.fillRect(0, 0, W, H); flash -= dt / 650; } }
-    x.globalAlpha = 1;
+    x.clearRect(0, 0, W, H);
+    drawSky(x, W, H, s, K, now, dt, still ? 1 : 1 - (1 - Math.min(1, (now - skyBorn) / 1800)) ** 3);   // the first time Now opens, the sky fades in and the sun lifts into place
     if (S.tab !== 'now') return;
     if (still) skyWait = setTimeout(() => { skyRaf = requestAnimationFrame(frame); }, 60e3);   // no motion: repaint once a minute as the light changes
     else skyRaf = requestAnimationFrame(frame);
@@ -1114,9 +1116,11 @@ async function copy(text, btn){
   setTimeout(() => { lbl.textContent = was; }, 2200);
 }
 
-/* The picture card: 1080×1350, always in the light palette so it looks the same for everyone it reaches */
+/* The picture card: 1080×1350, the Now screen as it looks at that moment: the same sky (time of day, haze, weather)
+   and the same light or dark theme */
 const CARD = {c:['#479B02','#006FA1','#FFCE03','#FFA800','#D60000'], on:['#FFFFFF','#FFFFFF','#1F1A00','#1F1400','#FFFFFF'],
-  fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6'};
+  fg:['#3A7F02','#006FA1','#8A6D00','#A86200','#C00000'], ink:'#12202B', muted:'#5A6A77', accent:'#1D5C88', line:'#D9E0E6', surface:'#FFFFFF'};
+const CARD_DARK = {...CARD, fg:['#7BC64A','#55A9DA','#FFCE03','#FFA800','#FF6152'], ink:'#E5ECF1', muted:'#93A3B0', accent:'#73B6E3', line:'#26333E', surface:'#141D25'};
 function rr(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X+r, Y); x.arcTo(X+w, Y, X+w, Y+h, r); x.arcTo(X+w, Y+h, X, Y+h, r); x.arcTo(X, Y+h, X, Y, r); x.arcTo(X, Y, X+w, Y, r); x.closePath(); }
 function wrap(x, text, maxW){
   // languages written without spaces (Chinese) wrap between characters
@@ -1130,18 +1134,18 @@ async function cardBlob(){
   const sample = {zh:'环境现在', ta:'இப்போது'}[P.lang], extra = {zh:'Noto Sans SC', ta:'Noto Sans Tamil'}[P.lang];
   try { await Promise.all(['750 132px "Bricolage Grotesque"', '700 96px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '800 30px "Public Sans"', '600 30px "Public Sans"',
     ...(extra ? [`700 60px "${extra}"`, `600 30px "${extra}"`].map(f => [f, sample]) : [])].map(f => Array.isArray(f) ? document.fonts.load(f[0], f[1]) : document.fonts.load(f))); } catch(e) {}
-  const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, r = fcRel(), sky = skyOf(n.pm, false), SKY = 830;
+  const W = 1080, H = 1350, pad = 80, cw = W - 2*pad, n = now(P.region), f = S.d.fc, r = fcRel(), sky = skyAt(n.pm), SKY = 830, C = isDark() ? CARD_DARK : CARD;
   const cv = Object.assign(document.createElement('canvas'), {width:W, height:H}), x = cv.getContext('2d');
   const font = (w, px, fam) => { x.font = `${w} ${px}px ${fam}`; };
   const space = px => { if ('letterSpacing' in x) x.letterSpacing = px + 'px'; };
   const fit = (text, w, px, fam, max) => { let s = px; font(w, s, fam); while (x.measureText(text).width > max && s > 24){ s -= 2; font(w, s, fam); } };
   // where a value sits along a band bar, 0..1
   const along = (Bs, v) => { const k = Bs.findIndex(q => v <= q.max), lo = bandLo(Bs, k), hi = bandHi(Bs, k); return (k + Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) / Bs.length; };
-  // sky, with the same haze grain as the app
+  // the sky, as Now draws it at a phone's scale, from under the header to where the white panel starts
   const g = x.createLinearGradient(0, 0, 0, SKY); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
   x.fillStyle = g; x.fillRect(0, 0, W, H);
-  const gc = sky.t > .3 ? '100,80,55' : '255,255,255';
-  for (let i = 0, N = 60 + n.pm * 3; i < N; i++){ x.beginPath(); x.arc(Math.random()*W, Math.random()*(SKY - 20), 1.2 + Math.random()*3.4, 0, 7); x.fillStyle = `rgba(${gc},${.1 + Math.random()*.28})`; x.fill(); }
+  { const top = 150, k = W / 400, h = (SKY + 44 - top) / k;
+    x.save(); x.translate(0, top); x.scale(k, k); drawSky(x, 400, h, sky, skyBits(400, h, n.pm), performance.now(), 0, 1); x.restore(); }
   // header
   x.fillStyle = sky.ink; x.textBaseline = 'middle';
   { const sg = x.createLinearGradient(0, 84, 0, 148); sg.addColorStop(.15, 'rgba(255,138,61,1)'); sg.addColorStop(1, 'rgba(255,138,61,.12)');
@@ -1160,41 +1164,43 @@ async function cardBlob(){
   const seg = (cw - 3*10) / 4, k1 = pmIdx(n.pm);
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .45; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(seg + 10), 606, seg, 22, 6); x.fill(); });
   x.globalAlpha = 1; const m1 = pad + along(PM, n.pm) * cw;
-  x.fillStyle = 'rgba(255,255,255,.85)'; rr(x, m1 - 9, 588, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, m1 - 5, 592, 10, 50, 5); x.fill();
+  x.fillStyle = sky.halo; rr(x, m1 - 9, 588, 18, 58, 7); x.fill(); x.fillStyle = sky.ink; rr(x, m1 - 5, 592, 10, 50, 5); x.fill();
   PM.forEach((q, k) => { x.globalAlpha = k === k1 ? 1 : .7; fit(`${q.n} · ${q.name}`, 600, 24, B, seg - 4); x.fillText(`${q.n} · ${q.name}`, pad + k*(seg + 10), 674); }); x.globalAlpha = 1;
   font(600, 46, D); wrap(x, n.b.gen, cw).slice(0, 2).forEach((l, i) => x.fillText(l, pad, 746 + i*56));
   // TODAY: the PSI pair, the PSI bar with the reading pinned and the forecast bracketed
   const PT = SKY, plan = f ? PSI[f.hi] : n.p, col2 = pad + cw/2 + 24;
-  x.fillStyle = '#FFFFFF'; rr(x, 0, PT, W, H, 44); x.fill();
-  x.fillStyle = CARD.muted; font(800, 26, B); space(3);
+  x.fillStyle = C.surface; rr(x, 0, PT, W, H, 44); x.fill();
+  x.fillStyle = C.muted; font(800, 26, B); space(3);
   x.fillText((f ? `${t(r === 1 ? 'card.tomorrow' : 'card.today')} · ${sgDay(f.date, true)}` : `${t('card.today')} · ${sgDay(S.d.asOf, true)}`).toUpperCase(), pad, PT + 62); space(0);
-  const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = CARD.fg[plan.c]; x.fillText(head, pad, PT + 126);
-  x.fillStyle = CARD.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
-  x.fillStyle = f ? CARD.fg[PSI[f.hi].c] : CARD.muted; fit(f ? psiRange(f.lo, f.hi) : t('now.none'), 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : t('now.none'), col2, PT + 206);
-  x.fillStyle = CARD.muted; fit(t('card.past'), 600, 24, B, cw/2 - 34); x.fillText(t('card.past'), pad, PT + 242);
+  const head = f ? fcName() : n.p.name; fit(head, 700, 56, D, cw); x.fillStyle = C.fg[plan.c]; x.fillText(head, pad, PT + 126);
+  x.fillStyle = C.fg[n.p.c]; font(700, 76, D); x.fillText(String(n.psi), pad, PT + 206);
+  x.fillStyle = f ? C.fg[PSI[f.hi].c] : C.muted; fit(f ? psiRange(f.lo, f.hi) : t('now.none'), 700, 76, D, cw/2 - 30); x.fillText(f ? psiRange(f.lo, f.hi) : t('now.none'), col2, PT + 206);
+  x.fillStyle = C.muted; fit(t('card.past'), 600, 24, B, cw/2 - 34); x.fillText(t('card.past'), pad, PT + 242);
   { const s = f ? t(r === 1 ? 'card.fcTomorrow' : 'card.fcToday') : t('card.nofc'); fit(s, 600, 24, B, cw/2 - 30); x.fillText(s, col2, PT + 242); }
-  x.fillStyle = CARD.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
+  x.fillStyle = C.line; x.fillRect(col2 - 24, PT + 142, 2, 108);
   const s5 = (cw - 4*8) / 5, by = PT + 306, inR = k => f ? k >= f.lo && k <= f.hi : k === psiIdx(n.psi);
   PSI.forEach((q, k) => { x.globalAlpha = inR(k) ? 1 : .3; x.fillStyle = CARD.c[q.c]; rr(x, pad + k*(s5 + 8), by, s5, 22, 6); x.fill(); });
   x.globalAlpha = 1;
   { const m = pad + along(PSI, n.psi) * cw, lab = t('card.nowPin', {v:n.psi}); font(800, 24, B); const lw = x.measureText(lab).width + 24, lx = Math.max(pad, Math.min(W - pad - lw, m - lw/2));
-    x.fillStyle = CARD.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
-    x.fillStyle = '#FFFFFF'; x.fillText(lab, lx + 12, by - 25); }
+    x.fillStyle = C.ink; rr(x, lx, by - 52, lw, 36, 9); x.fill(); x.fillRect(m - 2.5, by - 18, 5, 40);
+    x.fillStyle = C.surface; x.fillText(lab, lx + 12, by - 25); }
   const q = qrModules(shareURL('card')), cell = q ? Math.max(4, Math.floor(140 / q.n)) : 0, size = q ? cell * q.n : 0, qx = W - pad - size, qy = H - 24 - size;
   if (f){
     const x0 = pad + f.lo*(s5 + 8), x1 = pad + (f.hi + 1)*(s5 + 8) - 8;
-    x.strokeStyle = CARD.ink; x.lineWidth = 4; x.lineJoin = 'round';
+    x.strokeStyle = C.ink; x.lineWidth = 4; x.lineJoin = 'round';
     x.beginPath(); x.moveTo(x0, by + 30); x.lineTo(x0, by + 42); x.lineTo(x1, by + 42); x.lineTo(x1, by + 30); x.stroke();
     const lab = t('card.fcRange', {range:psiRange(f.lo, f.hi)}); font(800, 24, B); const lw = x.measureText(lab).width;
     const cx = Math.min((x0 + x1) / 2, (q ? qx - 20 : W - pad) - lw/2 - 10);
-    x.fillStyle = '#FFFFFF'; x.fillRect(cx - lw/2 - 10, by + 32, lw + 20, 30); x.fillStyle = CARD.ink; x.fillText(lab, cx - lw/2, by + 56);
+    x.fillStyle = C.surface; x.fillRect(cx - lw/2 - 10, by + 32, lw + 20, 30); x.fillStyle = C.ink; x.fillText(lab, cx - lw/2, by + 56);
   }
   // footer: where to find it, plus a QR code so a screenshot of this card still leads back
-  x.fillStyle = CARD.line; x.fillRect(pad, 1222, (q ? qx - 32 : W - pad) - pad, 2);
-  x.fillStyle = CARD.muted; fit(t('card.live'), 600, 26, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.live'), pad, 1262);
-  x.fillStyle = CARD.accent; font(800, 44, B); x.fillText('haze.geewax.org', pad, 1306);
-  x.fillStyle = CARD.muted; fit(t('card.data'), 500, 20, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.data'), pad, 1334);
-  if (q){ x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
+  x.fillStyle = C.line; x.fillRect(pad, 1222, (q ? qx - 32 : W - pad) - pad, 2);
+  x.fillStyle = C.muted; fit(t('card.live'), 600, 26, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.live'), pad, 1262);
+  x.fillStyle = C.accent; font(800, 44, B); x.fillText('haze.geewax.org', pad, 1306);
+  x.fillStyle = C.muted; fit(t('card.data'), 500, 20, B, (q ? qx - 40 : W - pad) - pad); x.fillText(t('card.data'), pad, 1334);
+  // the code stays dark on white in either theme, so every camera can read it
+  if (q){ if (C === CARD_DARK){ x.fillStyle = '#FFFFFF'; rr(x, qx - 12, qy - 12, size + 24, size + 24, 14); x.fill(); }
+    x.fillStyle = CARD.ink; for (let rr2 = 0; rr2 < q.n; rr2++) for (let c = 0; c < q.n; c++) if (q.dark(rr2, c)) x.fillRect(qx + c*cell, qy + rr2*cell, cell, cell); }
   return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
 }
 /* The picture card is made as soon as a screen shows, so a tap can share it at once: phones only allow sharing
@@ -1202,24 +1208,28 @@ async function cardBlob(){
    paste into WhatsApp Web; anything else shows it to save. */
 const CAN_SHARE_FILES = (() => { try { return !!(navigator.canShare && navigator.canShare({files:[new File([new Blob(['x'])], 'h.png', {type:'image/png'})]})); } catch(e) { return false; } })();
 const CAN_COPY_IMG = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
-let cardCache = {key:null, blob:null, url:null}, cardPending = null, cardPendingKey = null;
-const cardKey = () => S.d ? P.region + '|' + P.lang + '|' + atStamp(S.d.asOf) : null;
+let cardCache = {key:null, data:null, blob:null, url:null}, cardPending = null, cardPendingKey = null;
+/* cardData: what the card says. cardKey adds how its sky looks (theme, weather, haze, the time to the quarter hour),
+   so the picture is redrawn as the sky changes; a tap shares the latest picture with the same numbers straight away */
+const cardData = () => S.d ? P.region + '|' + P.lang + '|' + atStamp(S.d.asOf) : null;
+const cardKey = () => S.d ? [cardData(), now(P.region).pm, isDark(), skyWeather(), Math.floor(skyTime() / 9e5)].join('|') : null;
+const cardNow = () => cardCache.data === cardData() ? cardCache.blob : null;
 function ensureCard(){
-  const k = cardKey();
+  const k = cardKey(), dk = cardData();
   if (!k) return Promise.reject(new Error('no data'));
   if (cardCache.key === k) return Promise.resolve(cardCache.blob);
   if (cardPendingKey === k) return cardPending;
   cardPendingKey = k;
   cardPending = cardBlob().then(blob => {
     if (cardCache.url) URL.revokeObjectURL(cardCache.url);
-    cardCache = {key:k, blob, url:URL.createObjectURL(blob)};
+    cardCache = {key:k, data:dk, blob, url:URL.createObjectURL(blob)};
     paintThumbs();
     return blob;
   }).finally(() => { if (cardPendingKey === k){ cardPendingKey = null; cardPending = null; } });
   return cardPending;
 }
 function paintThumbs(){
-  if (cardCache.key !== cardKey()) return;
+  if (cardCache.data !== cardData()) return;
   document.querySelectorAll('.thumb').forEach(el => { el.style.backgroundImage = `url(${cardCache.url})`; el.classList.add('ready'); });
 }
 const pictureName = () => `haze-${P.region}-${sgDayEN(S.d.asOf).replace(' ', '-').toLowerCase()}.png`;
@@ -1233,7 +1243,7 @@ function showPicture(blob){
 }
 async function sharePicture(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl ? lbl.textContent : '', say = (m, ms) => { if (!lbl) return; lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
-  let blob = cardCache.key === cardKey() ? cardCache.blob : null;
+  let blob = cardNow();
   if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
   if (CAN_SHARE_FILES){
     try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})], text:shareText()}); track('share/picture/shared'); return; }
@@ -1255,7 +1265,7 @@ const picLabel = () => t(CAN_SHARE_FILES ? 'pic.share' : CAN_COPY_IMG ? 'pic.cop
 async function shareWhatsApp(btn){
   const lbl = btn.querySelector('.lbl'), was = lbl.textContent, say = (m, ms) => { lbl.textContent = m; if (ms) setTimeout(() => { lbl.textContent = was; }, ms); };
   const phone = matchMedia('(pointer:coarse)').matches;
-  let blob = cardCache.key === cardKey() ? cardCache.blob : null;
+  let blob = cardNow();
   if (!blob){ say(t('pic.preparing')); try { blob = await ensureCard(); } catch(e) { return say(was); } say(was); }
   if (phone && CAN_SHARE_FILES){
     try { await navigator.share({files:[new File([blob], pictureName(), {type:'image/png'})]}); track('share/whatsapp/shared'); return; }
@@ -1361,7 +1371,7 @@ function render(){
   if (S.tab !== 'now') stopSky();
   ({now:renderNow, day:renderDay, hist:renderHist, set:renderSet})[S.tab]();
   fitAll();
-  if (cardCache.key === cardKey()) paintThumbs(); else setTimeout(() => ensureCard().catch(() => {}), 80);
+  paintThumbs(); if (cardCache.key !== cardKey()) setTimeout(() => ensureCard().catch(() => {}), 80);
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
@@ -1445,7 +1455,7 @@ function installSection(){
 
 let loadedAt = 0;
 async function refresh(){
-  loadWeather().then(w => { S.wx = w; }, () => {});   // the sky picks it up on its next frame
+  loadWeather().then(w => { S.wx = w; if (S.d) ensureCard().catch(() => {}); }, () => {});   // the sky picks it up on its next frame
   try { S.d = await loadLive(); S.live = true; loadedAt = Date.now(); render(); welcome(); }
   catch(e){ if (!S.d) showStatus(t('status.error'), true); }
 }
@@ -1454,5 +1464,6 @@ applyLang();
 if (S.d){ render(); welcome(); } else showStatus(t('status.loading'));
 refresh();
 setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 10 * 60e3);
+setInterval(() => { if (S.d && document.visibilityState === 'visible' && cardCache.key !== cardKey()) ensureCard().catch(() => {}); }, 60e3);   // the picture follows the sky
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - loadedAt > 5 * 60e3) refresh(); });
 </script>

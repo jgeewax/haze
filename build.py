@@ -206,7 +206,7 @@ def mix(a, b, t):
     return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(pa, pb))
 
 
-def sky(pm):  # the page's light-theme sky
+def sky(pm):  # a fixed daytime sky for link previews (the page's own sky follows the time of day)
     t = min(1, pm / 260)
     clear, hazy, thick = ("#5BA6E6", "#D4EAF9"), ("#AFA796", "#E6DFD1"), ("#8E7258", "#D9BE9C")
     pick = lambda i: mix(clear[i], hazy[i], t * 2) if t < .5 else mix(hazy[i], thick[i], (t - .5) * 2)
