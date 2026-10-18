@@ -3253,7 +3253,8 @@ function normalise(aq, adv){
   let li = times.length - 1;
   while (li > 0 && REGIONS.some(r => regions[r].pm[li] == null || regions[r].psi[li] == null)) li--;
   const text = ((adv && adv.AirQualityBlurb) || '').replace(/^[^:]*:\s*/, '').trim();
-  const idx = text.split(/\s+to\s+|\s*[–-]\s*/i).map(p => PSI_EN.findIndex(b => b.toLowerCase() === p.trim().replace(/^(low|lower|mid|middle|high|higher|upper)\s+/i, '').toLowerCase())).filter(i => i >= 0);   // NEA writes e.g. 'Unhealthy to Low Very Unhealthy'
+  // the bands named, wherever they are: NEA has written 'Unhealthy to Low Very Unhealthy' and '150 - 220 (Unhealthy to Very Unhealthy)'
+  const idx = [...text.matchAll(new RegExp(`\\b(${PSI_EN.join('|')})\\b`, 'gi'))].map(m => PSI_EN.findIndex(b => b.toLowerCase() === m[1].toLowerCase()));
   const issued = adv && adv.DateOfArticle ? new Date(adv.DateOfArticle) : null;
   // NEA's evening forecast covers the next day; a morning one covers the same day
   const fcDate = issued ? new Date(issued.getTime() + (sg(issued).getUTCHours() >= 12 ? 86400e3 : 0)) : null;
