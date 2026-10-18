@@ -62,7 +62,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 /* header bar */
 .hdr{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px 18px;background:var(--sky-top);color:var(--sky-ink);position:relative;z-index:2}
-.logo{display:flex;align-items:center;gap:9px;margin-right:auto;min-width:0}
+.logo{display:flex;align-items:center;gap:9px;margin-right:auto;min-width:0;border:0;background:none;padding:0;color:inherit;text-align:left}
 .logo svg{width:28px;height:28px;flex:none}
 @media (max-width:389px){.logo svg{display:none}}
 .logo b{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.02em;line-height:1;display:block}
@@ -257,7 +257,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hdr{gap:4px}
 .hdr .iconbtn{width:36px;height:36px}
 .hdr .chip{margin-right:2px}
-.logo > div{min-width:0}
+.logo > span{min-width:0}
 .logo small{overflow:hidden;text-overflow:ellipsis}
 .bubble{background:var(--surface-2);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .shbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:6px}
@@ -329,10 +329,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 <div class="app" id="app">
   <header class="hdr">
-    <div class="logo">
+    <button class="logo" data-tab="now">
       <svg viewBox="0 0 28 28" aria-hidden="true"><defs><linearGradient id="sunfade" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF8A3D" stop-opacity=".12"/></linearGradient></defs><circle cx="14" cy="14" r="10" fill="url(#sunfade)"/></svg>
-      <div><b>Haze Status</b><small id="upd"></small></div>
-    </div>
+      <span><b>Haze Status</b><small id="upd"></small></span>
+    </button>
     <nav class="topnav" aria-label="Sections"><button data-tab="now" data-i="tab.now">Now</button><button data-tab="day" data-i="tab.day">My day</button><button data-tab="hist" data-i="tab.hist">History</button><button data-tab="set" data-i="tab.set">Settings</button></nav>
     <button class="chip" data-act="region" id="regionChip"></button>
     <button class="iconbtn" data-act="share" aria-label="Share" data-ia="aria.share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
@@ -4044,6 +4044,18 @@ const shareBlock = () => `<div class="share2">
     <button class="s2all" data-act="share">${ICON.share}<span class="lbl">${t('share.title')}</span></button>
   </div>`;
 
+/* ---------- Tabs are history entries, so Back returns to the previous tab, scrolled where it was ---------- */
+try { history.replaceState({tab:S.tab}, ''); } catch(e) {}
+function goTab(tab){
+  closeSheet();
+  if (tab !== S.tab) try { history.replaceState({tab:S.tab, y:document.getElementById('v-' + S.tab).scrollTop}, ''); history.pushState({tab}, ''); } catch(e) {}
+  S.tab = tab; render(); document.getElementById('v-' + tab).scrollTop = 0;
+}
+addEventListener('popstate', e => {
+  if (!e.state || !e.state.tab) return;   // a hash change, not one of ours
+  closeSheet(); S.tab = e.state.tab; render(); document.getElementById('v-' + S.tab).scrollTop = e.state.y || 0;
+});
+
 /* ---------- Events ---------- */
 document.getElementById('app').addEventListener('click', e => {
   const tr = e.target.closest('a[data-track]'); if (tr) track(tr.dataset.track);
@@ -4068,7 +4080,7 @@ document.getElementById('app').addEventListener('click', e => {
   if (b.dataset.region){ S.hi = null; return setRegion(b.dataset.region); }
   if (b.dataset.group){ P.group = b.dataset.group; save(); return render(); }
   if (b.dataset.start){ P.start = b.dataset.start; save(); return render(); }
-  if (b.dataset.tab){ closeSheet(); S.tab = b.dataset.tab; render(); document.getElementById('v-' + S.tab).scrollTop = 0; return; }
+  if (b.dataset.tab) return goTab(b.dataset.tab);
   const a = b.dataset.act;
   if (a === 'region') openSheet(t('region.sheet'), regionSheetHTML());
   if (a === 'explain') openSheet(t('ex.title'), explainHTML());
